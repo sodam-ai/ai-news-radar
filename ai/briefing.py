@@ -56,11 +56,35 @@ def generate_daily_briefing() -> dict | None:
         log(f"[브리핑 생성 오류] {e}")
         return None
 
+    # 다양한 LLM 응답 형식 유연하게 처리
+    top = []
+    summary = ""
+
+    if isinstance(result, list):
+        top = result
+    elif isinstance(result, dict):
+        # top_articles 키 유연 검색
+        for key in ("top_articles", "top_5_news", "top_news", "articles", "top5", "news"):
+            if key in result and isinstance(result[key], list):
+                top = result[key]
+                break
+        # 키를 못 찾으면 첫 번째 배열 사용
+        if not top:
+            for v in result.values():
+                if isinstance(v, list) and v and isinstance(v[0], dict):
+                    top = v
+                    break
+        # overall_summary 키 유연 검색
+        for key in ("overall_summary", "summary", "총평", "overall"):
+            if key in result and isinstance(result[key], str):
+                summary = result[key]
+                break
+
     briefing = {
         "id": f"brf_{today.replace('-', '')}",
         "date": today,
-        "top_articles": result.get("top_articles", result) if isinstance(result, dict) else result,
-        "summary": result.get("overall_summary", "") if isinstance(result, dict) else "",
+        "top_articles": top,
+        "summary": summary,
         "created_at": now_iso(),
     }
 

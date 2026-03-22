@@ -272,9 +272,11 @@ def is_watchlisted(article):
     return any(k.lower() in text for k in watchlist_keywords)
 
 
+BOOKMARKS_PATH = DATA_DIR / "bookmarks.json"
+
 # 탭 구성
-tab_briefing, tab_list, tab_timeline, tab_sources = st.tabs(
-    ["📋 오늘의 브리핑", "📰 뉴스 목록", "⏰ 타임라인", "📡 소스 관리"]
+tab_briefing, tab_list, tab_search, tab_timeline, tab_bookmarks, tab_sources = st.tabs(
+    ["📋 브리핑", "📰 뉴스", "🔍 검색", "⏰ 타임라인", "⭐ 북마크", "📡 소스"]
 )
 
 # ── 탭 1: 오늘의 브리핑 ──
@@ -415,7 +417,94 @@ with tab_list:
                 if pub:
                     st.caption(pub)
 
-# ── 탭 3: 타임라인 ──
+                # 북마크 버튼
+                bookmarks = safe_read_json(BOOKMARKS_PATH, [])
+                bm_ids = {b["article_id"] for b in bookmarks}
+                is_bm = article["id"] in bm_ids
+                bm_label = "⭐" if is_bm else "☆"
+                if st.button(bm_label, key=f"bm_{article['id']}", use_container_width=True):
+                    if is_bm:
+                        bookmarks = [b for b in bookmarks if b["article_id"] != article["id"]]
+                    else:
+                        bookmarks.append({"article_id": article["id"], "memo": "", "created_at": today_str()})
+                    safe_write_json(BOOKMARKS_PATH, bookmarks)
+                    st.rerun()
+
+                # 읽음 표시
+                if not article.get("is_read"):
+                    if st.button("📖", key=f"read_{article['id']}", help="읽음 표시", use_container_width=True):
+                        all_arts = safe_read_json(ARTICLES_PATH, [])
+                        for a in all_arts:
+                            if a["id"] == article["id"]:
+                                a["is_read"] = True
+                                break
+                        safe_write_json(ARTICLES_PATH, all_arts)
+                        st.rerun()
+                else:
+                    st.caption("✅ 읽음")
+
+# ── 탭 3: 검색 ──
+with tab_search:
+    st.header("🔍 뉴스 검색")
+
+    search_col1, search_col2 = st.columns([3, 1])
+    with search_col1:
+        search_query = st.text_input("검색어", placeholder="키워드를 입력하세요 (예: Claude, GPT, 삼성)", label_visibility="collapsed")
+    with search_col2:
+        search_category = st.selectbox("카테고리", ["전체"] + list(CATEGORIES.keys()), format_func=lambda x: "전체" if x == "전체" else CATEGORIES[x], key="search_cat")
+
+    search_col3, search_col4 = st.columns(2)
+    with search_col3:
+        search_sentiment = st.selectbox("감성", ["전체", "positive", "negative", "neutral"], format_func=lambda x: "전체" if x == "전체" else SENTIMENTS.get(x, x), key="search_sent")
+    with search_col4:
+        show_read = st.selectbox("읽음 상태", ["전체", "안 읽은 글만", "읽은 글만"], key="search_read")
+
+    if search_query or search_category != "전체" or search_sentiment != "전체" or show_read != "전체":
+        all_for_search = load_primary_articles()
+        results = all_for_search
+
+        # 키워드 검색 (제목 + 요약 + 태그)
+        if search_query:
+            q = search_query.lower()
+            results = [
+                a for a in results
+                if q in a.get("title", "").lower()
+                or q in a.get("summary_text", "").lower()
+                or any(q in t.lower() for t in a.get("tags", []))
+            ]
+
+        # 카테고리 필터
+        if search_category != "전체":
+            results = [a for a in results if a.get("category") == search_category]
+
+        # 감성 필터
+        if search_sentiment != "전체":
+            results = [a for a in results if a.get("sentiment") == search_sentiment]
+
+        # 읽음 상태 필터
+        if show_read == "안 읽은 글만":
+            results = [a for a in results if not a.get("is_read")]
+        elif show_read == "읽은 글만":
+            results = [a for a in results if a.get("is_read")]
+
+        st.caption(f"검색 결과: {len(results)}개")
+
+        for a in results[:50]:  # 최대 50개 표시
+            sentiment_emoji = {"positive": "😊", "negative": "😠", "neutral": "😐"}.get(a.get("sentiment"), "")
+            importance = "⭐" * a.get("importance", 0)
+            read_mark = "✅" if a.get("is_read") else ""
+            with st.container(border=True):
+                st.markdown(f"{importance} {sentiment_emoji} {read_mark} [{a['title']}]({a['url']})")
+                summary = a.get("summary_text", "")
+                if summary:
+                    st.caption(summary[:150])
+                tags = a.get("tags", [])
+                if tags:
+                    st.caption(" ".join([f"`{t}`" for t in tags]))
+    else:
+        st.info("검색어를 입력하거나 필터를 선택하세요.")
+
+# ── 탭 4: 타임라인 ──
 with tab_timeline:
     st.header("⏰ 타임라인")
 
@@ -444,7 +533,58 @@ with tab_timeline:
                 importance = "⭐" * a.get("importance", 0)
                 st.markdown(f"- {importance} {sentiment_emoji} [{a['title']}]({a['url']})")
 
-# ── 탭 4: 소스 관리 ──
+# ── 탭 5: 북마크 ──
+with tab_bookmarks:
+    st.header("⭐ 북마크")
+    bookmarks = safe_read_json(BOOKMARKS_PATH, [])
+
+    if not bookmarks:
+        st.info("북마크한 기사가 없습니다. 뉴스 목록에서 ☆ 버튼을 클릭하세요.")
+    else:
+        all_arts = load_articles()
+        arts_map = {a["id"]: a for a in all_arts}
+        st.caption(f"총 {len(bookmarks)}개 북마크")
+
+        for bm in reversed(bookmarks):  # 최신 북마크 먼저
+            a = arts_map.get(bm["article_id"])
+            if not a:
+                continue
+
+            with st.container(border=True):
+                col_bm_main, col_bm_action = st.columns([5, 1])
+
+                with col_bm_main:
+                    importance = "⭐" * a.get("importance", 0)
+                    sentiment_emoji = {"positive": "😊", "negative": "😠", "neutral": "😐"}.get(a.get("sentiment"), "")
+                    st.markdown(f"{importance} {sentiment_emoji} [{a['title']}]({a['url']})")
+
+                    summary = a.get("summary_text", "")
+                    if summary:
+                        st.caption(summary[:150])
+
+                    # 메모 입력/편집
+                    memo = st.text_input(
+                        "메모",
+                        value=bm.get("memo", ""),
+                        key=f"memo_{bm['article_id']}",
+                        placeholder="메모 추가...",
+                        label_visibility="collapsed",
+                    )
+                    if memo != bm.get("memo", ""):
+                        for b in bookmarks:
+                            if b["article_id"] == bm["article_id"]:
+                                b["memo"] = memo
+                                break
+                        safe_write_json(BOOKMARKS_PATH, bookmarks)
+
+                with col_bm_action:
+                    st.caption(bm.get("created_at", "")[:10])
+                    if st.button("🗑️", key=f"del_bm_{bm['article_id']}", help="북마크 삭제"):
+                        bookmarks = [b for b in bookmarks if b["article_id"] != bm["article_id"]]
+                        safe_write_json(BOOKMARKS_PATH, bookmarks)
+                        st.rerun()
+
+# ── 탭 6: 소스 관리 ──
 with tab_sources:
     st.header("📡 뉴스 소스")
     sources = load_sources()
