@@ -20,11 +20,34 @@ def _build_batch_prompt(articles: list[dict]) -> str:
 
 
 def _parse_response(text: str) -> list[dict]:
+    """LLM 응답을 파싱하여 분석 결과 리스트 반환.
+
+    다양한 응답 형식 지원:
+    - 배열: [{"category": ...}, ...]  (Gemini 스타일)
+    - 객체 안 배열: {"articles": [...]}  (OpenAI 스타일)
+    - 중첩: {"results": [...], "data": [...]}
+    """
     try:
         text = text.strip()
         if text.startswith("```"):
             text = text.split("\n", 1)[1].rsplit("```", 1)[0]
-        return json.loads(text)
+        parsed = json.loads(text)
+
+        # 이미 배열이면 그대로 반환
+        if isinstance(parsed, list):
+            return parsed
+
+        # 객체이면 내부에서 배열 찾기
+        if isinstance(parsed, dict):
+            for key in ("articles", "results", "data", "items", "analysis"):
+                if key in parsed and isinstance(parsed[key], list):
+                    return parsed[key]
+            # 키 이름 모르면 첫 번째 배열 값 반환
+            for v in parsed.values():
+                if isinstance(v, list) and v and isinstance(v[0], dict):
+                    return v
+
+        return []
     except json.JSONDecodeError:
         log(f"[배치 파싱 실패] 응답: {text[:200]}")
         return []
