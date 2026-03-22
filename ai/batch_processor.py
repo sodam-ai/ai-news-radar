@@ -3,7 +3,7 @@ import json
 
 from config import DATA_DIR
 from ai.model_router import call_gemini, call_gemini_multimodal
-from utils.helpers import safe_read_json, safe_write_json
+from utils.helpers import safe_read_json, safe_write_json, log
 
 ARTICLES_PATH = DATA_DIR / "articles.json"
 BATCH_SIZE = 5
@@ -26,7 +26,7 @@ def _parse_response(text: str) -> list[dict]:
             text = text.split("\n", 1)[1].rsplit("```", 1)[0]
         return json.loads(text)
     except json.JSONDecodeError:
-        print(f"[배치 파싱 실패] 응답: {text[:200]}")
+        log(f"[배치 파싱 실패] 응답: {text[:200]}")
         return []
 
 
@@ -36,7 +36,7 @@ def process_unprocessed() -> int:
     unprocessed = [a for a in articles if not a.get("ai_processed")]
 
     if not unprocessed:
-        print("[배치] 처리할 새 기사 없음")
+        log("[배치] 처리할 새 기사 없음")
         return 0
 
     articles_map = {a["id"]: a for a in articles}
@@ -74,7 +74,7 @@ def process_unprocessed() -> int:
                     processed_count += 1
 
         except Exception as e:
-            print(f"[배치 처리 오류] {e}")
+            log(f"[배치 처리 오류] {e}")
             continue
 
     # ── 멀티모달 이미지 분석 (이미지가 있는 기사만) ──
@@ -94,11 +94,11 @@ def process_unprocessed() -> int:
                 target["image_analysis"] = analysis
                 image_count += 1
         except Exception as e:
-            print(f"[이미지 분석 오류] {target['id']}: {e}")
+            log(f"[이미지 분석 오류] {target['id']}: {e}")
 
     if image_count > 0:
-        print(f"[멀티모달] {image_count}개 이미지 분석 완료")
+        log(f"[멀티모달] {image_count}개 이미지 분석 완료")
 
     safe_write_json(ARTICLES_PATH, list(articles_map.values()))
-    print(f"[배치 완료] {processed_count}개 기사 AI 처리됨")
+    log(f"[배치 완료] {processed_count}개 기사 AI 처리됨")
     return processed_count

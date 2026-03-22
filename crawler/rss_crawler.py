@@ -1,10 +1,12 @@
 """RSS 피드 수집"""
+import ssl
+import urllib.request
 import feedparser
 from datetime import datetime, timezone
 from time import mktime
 
 from config import DATA_DIR, MAX_ARTICLES_PER_SOURCE
-from utils.helpers import generate_id, now_iso, safe_read_json, safe_write_json
+from utils.helpers import generate_id, now_iso, safe_read_json, safe_write_json, log
 
 SOURCES_PATH = DATA_DIR / "sources.json"
 ARTICLES_PATH = DATA_DIR / "articles.json"
@@ -37,9 +39,17 @@ def crawl_source(source: dict) -> list[dict]:
         return []
 
     try:
-        feed = feedparser.parse(source["url"])
+        # SSL 인증서 검증 실패하는 사이트(arXiv 등) 대응
+        if "arxiv.org" in source["url"]:
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            handlers = [urllib.request.HTTPSHandler(context=ctx)]
+            feed = feedparser.parse(source["url"], handlers=handlers)
+        else:
+            feed = feedparser.parse(source["url"])
     except Exception as e:
-        print(f"[크롤링 실패] {source['name']}: {e}")
+        log(f"[크롤링 실패] {source['name']}: {e}")
         return []
 
     existing_articles = safe_read_json(ARTICLES_PATH, [])
@@ -108,5 +118,5 @@ def crawl_all() -> int:
         safe_write_json(ARTICLES_PATH, existing)
         safe_write_json(SOURCES_PATH, sources)
 
-    print(f"[크롤링 완료] 새 글 {total_new}개 수집")
+    log(f"[크롤링 완료] 새 글 {total_new}개 수집")
     return total_new

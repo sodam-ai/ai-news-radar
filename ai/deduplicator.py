@@ -2,7 +2,7 @@
 from difflib import SequenceMatcher
 
 from config import DATA_DIR
-from utils.helpers import generate_id, safe_read_json, safe_write_json
+from utils.helpers import generate_id, safe_read_json, safe_write_json, log
 
 ARTICLES_PATH = DATA_DIR / "articles.json"
 SIMILARITY_THRESHOLD = 0.6
@@ -59,5 +59,5 @@ def deduplicate() -> int:
             articles_map[p["id"]] = p
         safe_write_json(ARTICLES_PATH, list(articles_map.values()))
 
-    print(f"[중복 제거] {clusters_found}개 그룹 병합")
+    log(f"[중복 제거] {clusters_found}개 그룹 병합")
     return clusters_found

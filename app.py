@@ -14,6 +14,7 @@ from export.exporter import (
     export_briefing_pdf, export_articles_pdf,
 )
 from reader.article_reader import fetch_clean_content
+from utils.helpers import log
 
 # ── 페이지 설정 ──
 st.set_page_config(
@@ -110,7 +111,7 @@ with st.sidebar:
                 st.success(f"{count}개 새 글 수집!")
             except Exception as e:
                 st.error("수집 중 오류가 발생했습니다. 인터넷 연결을 확인해주세요.")
-                print(f"[수집 오류] {e}")
+                log(f"[수집 오류] {e}")
     with col2:
         if st.button("🤖 AI 처리", use_container_width=True):
             if not GEMINI_API_KEY:
@@ -123,7 +124,7 @@ with st.sidebar:
                     st.success(f"{processed}개 처리 완료!")
                 except Exception as e:
                     st.error("AI 분석 중 오류가 발생했습니다. 나중에 다시 시도해주세요.")
-                    print(f"[AI 처리 오류] {e}")
+                    log(f"[AI 처리 오류] {e}")
 
     if st.button("📋 브리핑 생성", use_container_width=True):
         if not GEMINI_API_KEY:
@@ -138,7 +139,7 @@ with st.sidebar:
                     st.warning("브리핑 생성에 필요한 기사가 부족합니다.")
             except Exception as e:
                 st.error("브리핑 생성 중 오류가 발생했습니다.")
-                print(f"[브리핑 오류] {e}")
+                log(f"[브리핑 오류] {e}")
 
     st.divider()
 

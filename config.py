@@ -1,7 +1,18 @@
 """AI News Radar 설정"""
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
+
+# Windows 콘솔 UTF-8 인코딩 강제 (CP949 오류 방지)
+if sys.platform == "win32":
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 
 load_dotenv()
 

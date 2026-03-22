@@ -1,9 +1,20 @@
 """유틸리티 함수"""
+import sys
 import json
 import uuid
 import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
+
+
+def log(msg: str):
+    """Windows CP949 콘솔에서도 안전한 로그 출력"""
+    try:
+        print(msg)
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        # 유니코드 문자를 ASCII 대체 문자로 변환하여 출력
+        safe = msg.encode("ascii", errors="replace").decode("ascii")
+        print(safe)
 
 
 def generate_id(prefix: str) -> str:

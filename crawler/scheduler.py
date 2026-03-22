@@ -3,6 +3,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from config import CRAWL_INTERVAL_MINUTES
 from crawler.rss_crawler import crawl_all
+from utils.helpers import log
 
 _scheduler = None
 
@@ -21,7 +22,7 @@ def start_scheduler():
         replace_existing=True,
     )
     _scheduler.start()
-    print(f"[스케줄러] {CRAWL_INTERVAL_MINUTES}분 간격 자동 수집 시작")
+    log(f"[스케줄러] {CRAWL_INTERVAL_MINUTES}분 간격 자동 수집 시작")
 
 
 def stop_scheduler():

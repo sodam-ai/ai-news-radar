@@ -4,6 +4,7 @@ import google.generativeai as genai
 from google.generativeai import caching
 
 from config import GEMINI_API_KEY, GEMINI_FLASH_MODEL, GEMINI_FLASH_LITE_MODEL
+from utils.helpers import log
 
 # API 초기화
 genai.configure(api_key=GEMINI_API_KEY)
@@ -86,11 +87,11 @@ def _try_server_cache(model_name: str, system_prompt: str):
             ttl=datetime.timedelta(minutes=CACHE_TTL_MINUTES),
         )
         _server_cache[cache_key] = (cached_content, time.time() + CACHE_TTL_MINUTES * 60)
-        print(f"[Context Cache] 서버 캐시 생성 성공: {model_name}")
+        log(f"[Context Cache] 서버 캐시 생성 성공: {model_name}")
         return genai.GenerativeModel.from_cached_content(cached_content)
     except Exception as e:
         # 최소 토큰 미달 등으로 실패 시 무시
-        print(f"[Context Cache] 서버 캐시 불가 (정상 — 클라이언트 캐시 사용): {e}")
+        log(f"[Context Cache] 서버 캐시 불가 (정상 — 클라이언트 캐시 사용): {e}")
         return None
 
 
@@ -133,7 +134,7 @@ def call_gemini(prompt: str, use_flash: bool = False) -> str:
             )
             return response.text
         except Exception as e:
-            print(f"[Gemini 오류] 시도 {attempt + 1}/3: {e}")
+            log(f"[Gemini 오류] 시도 {attempt + 1}/3: {e}")
             if attempt == 2:
                 raise
     return ""
@@ -176,7 +177,7 @@ def call_gemini_multimodal(image_url: str) -> str:
             )
             return response.text
         except Exception as e:
-            print(f"[멀티모달 오류] 시도 {attempt + 1}/3: {e}")
+            log(f"[멀티모달 오류] 시도 {attempt + 1}/3: {e}")
             if attempt == 2:
                 return f"이미지 분석 실패: {e}"
     return ""

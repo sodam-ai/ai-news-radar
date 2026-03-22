@@ -4,7 +4,7 @@ from datetime import datetime
 
 from config import DATA_DIR
 from ai.model_router import call_gemini
-from utils.helpers import safe_read_json, safe_write_json, today_str, now_iso
+from utils.helpers import safe_read_json, safe_write_json, today_str, now_iso, log
 
 ARTICLES_PATH = DATA_DIR / "articles.json"
 BRIEFINGS_PATH = DATA_DIR / "briefings.json"
@@ -53,7 +53,7 @@ def generate_daily_briefing() -> dict | None:
         response_text = call_gemini(prompt, use_flash=True)
         result = json.loads(response_text.strip().removeprefix("```json").removesuffix("```"))
     except Exception as e:
-        print(f"[브리핑 생성 오류] {e}")
+        log(f"[브리핑 생성 오류] {e}")
         return None
 
     briefing = {
@@ -70,5 +70,5 @@ def generate_daily_briefing() -> dict | None:
     briefings.append(briefing)
     safe_write_json(BRIEFINGS_PATH, briefings)
 
-    print(f"[브리핑] {today} 브리핑 생성 완료")
+    log(f"[브리핑] {today} 브리핑 생성 완료")
     return briefing
