@@ -217,6 +217,278 @@ PROVIDERS = {
         "free_tier": "유료 (API 크레딧 필요)",
         "supports_multimodal": True,
     },
+
+    # ── 무료 / 크레딧 추가 플랫폼 ──
+    "nvidia": {
+        "name": "NVIDIA NIM",
+        "env_key": "NVIDIA_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://integrate.api.nvidia.com/v1",
+        "models": {
+            "lite": "meta/llama-3.3-70b-instruct",
+            "main": "meta/llama-3.3-70b-instruct",
+        },
+        "free_tier": "1,000 크레딧 무료 (가입 시)",
+        "supports_multimodal": False,
+    },
+    "cloudflare": {
+        "name": "Cloudflare Workers AI",
+        "env_key": "CF_API_TOKEN",
+        "type": "openai_compat",
+        "base_url": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+        "extra_env": "CF_ACCOUNT_ID",
+        "models": {
+            "lite": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+            "main": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        },
+        "free_tier": "일 10,000 뉴런 무료",
+        "supports_multimodal": False,
+    },
+    "perplexity": {
+        "name": "Perplexity AI",
+        "env_key": "PERPLEXITY_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.perplexity.ai",
+        "models": {
+            "lite": "llama-3.1-sonar-small-128k-online",
+            "main": "llama-3.1-sonar-large-128k-online",
+        },
+        "free_tier": "가입 시 $5 크레딧 (온라인 검색 포함)",
+        "supports_multimodal": False,
+    },
+    "xai": {
+        "name": "xAI (Grok)",
+        "env_key": "XAI_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.x.ai/v1",
+        "models": {
+            "lite": "grok-2-latest",
+            "main": "grok-2-latest",
+        },
+        "free_tier": "매월 $25 무료 크레딧",
+        "supports_multimodal": True,
+    },
+    "ai21": {
+        "name": "AI21 Labs (Jamba)",
+        "env_key": "AI21_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.ai21.com/studio/v1",
+        "models": {
+            "lite": "jamba-1.5-mini",
+            "main": "jamba-1.5-large",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": False,
+    },
+    "upstage": {
+        "name": "Upstage (Solar)",
+        "env_key": "UPSTAGE_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.upstage.ai/v1/solar",
+        "models": {
+            "lite": "solar-pro",
+            "main": "solar-pro",
+        },
+        "free_tier": "가입 시 무료 크레딧 (한국 기업)",
+        "supports_multimodal": False,
+    },
+    "deepinfra": {
+        "name": "DeepInfra",
+        "env_key": "DEEPINFRA_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.deepinfra.com/v1/openai",
+        "models": {
+            "lite": "meta-llama/Llama-3.3-70B-Instruct",
+            "main": "meta-llama/Llama-3.3-70B-Instruct",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": False,
+    },
+    "hyperbolic": {
+        "name": "Hyperbolic",
+        "env_key": "HYPERBOLIC_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.hyperbolic.xyz/v1",
+        "models": {
+            "lite": "meta-llama/Llama-3.3-70B-Instruct",
+            "main": "meta-llama/Llama-3.3-70B-Instruct",
+        },
+        "free_tier": "무료 티어 제공",
+        "supports_multimodal": False,
+    },
+    "lepton": {
+        "name": "Lepton AI",
+        "env_key": "LEPTON_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://llama3-3-70b.lepton.run/api/v1",
+        "models": {
+            "lite": "llama3-3-70b",
+            "main": "llama3-3-70b",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": False,
+    },
+    "novita": {
+        "name": "Novita AI",
+        "env_key": "NOVITA_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.novita.ai/v3/openai",
+        "models": {
+            "lite": "meta-llama/llama-3.3-70b-instruct",
+            "main": "meta-llama/llama-3.3-70b-instruct",
+        },
+        "free_tier": "가입 시 $0.5 크레딧",
+        "supports_multimodal": False,
+    },
+    "nebius": {
+        "name": "Nebius AI",
+        "env_key": "NEBIUS_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.studio.nebius.ai/v1",
+        "models": {
+            "lite": "meta-llama/Llama-3.3-70B-Instruct",
+            "main": "meta-llama/Llama-3.3-70B-Instruct",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": False,
+    },
+    "kluster": {
+        "name": "Kluster AI",
+        "env_key": "KLUSTER_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.kluster.ai/v1",
+        "models": {
+            "lite": "klusterai/Meta-Llama-3.3-70B-Instruct-Turbo",
+            "main": "klusterai/Meta-Llama-3.3-70B-Instruct-Turbo",
+        },
+        "free_tier": "무료 티어 제공",
+        "supports_multimodal": False,
+    },
+    "glhf": {
+        "name": "GLHF.chat",
+        "env_key": "GLHF_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://glhf.chat/api/openai/v1",
+        "models": {
+            "lite": "hf:meta-llama/Llama-3.3-70B-Instruct",
+            "main": "hf:meta-llama/Llama-3.3-70B-Instruct",
+        },
+        "free_tier": "무료 (커뮤니티 지원)",
+        "supports_multimodal": False,
+    },
+    "chutes": {
+        "name": "Chutes AI",
+        "env_key": "CHUTES_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://llm.chutes.ai/v1",
+        "models": {
+            "lite": "meta-llama/Llama-3.3-70B-Instruct",
+            "main": "meta-llama/Llama-3.3-70B-Instruct",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": False,
+    },
+    "replicate": {
+        "name": "Replicate",
+        "env_key": "REPLICATE_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://openai-proxy.replicate.com/v1",
+        "models": {
+            "lite": "meta/meta-llama-3-70b-instruct",
+            "main": "meta/meta-llama-3-70b-instruct",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": False,
+    },
+
+    # ── 아시아 플랫폼 ──
+    "alibaba": {
+        "name": "Alibaba Qwen (DashScope)",
+        "env_key": "DASHSCOPE_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+        "models": {
+            "lite": "qwen-turbo",
+            "main": "qwen-plus",
+        },
+        "free_tier": "가입 시 무료 크레딧 (100만 토큰)",
+        "supports_multimodal": True,
+    },
+    "zhipu": {
+        "name": "Zhipu AI (GLM)",
+        "env_key": "ZHIPU_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://open.bigmodel.cn/api/paas/v4",
+        "models": {
+            "lite": "glm-4-flash",
+            "main": "glm-4-plus",
+        },
+        "free_tier": "Flash 모델 무료",
+        "supports_multimodal": True,
+    },
+    "moonshot": {
+        "name": "Moonshot AI (Kimi)",
+        "env_key": "MOONSHOT_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.moonshot.cn/v1",
+        "models": {
+            "lite": "moonshot-v1-8k",
+            "main": "moonshot-v1-32k",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": False,
+    },
+    "yi": {
+        "name": "01.AI (Yi)",
+        "env_key": "YI_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.lingyiwanwu.com/v1",
+        "models": {
+            "lite": "yi-lightning",
+            "main": "yi-large",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": False,
+    },
+    "baichuan": {
+        "name": "Baichuan AI",
+        "env_key": "BAICHUAN_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.baichuan-ai.com/v1",
+        "models": {
+            "lite": "Baichuan4",
+            "main": "Baichuan4",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": False,
+    },
+
+    # ── 클라우드 / 엔터프라이즈 ──
+    "azure_openai": {
+        "name": "Azure OpenAI",
+        "env_key": "AZURE_OPENAI_API_KEY",
+        "type": "openai_compat",
+        "base_url": "",  # AZURE_OPENAI_ENDPOINT 환경변수에서 동적 로드
+        "extra_env": "AZURE_OPENAI_ENDPOINT",
+        "models": {
+            "lite": "gpt-4o-mini",
+            "main": "gpt-4o",
+        },
+        "free_tier": "Azure 무료 계정 시 $200 크레딧",
+        "supports_multimodal": True,
+    },
+    "reka": {
+        "name": "Reka AI",
+        "env_key": "REKA_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.reka.ai/v1",
+        "models": {
+            "lite": "reka-flash",
+            "main": "reka-core",
+        },
+        "free_tier": "가입 시 무료 크레딧",
+        "supports_multimodal": True,
+    },
 }
 
 
@@ -233,11 +505,19 @@ def get_active_provider() -> str:
         if os.getenv(env_key):
             return explicit
 
-    # 2. API 키가 있는 프로바이더 자동 감지 (우선순위: 무료 충분한 순서)
+    # 2. API 키가 있는 프로바이더 자동 감지 (우선순위: 무료 할당량 많은 순서)
     priority = [
-        "gemini", "groq", "cerebras", "sambanova", "mistral",
-        "cohere", "huggingface", "together", "openrouter", "fireworks",
-        "deepseek", "openai", "anthropic",
+        # 무료 할당량 충분
+        "gemini", "groq", "cerebras", "sambanova", "xai",
+        "mistral", "cohere", "huggingface", "nvidia", "cloudflare",
+        "zhipu", "kluster", "glhf", "hyperbolic",
+        # 가입 크레딧 / 저렴
+        "together", "openrouter", "fireworks", "deepseek", "deepinfra",
+        "perplexity", "ai21", "upstage", "lepton", "novita", "nebius",
+        "chutes", "replicate", "alibaba", "moonshot", "yi", "baichuan",
+        "reka",
+        # 유료 (강력)
+        "openai", "azure_openai", "anthropic",
     ]
     for name in priority:
         env_key = PROVIDERS[name]["env_key"]
@@ -288,18 +568,34 @@ def _call_gemini_api(prompt: str, system: str, use_flash: bool) -> str:
 
 
 def _call_openai_compat(provider_id: str, prompt: str, system: str, use_flash: bool) -> str:
-    """OpenAI 호환 API로 호출 (Groq, Cerebras, OpenAI, Together 등)"""
+    """OpenAI 호환 API로 호출 (Groq, Cerebras, OpenAI, Together 등 30+ 플랫폼)"""
     info = PROVIDERS[provider_id]
     api_key = os.getenv(info["env_key"], "")
     base_url = info.get("base_url", "")
     model = info["models"]["main" if use_flash else "lite"]
+
+    # Cloudflare: {account_id} 동적 치환
+    if provider_id == "cloudflare":
+        account_id = os.getenv("CF_ACCOUNT_ID", "")
+        base_url = base_url.replace("{account_id}", account_id)
+
+    # Azure OpenAI: 엔드포인트 동적 로드
+    if provider_id == "azure_openai":
+        base_url = os.getenv("AZURE_OPENAI_ENDPOINT", "").rstrip("/") + "/openai/deployments/" + model + "/v1"
 
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
 
-    # OpenRouter는 추가 헤더 필요
+    # Azure OpenAI: api-key 헤더 방식
+    if provider_id == "azure_openai":
+        headers = {
+            "api-key": api_key,
+            "Content-Type": "application/json",
+        }
+
+    # OpenRouter: 추가 헤더 필요
     if provider_id == "openrouter":
         headers["HTTP-Referer"] = "https://github.com/sodam-ai/ai-news-radar"
         headers["X-Title"] = "AI News Radar"
