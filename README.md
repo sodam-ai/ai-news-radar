@@ -12,7 +12,9 @@ AI News Radar is a **personal dashboard** that automatically gathers AI-related 
 
 **In simple terms:** Instead of visiting 15+ news sites every day, this app does it for you and shows you only what matters.
 
-### What It Does
+---
+
+## Key Features
 
 | Feature | Description |
 |---------|-------------|
@@ -30,6 +32,8 @@ AI News Radar is a **personal dashboard** that automatically gathers AI-related 
 | Image Analysis | AI analyzes charts and infographics found in news articles |
 | Live Updates | Dashboard refreshes automatically every 5 minutes |
 | Timeline View | Browse news chronologically (Today / Yesterday / This Week) |
+| Context Caching | Caches system prompts to reduce API token costs by up to 90% |
+| Smart Routing | Uses Flash-Lite for simple tasks, Flash for complex tasks |
 
 ---
 
@@ -38,7 +42,7 @@ AI News Radar is a **personal dashboard** that automatically gathers AI-related 
 After running the app, open your browser to `http://localhost:6601` to see:
 
 - **Briefing Tab** - Today's Top 5 AI news at a glance
-- **News List Tab** - All collected articles with filters
+- **News List Tab** - All collected articles with filters and sorting
 - **Timeline Tab** - Time-based news flow
 - **Sources Tab** - Manage your news sources
 
@@ -89,7 +93,7 @@ cd path\to\ai-news-radar
 pip install -r requirements.txt
 ```
 
-> **What does this do?** It downloads all the libraries (tools) that the app needs to run.
+> **What does this do?** It downloads all the libraries (tools) that the app needs to run. This takes about 1-2 minutes.
 
 ### Step 4: Get a Gemini API Key (Free)
 
@@ -151,7 +155,11 @@ The app automatically collects news every 60 minutes. Just open the dashboard an
 | Track a keyword | Sidebar > Keyword Watchlist > Enter keyword > Click "Add" |
 | Read full article | Click article title (opens in new tab) or "Read More" > "Fetch Original" |
 | Export as PDF | Briefing tab or News tab > Click "Export" > Select PDF |
+| Export as Markdown | Briefing tab or News tab > Click "Export" > Select Markdown |
 | Switch dark/light mode | Sidebar > Toggle at the top |
+| Filter by category | Sidebar > Filter section > Select categories |
+| Filter by sentiment | Sidebar > Filter section > Select sentiments |
+| Filter by importance | Sidebar > Filter section > Move the slider |
 
 ---
 
@@ -164,14 +172,15 @@ ai-news-radar/
 ├── requirements.txt        # List of required packages
 ├── .env.example            # Template for your API key
 ├── .env                    # Your actual API key (NOT uploaded to GitHub)
+├── LICENSE                 # MIT License (SoDam AI Studio)
 ├── .streamlit/
 │   └── config.toml         # Theme and port settings
 ├── crawler/                # News collection
 │   ├── rss_crawler.py      # Fetches articles from RSS feeds
 │   └── scheduler.py        # Runs collection on schedule
 ├── ai/                     # AI processing
-│   ├── model_router.py     # Smart routing: Flash-Lite for simple, Flash for complex
-│   ├── batch_processor.py  # Processes 5 articles at once + image analysis
+│   ├── model_router.py     # Smart routing + Context Caching
+│   ├── batch_processor.py  # Batch AI processing + image analysis
 │   ├── deduplicator.py     # Merges duplicate news
 │   └── briefing.py         # Generates daily Top 5 briefing
 ├── reader/
@@ -182,7 +191,7 @@ ai-news-radar/
 │   └── preset_sources.json # 15 pre-configured news sources
 ├── utils/
 │   └── helpers.py          # Utility functions
-└── PRD/                    # Design documents
+└── PRD/                    # Design documents (4 files)
 ```
 
 ---
@@ -196,7 +205,9 @@ ai-news-radar/
 | "GEMINI_API_KEY not set" warning | Make sure you created `.env` file (not `.env.example`) with your key |
 | No articles appear | Click "Collect" first, then "AI Process" |
 | Port 6601 already in use | Close other Streamlit instances or change port in `.streamlit/config.toml` |
-| PDF export fails | Make sure you're on Windows (uses Windows fonts) |
+| PDF export fails | Make sure you're on Windows (uses Windows fonts for Korean support) |
+| Articles collected but no AI analysis | Check that your GEMINI_API_KEY is correct in the `.env` file |
+| App crashes on startup | Run `pip install -r requirements.txt` again to check for missing packages |
 
 ---
 
@@ -231,22 +242,19 @@ See [PRD/03_PHASES.md](./PRD/03_PHASES.md) for the full roadmap.
 |-----------|-----------|-----|
 | Language | Python 3.11+ | Best ecosystem for AI and web scraping |
 | Dashboard | Streamlit 2026 | Build web UI with Python only |
-| AI | Google Gemini (Flash + Flash-Lite) | Free tier, smart routing |
+| AI | Google Gemini (Flash + Flash-Lite) | Free tier, smart routing, context caching |
 | Data | Local JSON files | No database server needed |
 | Scheduling | APScheduler | Background collection without cron |
+| PDF Export | fpdf2 | Lightweight PDF generation with Korean font support |
 
 ---
 
 ## License
 
-This is a personal project. All rights reserved.
+MIT License - Copyright (c) 2026 **SoDam AI Studio**
+
+See [LICENSE](./LICENSE) for details.
 
 ---
 
-## Contributing
-
-This project is currently for personal use. If you're interested in contributing, please open an issue first.
-
----
-
-*Built with Streamlit + Google Gemini AI*
+*Built with Streamlit + Google Gemini AI by SoDam AI Studio*
