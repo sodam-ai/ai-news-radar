@@ -15,6 +15,7 @@ from export.exporter import (
     export_briefing_pdf, export_articles_pdf,
 )
 from reader.article_reader import fetch_clean_content
+from ai.chat import chat as ai_chat
 
 # ── 페이지 설정 ──
 st.set_page_config(
@@ -275,8 +276,8 @@ def is_watchlisted(article):
 BOOKMARKS_PATH = DATA_DIR / "bookmarks.json"
 
 # 탭 구성
-tab_briefing, tab_list, tab_search, tab_timeline, tab_bookmarks, tab_sources = st.tabs(
-    ["📋 브리핑", "📰 뉴스", "🔍 검색", "⏰ 타임라인", "⭐ 북마크", "📡 소스"]
+tab_briefing, tab_list, tab_search, tab_chat, tab_timeline, tab_bookmarks, tab_sources = st.tabs(
+    ["📋 브리핑", "📰 뉴스", "🔍 검색", "💬 AI 채팅", "⏰ 타임라인", "⭐ 북마크", "📡 소스"]
 )
 
 # ── 탭 1: 오늘의 브리핑 ──
@@ -325,6 +326,81 @@ with tab_briefing:
                 st.caption(f"PDF 생성 불가: {e}")
     else:
         st.info("아직 오늘의 브리핑이 없습니다. 사이드바에서 '📋 브리핑 생성'을 클릭하세요.")
+
+    # ── 감성 온도계 ──
+    if articles:
+        import plotly.graph_objects as go
+
+        st.divider()
+        st.subheader("🌡️ AI 뉴스 감성 온도계")
+
+        # 감성 집계
+        pos = len([a for a in articles if a.get("sentiment") == "positive"])
+        neu = len([a for a in articles if a.get("sentiment") == "neutral"])
+        neg = len([a for a in articles if a.get("sentiment") == "negative"])
+        total = pos + neu + neg
+        pos_pct = round(pos / total * 100) if total else 0
+
+        chart_col1, chart_col2 = st.columns([1, 1])
+
+        with chart_col1:
+            # 게이지 차트 (긍정 비율)
+            fig_gauge = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=pos_pct,
+                number={"suffix": "%"},
+                title={"text": "긍정 뉴스 비율"},
+                gauge={
+                    "axis": {"range": [0, 100]},
+                    "bar": {"color": "#4FC3F7"},
+                    "steps": [
+                        {"range": [0, 33], "color": "#ff6b6b"},
+                        {"range": [33, 66], "color": "#ffd93d"},
+                        {"range": [66, 100], "color": "#6bcb77"},
+                    ],
+                },
+            ))
+            fig_gauge.update_layout(height=250, margin=dict(t=50, b=0, l=30, r=30))
+            st.plotly_chart(fig_gauge, use_container_width=True)
+
+        with chart_col2:
+            # 도넛 차트 (감성 분포)
+            fig_donut = go.Figure(go.Pie(
+                labels=["😊 긍정", "😐 중립", "😠 부정"],
+                values=[pos, neu, neg],
+                hole=0.5,
+                marker=dict(colors=["#6bcb77", "#ffd93d", "#ff6b6b"]),
+                textinfo="label+value",
+            ))
+            fig_donut.update_layout(
+                height=250,
+                margin=dict(t=30, b=0, l=0, r=0),
+                showlegend=False,
+            )
+            st.plotly_chart(fig_donut, use_container_width=True)
+
+        # 카테고리별 감성 바 차트
+        cat_data = {}
+        for a in articles:
+            cat = CATEGORIES.get(a.get("category", ""), a.get("category", "기타"))
+            sent = a.get("sentiment", "neutral")
+            if cat not in cat_data:
+                cat_data[cat] = {"positive": 0, "neutral": 0, "negative": 0}
+            cat_data[cat][sent] = cat_data[cat].get(sent, 0) + 1
+
+        if cat_data:
+            cats_sorted = sorted(cat_data.keys())
+            fig_bar = go.Figure()
+            fig_bar.add_trace(go.Bar(name="😊 긍정", x=cats_sorted, y=[cat_data[c]["positive"] for c in cats_sorted], marker_color="#6bcb77"))
+            fig_bar.add_trace(go.Bar(name="😐 중립", x=cats_sorted, y=[cat_data[c]["neutral"] for c in cats_sorted], marker_color="#ffd93d"))
+            fig_bar.add_trace(go.Bar(name="😠 부정", x=cats_sorted, y=[cat_data[c]["negative"] for c in cats_sorted], marker_color="#ff6b6b"))
+            fig_bar.update_layout(
+                barmode="stack",
+                height=300,
+                margin=dict(t=30, b=0),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02),
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
 
 # ── 탭 2: 뉴스 목록 ──
 with tab_list:
@@ -504,7 +580,62 @@ with tab_search:
     else:
         st.info("검색어를 입력하거나 필터를 선택하세요.")
 
-# ── 탭 4: 타임라인 ──
+# ── 탭 4: AI 채팅 ──
+with tab_chat:
+    st.header("💬 AI 뉴스 채팅")
+    st.caption("수집된 뉴스에 대해 자연어로 질문하세요.")
+
+    if not _active_provider:
+        st.warning("LLM API 키를 먼저 설정해야 채팅을 사용할 수 있습니다.")
+    else:
+        # 채팅 히스토리 초기화
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
+
+        # 대화 히스토리 표시
+        for msg in st.session_state.chat_history:
+            if msg["role"] == "user":
+                st.chat_message("user").write(msg["content"])
+            else:
+                st.chat_message("assistant").write(msg["content"])
+
+        # 입력
+        user_input = st.chat_input("AI 뉴스에 대해 질문하세요... (예: 이번 주 Claude 관련 뉴스 알려줘)")
+
+        if user_input:
+            # 사용자 메시지 표시
+            st.chat_message("user").write(user_input)
+            st.session_state.chat_history.append({"role": "user", "content": user_input})
+
+            # AI 응답 생성
+            with st.chat_message("assistant"):
+                with st.spinner("뉴스를 검색하고 답변을 생성 중..."):
+                    response = ai_chat(user_input, st.session_state.chat_history)
+                st.write(response)
+
+            st.session_state.chat_history.append({"role": "assistant", "content": response})
+
+        # 대화 초기화 버튼
+        if st.session_state.chat_history:
+            if st.button("🗑️ 대화 초기화", key="clear_chat"):
+                st.session_state.chat_history = []
+                st.rerun()
+
+        # 추천 질문
+        if not st.session_state.chat_history:
+            st.divider()
+            st.caption("💡 추천 질문:")
+            suggestions = [
+                "오늘 가장 중요한 AI 뉴스 3가지 알려줘",
+                "OpenAI 관련 최신 뉴스 요약해줘",
+                "AI 투자/비즈니스 관련 뉴스 정리해줘",
+                "부정적인 AI 뉴스는 어떤 게 있어?",
+                "삼성 AI 관련 뉴스 알려줘",
+            ]
+            for s in suggestions:
+                st.caption(f"• {s}")
+
+# ── 탭 5: 타임라인 ──
 with tab_timeline:
     st.header("⏰ 타임라인")
 
