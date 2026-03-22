@@ -1,0 +1,39 @@
+# 환경변수 (API 키 보호)
+.env
+.env.local
+
+# Python 캐시
+__pycache__/
+*.pyc
+*.pyo
+
+# 런타임 데이터 (사용자별로 다름)
+data/articles.json
+data/sources.json
+data/briefings.json
+data/watchlist.json
+data/bookmarks.json
+data/reading_log.json
+data/user_pref.json
+data/chat_sessions.json
+data/chroma/
+
+# Streamlit 캐시 (config.toml은 커밋해야 함)
+.streamlit/secrets.toml
+
+# 가상환경 / 패키지
+Lib/
+Scripts/
+Include/
+etc/
+share/
+pyvenv.cfg
+*.egg-info/
+dist/
+build/
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,17 @@
+[
+  {"id": "src_001", "name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "en"},
+  {"id": "src_002", "name": "The Verge AI", "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "en"},
+  {"id": "src_003", "name": "MIT Technology Review", "url": "https://www.technologyreview.com/feed/", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "en"},
+  {"id": "src_004", "name": "arXiv cs.AI", "url": "https://arxiv.org/rss/cs.AI", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en"},
+  {"id": "src_005", "name": "arXiv cs.CL", "url": "https://arxiv.org/rss/cs.CL", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en"},
+  {"id": "src_006", "name": "Hugging Face Blog", "url": "https://huggingface.co/blog/feed.xml", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en"},
+  {"id": "src_007", "name": "OpenAI Blog", "url": "https://openai.com/blog/rss.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "en"},
+  {"id": "src_008", "name": "Google AI Blog", "url": "https://blog.google/technology/ai/rss/", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "en"},
+  {"id": "src_009", "name": "Ars Technica AI", "url": "https://feeds.arstechnica.com/arstechnica/technology-lab", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "en"},
+  {"id": "src_010", "name": "VentureBeat AI", "url": "https://venturebeat.com/category/ai/feed/", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "en"},
+  {"id": "src_011", "name": "AI타임스", "url": "https://www.aitimes.com/rss/allArticle.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
+  {"id": "src_012", "name": "인공지능신문", "url": "https://www.aitimes.kr/rss/allArticle.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
+  {"id": "src_013", "name": "GeekNews", "url": "https://news.hada.io/rss/news", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
+  {"id": "src_014", "name": "디지털투데이", "url": "https://www.digitaltoday.co.kr/rss/allArticle.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
+  {"id": "src_015", "name": "AI Trends KR", "url": "https://aitrends.kr/feed", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"}
+]
