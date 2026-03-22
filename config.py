@@ -20,7 +20,11 @@ load_dotenv()
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 
-# Gemini API
+# LLM 프로바이더 (자동 감지 또는 명시적 설정)
+# .env에 LLM_PROVIDER=groq 처럼 설정하거나, API 키만 넣으면 자동 감지
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "")
+
+# Gemini API (하위 호환)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_FLASH_MODEL = "gemini-2.5-flash"
 GEMINI_FLASH_LITE_MODEL = "gemini-2.5-flash-lite"

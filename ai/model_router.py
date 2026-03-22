@@ -1,15 +1,29 @@
-"""Gemini 스마트 모델 라우팅 + Context Caching"""
-import time
-import google.generativeai as genai
-from google.generativeai import caching
+"""멀티 LLM 플랫폼 라우팅 + Context Caching
 
-from config import GEMINI_API_KEY, GEMINI_FLASH_MODEL, GEMINI_FLASH_LITE_MODEL
+지원 플랫폼 (무료 할당량 있는 플랫폼 우선):
+- Google Gemini: Flash-Lite 1000회/일, Flash 250회/일 (기본값)
+- Groq: Llama/Gemma 무료 (분당 30회, 일 14,400회)
+- Cerebras: Llama 무료 (분당 30회)
+- SambaNova: Llama 무료 (분당 10회)
+- Mistral: 무료 실험용 API 제공
+- Cohere: Command 무료 (월 1000회)
+- HuggingFace: 무료 Inference API
+- Together AI: 가입 시 $5 크레딧
+- OpenRouter: 일부 무료 모델
+- OpenAI: GPT-4o-mini (유료, 가입 크레딧)
+- Anthropic: Claude (유료)
+- DeepSeek: DeepSeek-V3 저렴 (100만 토큰당 $0.27)
+- Fireworks AI: 가입 시 $1 크레딧
+"""
+import os
+import json
+import time
+import requests as req
+
 from utils.helpers import log
 
-# API 초기화
-genai.configure(api_key=GEMINI_API_KEY)
+# ── 시스템 프롬프트 ──
 
-# 시스템 프롬프트 (캐싱 대상)
 CLASSIFICATION_SYSTEM = """너는 AI 뉴스 분류 전문가야. 각 뉴스 기사에 대해 다음을 JSON으로 반환해:
 - category: ai_tool | ai_research | ai_trend | ai_tutorial | ai_business | ai_other
 - importance: 1~5 (5가 가장 중요)
@@ -40,113 +54,414 @@ IMAGE_ANALYSIS_SYSTEM = """너는 뉴스 이미지 분석 전문가야.
 2~3줄로 간결하게 요약해. JSON이 아닌 일반 텍스트로 응답해."""
 
 
-# ── Context Caching: 모델 인스턴스 재사용 ──
-# system_instruction으로 시스템 프롬프트를 바인딩한 모델 인스턴스를 캐싱합니다.
-# 이렇게 하면 매 요청마다 시스템 프롬프트 토큰을 중복 전송하지 않습니다.
+# ══════════════════════════════════════════════════════════
+# 프로바이더 레지스트리: 각 플랫폼의 설정 정보
+# ══════════════════════════════════════════════════════════
 
-_cached_models = {}
+PROVIDERS = {
+    # ── 무료 할당량 충분 (추천) ──
+    "gemini": {
+        "name": "Google Gemini",
+        "env_key": "GEMINI_API_KEY",
+        "type": "gemini",  # Google 전용 SDK
+        "models": {
+            "lite": "gemini-2.5-flash-lite",
+            "main": "gemini-2.5-flash",
+        },
+        "free_tier": "Flash-Lite 1000회/일, Flash 250회/일",
+        "supports_multimodal": True,
+    },
+    "groq": {
+        "name": "Groq",
+        "env_key": "GROQ_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.groq.com/openai/v1",
+        "models": {
+            "lite": "llama-3.3-70b-versatile",
+            "main": "llama-3.3-70b-versatile",
+        },
+        "free_tier": "분당 30회, 일 14,400회 무료",
+        "supports_multimodal": False,
+    },
+    "cerebras": {
+        "name": "Cerebras",
+        "env_key": "CEREBRAS_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.cerebras.ai/v1",
+        "models": {
+            "lite": "llama-3.3-70b",
+            "main": "llama-3.3-70b",
+        },
+        "free_tier": "분당 30회 무료 (초고속 추론)",
+        "supports_multimodal": False,
+    },
+    "sambanova": {
+        "name": "SambaNova",
+        "env_key": "SAMBANOVA_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.sambanova.ai/v1",
+        "models": {
+            "lite": "Meta-Llama-3.3-70B-Instruct",
+            "main": "Meta-Llama-3.3-70B-Instruct",
+        },
+        "free_tier": "분당 10회 무료",
+        "supports_multimodal": False,
+    },
+    "mistral": {
+        "name": "Mistral AI",
+        "env_key": "MISTRAL_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.mistral.ai/v1",
+        "models": {
+            "lite": "mistral-small-latest",
+            "main": "mistral-medium-latest",
+        },
+        "free_tier": "실험용 무료 API 제공",
+        "supports_multimodal": False,
+    },
+    "cohere": {
+        "name": "Cohere",
+        "env_key": "COHERE_API_KEY",
+        "type": "cohere",
+        "models": {
+            "lite": "command-r",
+            "main": "command-r-plus",
+        },
+        "free_tier": "월 1,000회 무료",
+        "supports_multimodal": False,
+    },
+    "huggingface": {
+        "name": "HuggingFace",
+        "env_key": "HF_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api-inference.huggingface.co/v1",
+        "models": {
+            "lite": "meta-llama/Llama-3.3-70B-Instruct",
+            "main": "meta-llama/Llama-3.3-70B-Instruct",
+        },
+        "free_tier": "무료 Inference API (속도 제한)",
+        "supports_multimodal": False,
+    },
+
+    # ── 가입 크레딧 / 저렴 ──
+    "together": {
+        "name": "Together AI",
+        "env_key": "TOGETHER_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.together.xyz/v1",
+        "models": {
+            "lite": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+            "main": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        },
+        "free_tier": "가입 시 $5 크레딧",
+        "supports_multimodal": False,
+    },
+    "openrouter": {
+        "name": "OpenRouter",
+        "env_key": "OPENROUTER_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://openrouter.ai/api/v1",
+        "models": {
+            "lite": "meta-llama/llama-3.3-70b-instruct:free",
+            "main": "meta-llama/llama-3.3-70b-instruct:free",
+        },
+        "free_tier": "일부 모델 무료 (속도 제한)",
+        "supports_multimodal": False,
+    },
+    "fireworks": {
+        "name": "Fireworks AI",
+        "env_key": "FIREWORKS_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.fireworks.ai/inference/v1",
+        "models": {
+            "lite": "accounts/fireworks/models/llama-v3p3-70b-instruct",
+            "main": "accounts/fireworks/models/llama-v3p3-70b-instruct",
+        },
+        "free_tier": "가입 시 $1 크레딧",
+        "supports_multimodal": False,
+    },
+    "deepseek": {
+        "name": "DeepSeek",
+        "env_key": "DEEPSEEK_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.deepseek.com/v1",
+        "models": {
+            "lite": "deepseek-chat",
+            "main": "deepseek-chat",
+        },
+        "free_tier": "매우 저렴 (100만 토큰당 $0.27)",
+        "supports_multimodal": False,
+    },
+
+    # ── 유료 (강력) ──
+    "openai": {
+        "name": "OpenAI",
+        "env_key": "OPENAI_API_KEY",
+        "type": "openai_compat",
+        "base_url": "https://api.openai.com/v1",
+        "models": {
+            "lite": "gpt-4o-mini",
+            "main": "gpt-4o",
+        },
+        "free_tier": "신규 가입 시 $5 크레딧",
+        "supports_multimodal": True,
+    },
+    "anthropic": {
+        "name": "Anthropic Claude",
+        "env_key": "ANTHROPIC_API_KEY",
+        "type": "anthropic",
+        "models": {
+            "lite": "claude-sonnet-4-6",
+            "main": "claude-sonnet-4-6",
+        },
+        "free_tier": "유료 (API 크레딧 필요)",
+        "supports_multimodal": True,
+    },
+}
 
 
-def _get_cached_model(model_name: str, system_prompt: str):
-    """시스템 프롬프트가 바인딩된 모델 인스턴스를 캐싱하여 반환"""
-    cache_key = f"{model_name}:{hash(system_prompt)}"
-    if cache_key not in _cached_models:
-        _cached_models[cache_key] = genai.GenerativeModel(
-            model_name=model_name,
-            system_instruction=system_prompt,
-        )
-    return _cached_models[cache_key]
+# ══════════════════════════════════════════════════════════
+# 활성 프로바이더 감지
+# ══════════════════════════════════════════════════════════
+
+def get_active_provider() -> str:
+    """환경변수에서 LLM_PROVIDER를 읽거나, API 키가 있는 첫 번째 프로바이더를 자동 감지"""
+    # 1. 명시적 설정
+    explicit = os.getenv("LLM_PROVIDER", "").lower().strip()
+    if explicit and explicit in PROVIDERS:
+        env_key = PROVIDERS[explicit]["env_key"]
+        if os.getenv(env_key):
+            return explicit
+
+    # 2. API 키가 있는 프로바이더 자동 감지 (우선순위: 무료 충분한 순서)
+    priority = [
+        "gemini", "groq", "cerebras", "sambanova", "mistral",
+        "cohere", "huggingface", "together", "openrouter", "fireworks",
+        "deepseek", "openai", "anthropic",
+    ]
+    for name in priority:
+        env_key = PROVIDERS[name]["env_key"]
+        key = os.getenv(env_key, "")
+        if key and key != f"your_{name}_api_key_here":
+            return name
+
+    return ""
 
 
-# ── 서버 측 Context Caching (Gemini Caching API) ──
-# 서버 캐시는 최소 토큰 요구사항이 있어 실패할 수 있으므로 graceful fallback
-
-_server_cache = {}  # {cache_key: (cached_content, expire_time)}
-CACHE_TTL_MINUTES = 60
-
-
-def _try_server_cache(model_name: str, system_prompt: str):
-    """서버 측 캐시 생성 시도. 실패 시 None 반환."""
-    cache_key = f"server:{model_name}:{hash(system_prompt)}"
-
-    # 기존 캐시 확인
-    if cache_key in _server_cache:
-        cached, expire_time = _server_cache[cache_key]
-        if time.time() < expire_time:
-            try:
-                return genai.GenerativeModel.from_cached_content(cached)
-            except Exception:
-                del _server_cache[cache_key]
-
-    # 새 서버 캐시 생성 시도
-    try:
-        import datetime
-        cached_content = caching.CachedContent.create(
-            model=model_name,
-            system_instruction=system_prompt,
-            ttl=datetime.timedelta(minutes=CACHE_TTL_MINUTES),
-        )
-        _server_cache[cache_key] = (cached_content, time.time() + CACHE_TTL_MINUTES * 60)
-        log(f"[Context Cache] 서버 캐시 생성 성공: {model_name}")
-        return genai.GenerativeModel.from_cached_content(cached_content)
-    except Exception as e:
-        # 최소 토큰 미달 등으로 실패 시 무시
-        log(f"[Context Cache] 서버 캐시 불가 (정상 — 클라이언트 캐시 사용): {e}")
-        return None
+def get_available_providers() -> list[dict]:
+    """API 키가 설정된 모든 프로바이더 목록 반환"""
+    available = []
+    for name, info in PROVIDERS.items():
+        key = os.getenv(info["env_key"], "")
+        if key and not key.startswith("your_"):
+            available.append({
+                "id": name,
+                "name": info["name"],
+                "free_tier": info["free_tier"],
+                "multimodal": info["supports_multimodal"],
+            })
+    return available
 
 
-def get_lite_model():
-    """경량 작업용 (분류/태그/감성) — Flash-Lite (1000회/일) + Context Caching"""
-    server_model = _try_server_cache(GEMINI_FLASH_LITE_MODEL, CLASSIFICATION_SYSTEM)
-    if server_model:
-        return server_model
-    return _get_cached_model(GEMINI_FLASH_LITE_MODEL, CLASSIFICATION_SYSTEM)
+# ══════════════════════════════════════════════════════════
+# 프로바이더별 API 호출 구현
+# ══════════════════════════════════════════════════════════
+
+def _call_gemini_api(prompt: str, system: str, use_flash: bool) -> str:
+    """Google Gemini SDK로 호출"""
+    import google.generativeai as genai
+
+    api_key = os.getenv("GEMINI_API_KEY", "")
+    genai.configure(api_key=api_key)
+
+    model_name = PROVIDERS["gemini"]["models"]["main" if use_flash else "lite"]
+    model = genai.GenerativeModel(model_name=model_name, system_instruction=system)
+
+    response = model.generate_content(
+        prompt,
+        generation_config=genai.types.GenerationConfig(
+            temperature=0.1,
+            response_mime_type="application/json",
+        ),
+    )
+    return response.text
 
 
-def get_flash_model():
-    """고품질 작업용 (요약/브리핑) — Flash (250회/일) + Context Caching"""
-    server_model = _try_server_cache(GEMINI_FLASH_MODEL, BRIEFING_SYSTEM)
-    if server_model:
-        return server_model
-    return _get_cached_model(GEMINI_FLASH_MODEL, BRIEFING_SYSTEM)
+def _call_openai_compat(provider_id: str, prompt: str, system: str, use_flash: bool) -> str:
+    """OpenAI 호환 API로 호출 (Groq, Cerebras, OpenAI, Together 등)"""
+    info = PROVIDERS[provider_id]
+    api_key = os.getenv(info["env_key"], "")
+    base_url = info.get("base_url", "")
+    model = info["models"]["main" if use_flash else "lite"]
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    # OpenRouter는 추가 헤더 필요
+    if provider_id == "openrouter":
+        headers["HTTP-Referer"] = "https://github.com/sodam-ai/ai-news-radar"
+        headers["X-Title"] = "AI News Radar"
+
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.1,
+        "response_format": {"type": "json_object"},
+    }
+
+    resp = req.post(
+        f"{base_url}/chat/completions",
+        headers=headers,
+        json=payload,
+        timeout=60,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return data["choices"][0]["message"]["content"]
 
 
-def get_image_model():
-    """이미지 분석용 — Flash (멀티모달) + Context Caching"""
-    server_model = _try_server_cache(GEMINI_FLASH_MODEL, IMAGE_ANALYSIS_SYSTEM)
-    if server_model:
-        return server_model
-    return _get_cached_model(GEMINI_FLASH_MODEL, IMAGE_ANALYSIS_SYSTEM)
+def _call_cohere_api(prompt: str, system: str, use_flash: bool) -> str:
+    """Cohere API로 호출"""
+    api_key = os.getenv("COHERE_API_KEY", "")
+    model = PROVIDERS["cohere"]["models"]["main" if use_flash else "lite"]
 
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": model,
+        "message": prompt,
+        "preamble": system,
+        "temperature": 0.1,
+        "response_format": {"type": "json_object"},
+    }
+
+    resp = req.post(
+        "https://api.cohere.com/v2/chat",
+        headers=headers,
+        json=payload,
+        timeout=60,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return data["text"]
+
+
+def _call_anthropic_api(prompt: str, system: str, use_flash: bool) -> str:
+    """Anthropic Claude API로 호출"""
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    model = PROVIDERS["anthropic"]["models"]["main" if use_flash else "lite"]
+
+    headers = {
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": model,
+        "max_tokens": 4096,
+        "system": system,
+        "messages": [
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.1,
+    }
+
+    resp = req.post(
+        "https://api.anthropic.com/v1/messages",
+        headers=headers,
+        json=payload,
+        timeout=60,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return data["content"][0]["text"]
+
+
+# ══════════════════════════════════════════════════════════
+# 통합 호출 함수 (기존 인터페이스 유지)
+# ══════════════════════════════════════════════════════════
 
 def call_gemini(prompt: str, use_flash: bool = False) -> str:
-    """Gemini API 호출 + 재시도 로직 (Context Caching 적용)"""
-    model = get_flash_model() if use_flash else get_lite_model()
+    """LLM API 호출 + 재시도 로직 (멀티 플랫폼 지원)
+
+    기존 함수명 유지: batch_processor.py, briefing.py에서 이 함수를 호출함.
+    내부적으로 활성 프로바이더에 따라 적절한 API를 호출.
+    """
+    provider_id = get_active_provider()
+    if not provider_id:
+        raise RuntimeError(
+            "LLM API 키가 설정되지 않았습니다. .env 파일에 API 키를 입력하세요.\n"
+            "무료 추천: GEMINI_API_KEY, GROQ_API_KEY, CEREBRAS_API_KEY"
+        )
+
+    info = PROVIDERS[provider_id]
+    provider_type = info["type"]
+    system = BRIEFING_SYSTEM if use_flash else CLASSIFICATION_SYSTEM
 
     for attempt in range(3):
         try:
-            response = model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.1,
-                    response_mime_type="application/json",
-                ),
-            )
-            return response.text
+            if provider_type == "gemini":
+                return _call_gemini_api(prompt, system, use_flash)
+            elif provider_type == "openai_compat":
+                return _call_openai_compat(provider_id, prompt, system, use_flash)
+            elif provider_type == "cohere":
+                return _call_cohere_api(prompt, system, use_flash)
+            elif provider_type == "anthropic":
+                return _call_anthropic_api(prompt, system, use_flash)
+            else:
+                raise ValueError(f"지원하지 않는 프로바이더 타입: {provider_type}")
+
         except Exception as e:
-            log(f"[Gemini 오류] 시도 {attempt + 1}/3: {e}")
+            log(f"[{info['name']} 오류] 시도 {attempt + 1}/3: {e}")
             if attempt == 2:
                 raise
+
     return ""
 
 
 def call_gemini_multimodal(image_url: str) -> str:
-    """이미지 URL로 멀티모달 분석 + 재시도"""
-    import requests as req
+    """이미지 멀티모달 분석 (Gemini/OpenAI만 지원, 비지원 시 스킵)"""
+    provider_id = get_active_provider()
+    if not provider_id:
+        return "LLM 프로바이더 미설정"
 
-    model = get_image_model()
+    info = PROVIDERS[provider_id]
 
-    # 이미지 다운로드
+    # 멀티모달 미지원 프로바이더는 스킵
+    if not info.get("supports_multimodal"):
+        return ""
+
+    if info["type"] == "gemini":
+        return _call_gemini_multimodal_impl(image_url)
+    elif provider_id == "openai":
+        return _call_openai_multimodal_impl(image_url)
+    elif provider_id == "anthropic":
+        return _call_anthropic_multimodal_impl(image_url)
+
+    return ""
+
+
+def _call_gemini_multimodal_impl(image_url: str) -> str:
+    """Gemini 멀티모달 이미지 분석"""
+    import google.generativeai as genai
+
+    api_key = os.getenv("GEMINI_API_KEY", "")
+    genai.configure(api_key=api_key)
+
+    model = genai.GenerativeModel(
+        model_name=PROVIDERS["gemini"]["models"]["main"],
+        system_instruction=IMAGE_ANALYSIS_SYSTEM,
+    )
+
     try:
         resp = req.get(image_url, timeout=10, headers={
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -155,29 +470,91 @@ def call_gemini_multimodal(image_url: str) -> str:
     except Exception as e:
         return f"이미지 다운로드 실패: {e}"
 
-    # Content-Type에서 MIME 타입 추출
-    content_type = resp.headers.get("Content-Type", "image/jpeg")
-    if ";" in content_type:
-        content_type = content_type.split(";")[0].strip()
+    content_type = resp.headers.get("Content-Type", "image/jpeg").split(";")[0].strip()
     if content_type not in ("image/jpeg", "image/png", "image/webp", "image/gif"):
         content_type = "image/jpeg"
 
-    image_part = {
-        "mime_type": content_type,
-        "data": resp.content,
-    }
+    image_part = {"mime_type": content_type, "data": resp.content}
 
     for attempt in range(3):
         try:
             response = model.generate_content(
                 ["이 뉴스 이미지를 분석해줘:", image_part],
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.1,
-                ),
+                generation_config=genai.types.GenerationConfig(temperature=0.1),
             )
             return response.text
         except Exception as e:
-            log(f"[멀티모달 오류] 시도 {attempt + 1}/3: {e}")
+            log(f"[Gemini 멀티모달 오류] 시도 {attempt + 1}/3: {e}")
             if attempt == 2:
                 return f"이미지 분석 실패: {e}"
     return ""
+
+
+def _call_openai_multimodal_impl(image_url: str) -> str:
+    """OpenAI Vision 이미지 분석"""
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
+    payload = {
+        "model": "gpt-4o",
+        "messages": [
+            {"role": "system", "content": IMAGE_ANALYSIS_SYSTEM},
+            {"role": "user", "content": [
+                {"type": "text", "text": "이 뉴스 이미지를 분석해줘:"},
+                {"type": "image_url", "image_url": {"url": image_url}},
+            ]},
+        ],
+        "temperature": 0.1,
+        "max_tokens": 500,
+    }
+
+    try:
+        resp = req.post("https://api.openai.com/v1/chat/completions",
+                        headers=headers, json=payload, timeout=30)
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"이미지 분석 실패: {e}"
+
+
+def _call_anthropic_multimodal_impl(image_url: str) -> str:
+    """Anthropic Claude Vision 이미지 분석"""
+    import base64
+
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+
+    try:
+        img_resp = req.get(image_url, timeout=10, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        })
+        img_resp.raise_for_status()
+    except Exception as e:
+        return f"이미지 다운로드 실패: {e}"
+
+    content_type = img_resp.headers.get("Content-Type", "image/jpeg").split(";")[0].strip()
+    b64_data = base64.b64encode(img_resp.content).decode("utf-8")
+
+    headers = {
+        "x-api-key": api_key,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": PROVIDERS["anthropic"]["models"]["main"],
+        "max_tokens": 500,
+        "system": IMAGE_ANALYSIS_SYSTEM,
+        "messages": [{"role": "user", "content": [
+            {"type": "image", "source": {"type": "base64", "media_type": content_type, "data": b64_data}},
+            {"type": "text", "text": "이 뉴스 이미지를 분석해줘:"},
+        ]}],
+        "temperature": 0.1,
+    }
+
+    try:
+        resp = req.post("https://api.anthropic.com/v1/messages",
+                        headers=headers, json=payload, timeout=30)
+        resp.raise_for_status()
+        return resp.json()["content"][0]["text"]
+    except Exception as e:
+        return f"이미지 분석 실패: {e}"

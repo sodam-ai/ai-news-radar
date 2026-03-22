@@ -2,19 +2,19 @@
 import streamlit as st
 from datetime import datetime, timedelta
 
-from config import DATA_DIR, CATEGORIES, SENTIMENTS, GEMINI_API_KEY
-from utils.helpers import safe_read_json, safe_write_json, today_str
+from config import DATA_DIR, CATEGORIES, SENTIMENTS
+from utils.helpers import safe_read_json, safe_write_json, today_str, log
 from crawler.rss_crawler import crawl_all, load_sources
 from crawler.scheduler import start_scheduler
 from ai.batch_processor import process_unprocessed
 from ai.deduplicator import deduplicate
 from ai.briefing import generate_daily_briefing
+from ai.model_router import get_active_provider, get_available_providers, PROVIDERS
 from export.exporter import (
     export_briefing_markdown, export_articles_markdown,
     export_briefing_pdf, export_articles_pdf,
 )
 from reader.article_reader import fetch_clean_content
-from utils.helpers import log
 
 # ── 페이지 설정 ──
 st.set_page_config(
@@ -24,9 +24,10 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── API 키 체크 ──
-if not GEMINI_API_KEY:
-    st.warning("⚠️ GEMINI_API_KEY가 설정되지 않았습니다. `.env` 파일에 API 키를 입력하세요. RSS 수집은 가능하지만 AI 처리는 불가합니다.")
+# ── LLM 프로바이더 체크 ──
+_active_provider = get_active_provider()
+if not _active_provider:
+    st.warning("⚠️ LLM API 키가 설정되지 않았습니다. `.env` 파일에 API 키를 최소 1개 입력하세요. RSS 수집은 가능하지만 AI 처리는 불가합니다.")
 
 # ── 자동 스케줄러 시작 (세션당 1회) ──
 if "scheduler_started" not in st.session_state:
@@ -101,6 +102,21 @@ with st.sidebar:
 
     st.divider()
 
+    # LLM 프로바이더 상태 표시
+    if _active_provider:
+        provider_info = PROVIDERS[_active_provider]
+        st.caption(f"🤖 AI: **{provider_info['name']}**")
+        available = get_available_providers()
+        if len(available) > 1:
+            with st.expander(f"🔌 프로바이더 ({len(available)}개 사용 가능)"):
+                for p in available:
+                    icon = "✅" if p["id"] == _active_provider else "⚪"
+                    multi = "🖼️" if p["multimodal"] else ""
+                    st.caption(f"{icon} **{p['name']}** {multi} — {p['free_tier']}")
+                st.caption("💡 `.env`의 `LLM_PROVIDER=이름`으로 변경 가능")
+
+    st.divider()
+
     # 수동 수집 버튼
     col1, col2 = st.columns(2)
     with col1:
@@ -114,11 +130,11 @@ with st.sidebar:
                 log(f"[수집 오류] {e}")
     with col2:
         if st.button("🤖 AI 처리", use_container_width=True):
-            if not GEMINI_API_KEY:
-                st.error("GEMINI_API_KEY를 먼저 설정해주세요.")
+            if not _active_provider:
+                st.error("LLM API 키를 먼저 설정해주세요. (.env 파일)")
             else:
                 try:
-                    with st.spinner("AI 분석 중..."):
+                    with st.spinner(f"AI 분석 중 ({PROVIDERS[_active_provider]['name']})..."):
                         processed = process_unprocessed()
                         deduplicate()
                     st.success(f"{processed}개 처리 완료!")
@@ -127,8 +143,8 @@ with st.sidebar:
                     log(f"[AI 처리 오류] {e}")
 
     if st.button("📋 브리핑 생성", use_container_width=True):
-        if not GEMINI_API_KEY:
-            st.error("GEMINI_API_KEY를 먼저 설정해주세요.")
+        if not _active_provider:
+            st.error("LLM API 키를 먼저 설정해주세요. (.env 파일)")
         else:
             try:
                 with st.spinner("오늘의 브리핑 생성 중..."):
