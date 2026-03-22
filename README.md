@@ -1,6 +1,6 @@
 # AI News Radar
 
-> **Your personal AI news dashboard that automatically collects, summarizes, and categorizes AI news.**
+> **Your personal AI news dashboard that automatically collects, summarizes, and categorizes AI news — with 35 LLM platform support.**
 
 **Language / [Korean](./README_KO.md) / [Japanese](./README_JA.md) / [Chinese](./README_ZH.md)**
 
@@ -8,19 +8,21 @@
 
 ## What is AI News Radar?
 
-AI News Radar is a **personal dashboard** that automatically gathers AI-related news from around the world, then uses Google's Gemini AI to summarize, categorize, and rank them by importance.
+AI News Radar is a **personal dashboard** that automatically gathers AI-related news from around the world, then uses AI to summarize, categorize, and rank them by importance. It supports **35 LLM platforms** including OpenAI, Gemini, Groq, Claude, and many more — most with free tiers.
 
 **In simple terms:** Instead of visiting 15+ news sites every day, this app does it for you and shows you only what matters.
 
 ---
 
-## Key Features
+## Key Features (22 features)
+
+### Phase 1 — Core (17 features)
 
 | Feature | Description |
 |---------|-------------|
 | Auto-Collect | Automatically gathers news from 15 pre-set sources (TechCrunch, The Verge, MIT Tech Review, etc.) |
 | AI Summary | Summarizes each article into 3 lines in Korean |
-| Smart Categorization | Sorts news into categories: Tools, Research, Trends, Tutorials, Business |
+| Smart Categorization | Sorts news into 6 categories: Tools, Research, Trends, Tutorials, Business, Other |
 | Importance Score | Rates each article from 1 to 5 stars |
 | Sentiment Analysis | Tags each article as Positive / Neutral / Negative |
 | Daily Briefing | Generates a "Top 5 AI News Today" briefing every day |
@@ -28,23 +30,85 @@ AI News Radar is a **personal dashboard** that automatically gathers AI-related 
 | Keyword Watchlist | Highlights news containing your tracked keywords (e.g., "Claude", "GPT") |
 | In-App Reader | Read full articles inside the dashboard without ads |
 | Dark Mode | Switch between dark and light themes |
-| Export | Download briefings and articles as Markdown or PDF |
+| Export (Markdown) | Download briefings and articles as Markdown |
+| Export (PDF) | Download briefings and articles as PDF with Korean font support |
 | Image Analysis | AI analyzes charts and infographics found in news articles |
 | Live Updates | Dashboard refreshes automatically every 5 minutes |
 | Timeline View | Browse news chronologically (Today / Yesterday / This Week) |
-| Context Caching | Caches system prompts to reduce API token costs by up to 90% |
-| Smart Routing | Uses Flash-Lite for simple tasks, Flash for complex tasks |
+| Context Caching | Caches system prompts to reduce API token costs |
+| Smart Routing | Uses lighter model for simple tasks, stronger model for complex tasks |
+
+### Phase 2-A — Enhanced (5 features)
+
+| Feature | Description |
+|---------|-------------|
+| Search | Search articles by keyword + category + sentiment + read status |
+| Bookmarks + Memo | Save important articles with personal notes |
+| Read History | Mark articles as read, filter unread articles |
+| Sentiment Gauge | Plotly charts: gauge (positive %), donut (distribution), stacked bar (by category) |
+| AI Chat | Ask questions about collected news in natural language |
 
 ---
 
-## Screenshots
+## 35 LLM Platforms Supported
 
-After running the app, open your browser to `http://localhost:6601` to see:
+You only need **one API key** from any of these platforms:
 
-- **Briefing Tab** - Today's Top 5 AI news at a glance
-- **News List Tab** - All collected articles with filters and sorting
-- **Timeline Tab** - Time-based news flow
-- **Sources Tab** - Manage your news sources
+### Free Tier (Recommended)
+
+| Platform | Free Quota | Get Key |
+|----------|-----------|---------|
+| Google Gemini | Flash-Lite 1,000/day, Flash 250/day | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| Groq | 30/min, 14,400/day | [console.groq.com/keys](https://console.groq.com/keys) |
+| Cerebras | 30/min (ultra-fast) | [cloud.cerebras.ai](https://cloud.cerebras.ai/) |
+| SambaNova | 10/min | [cloud.sambanova.ai](https://cloud.sambanova.ai/) |
+| xAI (Grok) | $25/month free | [console.x.ai](https://console.x.ai/) |
+| Mistral AI | Free experimental API | [console.mistral.ai](https://console.mistral.ai/api-keys) |
+| Cohere | 1,000/month | [dashboard.cohere.com](https://dashboard.cohere.com/api-keys) |
+| HuggingFace | Free (rate limited) | [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) |
+| NVIDIA NIM | 1,000 credits | [build.nvidia.com](https://build.nvidia.com/) |
+| Cloudflare Workers AI | 10,000 neurons/day | [dash.cloudflare.com](https://dash.cloudflare.com/) |
+| Zhipu AI (GLM) | Flash model free | [open.bigmodel.cn](https://open.bigmodel.cn/) |
+| Kluster AI | Free tier | [kluster.ai](https://kluster.ai/) |
+| GLHF.chat | Free (community) | [glhf.chat](https://glhf.chat/) |
+| Hyperbolic | Free tier | [app.hyperbolic.xyz](https://app.hyperbolic.xyz/) |
+
+### Sign-up Credits / Affordable
+
+| Platform | Credits | Get Key |
+|----------|---------|---------|
+| Together AI | $5 credit | [api.together.xyz](https://api.together.xyz/settings/api-keys) |
+| OpenRouter | Some free models | [openrouter.ai/keys](https://openrouter.ai/keys) |
+| Fireworks AI | $1 credit | [fireworks.ai](https://fireworks.ai/account/api-keys) |
+| DeepSeek | $0.27/1M tokens | [platform.deepseek.com](https://platform.deepseek.com/api_keys) |
+| DeepInfra | Free credits | [deepinfra.com](https://deepinfra.com/dash/api_keys) |
+| Perplexity AI | $5 credit (with search) | [perplexity.ai](https://www.perplexity.ai/settings/api) |
+| AI21 Labs | Free credits | [studio.ai21.com](https://studio.ai21.com/account/api-key) |
+| Upstage (Solar) | Free credits (Korean) | [console.upstage.ai](https://console.upstage.ai/) |
+| + 9 more | See .env.example | Various |
+
+### Premium
+
+| Platform | Pricing | Get Key |
+|----------|---------|---------|
+| OpenAI | $5 credit (new users) | [platform.openai.com](https://platform.openai.com/api-keys) |
+| Azure OpenAI | $200 credit (free account) | [portal.azure.com](https://portal.azure.com/) |
+| Anthropic Claude | Paid | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
+| Reka AI | Free credits | [platform.reka.ai](https://platform.reka.ai/) |
+
+---
+
+## Dashboard (7 Tabs)
+
+| Tab | Description |
+|-----|-------------|
+| **Briefing** | Today's Top 5 + Sentiment Gauge (3 Plotly charts) |
+| **News** | All articles + filters + bookmark/read buttons |
+| **Search** | Keyword + category + sentiment + read status filters |
+| **AI Chat** | Ask questions about news in natural language |
+| **Timeline** | Chronological news flow (Today / Yesterday / This Week) |
+| **Bookmarks** | Saved articles with memo editing |
+| **Sources** | Manage 15 news sources |
 
 ---
 
@@ -54,70 +118,59 @@ After running the app, open your browser to `http://localhost:6601` to see:
 
 ### Step 1: Install Python
 
-Python is the programming language this app runs on. You need to install it first.
-
 1. Go to [python.org/downloads](https://www.python.org/downloads/)
 2. Click the big yellow **"Download Python 3.xx"** button
 3. Run the downloaded file
-4. **IMPORTANT:** Check the box that says **"Add Python to PATH"** at the bottom of the installer
+4. **IMPORTANT:** Check the box **"Add Python to PATH"** at the bottom
 5. Click **"Install Now"**
 
-**How to verify:** Open Command Prompt (press `Win + R`, type `cmd`, press Enter) and type:
+**Verify:** Open Command Prompt (`Win + R` → `cmd` → Enter) and type:
 ```
 python --version
 ```
-If you see something like `Python 3.13.x`, you're good!
 
 ### Step 2: Download This Project
 
-**Option A: Using Git (Recommended)**
-
-If you have Git installed:
+**Option A: Using Git**
 ```
 git clone https://github.com/sodam-ai/ai-news-radar.git
 cd ai-news-radar
 ```
 
-**Option B: Direct Download**
+**Option B: Direct Download** — Go to [GitHub page](https://github.com/sodam-ai/ai-news-radar) → Code → Download ZIP → Extract
 
-1. Go to the [GitHub repository page](https://github.com/sodam-ai/ai-news-radar)
-2. Click the green **"Code"** button
-3. Click **"Download ZIP"**
-4. Extract the ZIP file to any folder you like
+### Step 3: Install Packages
 
-### Step 3: Install Required Packages
-
-Open Command Prompt, navigate to the project folder, and run:
 ```
 cd path\to\ai-news-radar
 pip install -r requirements.txt
 ```
 
-> **What does this do?** It downloads all the libraries (tools) that the app needs to run. This takes about 1-2 minutes.
+### Step 4: Get an API Key (Free)
 
-### Step 4: Get a Gemini API Key (Free)
+Choose **any one** platform from the table above. Example with Groq (easiest free option):
 
-The AI features require a Google Gemini API key. It's **completely free**.
-
-1. Go to [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-2. Sign in with your Google account
-3. Click **"Create API Key"**
-4. Copy the generated key (it looks like `AIzaSy...`)
+1. Go to [console.groq.com/keys](https://console.groq.com/keys)
+2. Sign up and create an API key
+3. Copy the key
 
 ### Step 5: Set Up Your API Key
 
-1. In the project folder, find the file named `.env.example`
-2. Make a copy of it and rename the copy to `.env`
-3. Open `.env` with any text editor (Notepad is fine)
-4. Replace `your_gemini_api_key_here` with your actual API key:
+1. Copy `.env.example` to `.env`
+2. Open `.env` with Notepad
+3. Add your key:
 
 ```
-GEMINI_API_KEY=AIzaSyYourActualKeyHere
+GROQ_API_KEY=gsk_YourActualKeyHere
 ```
 
-5. Save the file
+Or if using OpenAI:
+```
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-YourActualKeyHere
+```
 
-> **Security Note:** The `.env` file contains your secret API key. It is automatically excluded from uploads to GitHub. Never share this file with anyone.
+> **Security:** `.env` is automatically excluded from GitHub. Never share it.
 
 ### Step 6: Run the App
 
@@ -125,9 +178,7 @@ GEMINI_API_KEY=AIzaSyYourActualKeyHere
 streamlit run app.py
 ```
 
-Your browser will automatically open to **http://localhost:6601**
-
-That's it! You're now running AI News Radar!
+Browser opens to **http://localhost:6601** — Done!
 
 ---
 
@@ -135,31 +186,32 @@ That's it! You're now running AI News Radar!
 
 ### First Time
 
-1. Click **"Collect"** button in the sidebar to gather news
-2. Click **"AI Process"** button to analyze the collected articles
-3. Click **"Generate Briefing"** to create today's Top 5 summary
+1. Click **"Collect"** in sidebar → gathers news from 15 sources
+2. Click **"AI Process"** → AI analyzes all articles
+3. Click **"Generate Briefing"** → creates today's Top 5
 
 ### Daily Use
 
-The app automatically collects news every 60 minutes. Just open the dashboard and check:
-
-- **Briefing Tab** for a quick overview
-- **News List** for detailed reading
-- Use **filters** in the sidebar to focus on specific categories or sentiments
+- **Briefing tab** — quick overview + sentiment charts
+- **News tab** — browse with filters, bookmark important articles
+- **Search tab** — find specific topics
+- **AI Chat tab** — ask "What are today's most important AI news?"
+- **Bookmarks tab** — review saved articles with your notes
 
 ### Features Guide
 
 | Action | How To |
 |--------|--------|
-| Add a news source | Sidebar > Source Management > Enter name and RSS URL > Click "Add Source" |
-| Track a keyword | Sidebar > Keyword Watchlist > Enter keyword > Click "Add" |
-| Read full article | Click article title (opens in new tab) or "Read More" > "Fetch Original" |
-| Export as PDF | Briefing tab or News tab > Click "Export" > Select PDF |
-| Export as Markdown | Briefing tab or News tab > Click "Export" > Select Markdown |
-| Switch dark/light mode | Sidebar > Toggle at the top |
-| Filter by category | Sidebar > Filter section > Select categories |
-| Filter by sentiment | Sidebar > Filter section > Select sentiments |
-| Filter by importance | Sidebar > Filter section > Move the slider |
+| Add a news source | Sidebar → Source Management → Enter name & RSS URL |
+| Track a keyword | Sidebar → Keyword Watchlist → Enter keyword |
+| Bookmark an article | News tab → Click ☆ on article card |
+| Add memo to bookmark | Bookmarks tab → Type in memo field |
+| Mark as read | News tab → Click 📖 on article card |
+| Search articles | Search tab → Enter keyword + select filters |
+| Chat with AI | AI Chat tab → Type your question |
+| Export as PDF | Briefing/News tab → Select PDF → Download |
+| Switch dark/light | Sidebar → Toggle at top |
+| Change LLM provider | Edit `.env` → Set `LLM_PROVIDER=groq` (or any provider name) |
 
 ---
 
@@ -167,31 +219,31 @@ The app automatically collects news every 60 minutes. Just open the dashboard an
 
 ```
 ai-news-radar/
-├── app.py                  # Main dashboard (what you see in the browser)
-├── config.py               # Settings (API keys, intervals)
-├── requirements.txt        # List of required packages
-├── .env.example            # Template for your API key
-├── .env                    # Your actual API key (NOT uploaded to GitHub)
+├── app.py                  # Main dashboard (7 tabs)
+├── config.py               # Settings
+├── requirements.txt        # Dependencies (8 packages)
+├── .env.example            # API key template (35 platforms)
 ├── LICENSE                 # MIT License (SoDam AI Studio)
-├── .streamlit/
-│   └── config.toml         # Theme and port settings
-├── crawler/                # News collection
-│   ├── rss_crawler.py      # Fetches articles from RSS feeds
-│   └── scheduler.py        # Runs collection on schedule
-├── ai/                     # AI processing
-│   ├── model_router.py     # Smart routing + Context Caching
+├── .streamlit/config.toml  # Theme + port settings
+├── crawler/
+│   ├── rss_crawler.py      # RSS feed collection
+│   └── scheduler.py        # Auto-collection scheduler
+├── ai/
+│   ├── model_router.py     # 35 LLM providers + smart routing
 │   ├── batch_processor.py  # Batch AI processing + image analysis
-│   ├── deduplicator.py     # Merges duplicate news
-│   └── briefing.py         # Generates daily Top 5 briefing
+│   ├── deduplicator.py     # Duplicate news merging
+│   ├── briefing.py         # Daily Top 5 briefing
+│   └── chat.py             # AI news chat (keyword RAG)
 ├── reader/
-│   └── article_reader.py   # Clean article reader (no ads)
+│   └── article_reader.py   # Ad-free article reader
 ├── export/
-│   └── exporter.py         # Markdown and PDF export
+│   └── exporter.py         # Markdown + PDF export
 ├── data/
-│   └── preset_sources.json # 15 pre-configured news sources
+│   └── preset_sources.json # 15 pre-configured sources
 ├── utils/
-│   └── helpers.py          # Utility functions
-└── PRD/                    # Design documents (4 files)
+│   └── helpers.py          # Utilities + safe logging
+├── PRD/                    # Design documents
+└── README*.md              # 4 languages (EN/KO/JA/ZH)
 ```
 
 ---
@@ -200,27 +252,15 @@ ai-news-radar/
 
 | Problem | Solution |
 |---------|----------|
-| `pip` command not found | Reinstall Python and check "Add Python to PATH" |
-| `streamlit` command not found | Run: `pip install streamlit` |
-| "GEMINI_API_KEY not set" warning | Make sure you created `.env` file (not `.env.example`) with your key |
+| `pip` not found | Reinstall Python, check "Add Python to PATH" |
+| `streamlit` not found | Run: `pip install streamlit` |
+| "LLM API key not set" warning | Create `.env` file with at least one API key |
 | No articles appear | Click "Collect" first, then "AI Process" |
-| Port 6601 already in use | Close other Streamlit instances or change port in `.streamlit/config.toml` |
-| PDF export fails | Make sure you're on Windows (uses Windows fonts for Korean support) |
-| Articles collected but no AI analysis | Check that your GEMINI_API_KEY is correct in the `.env` file |
-| App crashes on startup | Run `pip install -r requirements.txt` again to check for missing packages |
-
----
-
-## Free API Limits
-
-AI News Radar is designed to run **completely free** using Gemini's free tier:
-
-| Model | Free Limit | Used For |
-|-------|-----------|----------|
-| Gemini Flash-Lite | 1,000 requests/day | Categorization, tags, sentiment |
-| Gemini Flash | 250 requests/day | Summaries, briefings, image analysis |
-
-The smart routing system automatically uses the cheaper model for simple tasks and the better model for complex tasks, maximizing what you can do for free.
+| Port 6601 in use | Change port in `.streamlit/config.toml` or use `--server.port 6602` |
+| PDF export fails | Windows only (uses Windows Korean fonts) |
+| AI analysis not working | Check API key in `.env` is correct and not expired |
+| App crashes on startup | Run `pip install -r requirements.txt` again |
+| Chat returns JSON instead of text | Already fixed — update to latest version |
 
 ---
 
@@ -228,9 +268,10 @@ The smart routing system automatically uses the cheaper model for simple tasks a
 
 | Phase | Features | Status |
 |-------|----------|--------|
-| Phase 1 (MVP) | Collection + AI Summary + Dashboard (17 features) | Complete |
-| Phase 2 | Chat + Voice + Bots + Fact-check + Gamification (35 features) | Planned |
-| Phase 3 | Agents + Prediction + Podcast + Plugins + Team mode (19 features) | Planned |
+| Phase 1 (MVP) | Collection + AI Summary + Dashboard (17 features) | **Complete** |
+| Phase 2-A | Search + Bookmarks + Read History + Sentiment Chart + AI Chat (5 features) | **Complete** |
+| Phase 2-B | Voice Briefing + Telegram Bot + Fact-check + Glossary + GitHub Actions | Planned |
+| Phase 3 | Agents + Prediction + Podcast + Plugins + Team mode | Planned |
 
 See [PRD/03_PHASES.md](./PRD/03_PHASES.md) for the full roadmap.
 
@@ -238,14 +279,15 @@ See [PRD/03_PHASES.md](./PRD/03_PHASES.md) for the full roadmap.
 
 ## Tech Stack
 
-| Component | Technology | Why |
-|-----------|-----------|-----|
-| Language | Python 3.11+ | Best ecosystem for AI and web scraping |
-| Dashboard | Streamlit 2026 | Build web UI with Python only |
-| AI | Google Gemini (Flash + Flash-Lite) | Free tier, smart routing, context caching |
-| Data | Local JSON files | No database server needed |
-| Scheduling | APScheduler | Background collection without cron |
-| PDF Export | fpdf2 | Lightweight PDF generation with Korean font support |
+| Component | Technology |
+|-----------|-----------|
+| Language | Python 3.11+ |
+| Dashboard | Streamlit 2026 |
+| AI | 35 LLM platforms (OpenAI, Gemini, Groq, Claude, etc.) |
+| Charts | Plotly (gauge, donut, stacked bar) |
+| Data | Local JSON files |
+| Scheduling | APScheduler |
+| PDF | fpdf2 (Korean font support) |
 
 ---
 
@@ -257,4 +299,4 @@ See [LICENSE](./LICENSE) for details.
 
 ---
 
-*Built with Streamlit + Google Gemini AI by SoDam AI Studio*
+*Built with Streamlit + 35 AI Platforms by SoDam AI Studio*
