@@ -24,6 +24,8 @@ from ai.weekly_report import generate_weekly_report, get_latest_report, export_w
 from ai.competitor import get_competitor_analysis, COMPETITOR_GROUPS
 from ai.trend import get_trend_data, get_keyword_trend, get_hot_keywords
 from ai.debate import generate_debate, get_debate_pairs
+from sns.card_generator import generate_single_card, generate_briefing_card, generate_category_cards
+from sns.poster import get_available_platforms, post_article, post_briefing, PLATFORM_ADAPTERS
 
 # ── 페이지 설정 ──
 st.set_page_config(
@@ -449,8 +451,8 @@ with m4:
 st.markdown("")  # spacer
 
 # ── 탭 구성 ──
-tab_briefing, tab_list, tab_search, tab_chat, tab_glossary, tab_competitor, tab_timeline, tab_bookmarks, tab_sources = st.tabs(
-    ["📋 브리핑", "📰 뉴스", "🔍 검색", "💬 AI 채팅", "📚 용어 사전", "🏆 도구 비교", "⏰ 타임라인", "⭐ 북마크", "📡 소스"]
+tab_briefing, tab_list, tab_search, tab_chat, tab_glossary, tab_competitor, tab_sns, tab_timeline, tab_bookmarks, tab_sources = st.tabs(
+    ["📋 브리핑", "📰 뉴스", "🔍 검색", "💬 AI 채팅", "📚 용어 사전", "🏆 도구 비교", "📢 SNS", "⏰ 타임라인", "⭐ 북마크", "📡 소스"]
 )
 
 # ═══════════════════════════════════════════════
@@ -1283,7 +1285,199 @@ with tab_competitor:
                     st.caption(f"⚔️ {pa['name']} vs {pb['name']}")
 
 # ═══════════════════════════════════════════════
-# 탭 7: 타임라인
+# 탭 7: SNS 카드 뉴스
+# ═══════════════════════════════════════════════
+with tab_sns:
+    st.markdown("### 📢 SNS 카드 뉴스 자동 업로드")
+    st.caption("원하는 카테고리의 뉴스를 카드 이미지로 만들어 SNS에 자동 게시합니다.")
+
+    # ── 플랫폼 상태 표시 ──
+    platforms = get_available_platforms()
+    st.markdown("#### 📱 연결된 플랫폼")
+    plat_cols = st.columns(len(platforms))
+    for idx, p in enumerate(platforms):
+        with plat_cols[idx]:
+            status = "🟢 연결됨" if p["configured"] else "⚪ 미설정"
+            with st.container(border=True):
+                st.markdown(f"**{p['icon']} {p['name']}**")
+                st.caption(status)
+
+    configured_platforms = [p for p in platforms if p["configured"]]
+
+    if not configured_platforms:
+        st.divider()
+        st.markdown("#### ⚙️ SNS 연결 설정")
+        st.markdown("""
+`.env` 파일에 아래 키를 추가하세요:
+
+**X (Twitter):**
+```
+X_API_KEY=your_api_key
+X_API_SECRET=your_api_secret
+X_ACCESS_TOKEN=your_access_token
+X_ACCESS_SECRET=your_access_secret
+```
+
+**Telegram:**
+```
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHANNEL_ID=@your_channel_id
+```
+
+**Discord:**
+```
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+```
+""")
+    else:
+        st.divider()
+
+        # ── 모드 선택 ──
+        sns_mode = st.radio("포스트 유형", ["📰 개별 기사", "📋 오늘의 브리핑"], horizontal=True, key="sns_mode")
+
+        # ── 플랫폼 선택 ──
+        selected_platforms = []
+        sp_cols = st.columns(len(configured_platforms))
+        for idx, p in enumerate(configured_platforms):
+            with sp_cols[idx]:
+                if st.checkbox(f"{p['icon']} {p['name']}", value=True, key=f"sns_plat_{p['id']}"):
+                    selected_platforms.append(p["id"])
+
+        if sns_mode == "📰 개별 기사":
+            # ── 카테고리 필터 ──
+            st.markdown("#### 🏷️ 카테고리 선택")
+            sns_categories = st.multiselect(
+                "게시할 카테고리",
+                options=list(CATEGORIES.keys()),
+                default=["ai_image_video", "ai_coding", "ai_ontology"],
+                format_func=lambda x: CATEGORIES[x],
+                key="sns_cat",
+            )
+
+            # 해당 카테고리 기사 필터
+            sns_articles = [a for a in articles if a.get("category") in sns_categories]
+            sns_articles.sort(key=lambda x: x.get("importance", 0), reverse=True)
+
+            if not sns_articles:
+                st.info("선택한 카테고리에 기사가 없습니다. 다른 카테고리를 선택하거나 뉴스를 먼저 수집하세요.")
+            else:
+                st.caption(f"📰 {len(sns_articles)}개 기사 발견")
+
+                # 기사 선택
+                max_posts = st.slider("게시할 기사 수", 1, min(10, len(sns_articles)), min(3, len(sns_articles)), key="sns_max")
+
+                # 미리보기
+                st.markdown("#### 👀 미리보기")
+                preview_articles = sns_articles[:max_posts]
+                for i, a in enumerate(preview_articles):
+                    cat_name = CATEGORIES.get(a.get("category", ""), "기타")
+                    sentiment_emoji = {"positive": "😊", "negative": "😠", "neutral": "😐"}.get(a.get("sentiment", ""), "")
+                    stars = "⭐" * a.get("importance", 0)
+                    with st.container(border=True):
+                        st.markdown(f"{stars} {sentiment_emoji} **[{cat_name}]** {a['title']}")
+                        tags = a.get("tags", [])[:3]
+                        if tags:
+                            st.caption(" ".join([f"#{t}" for t in tags]))
+
+                # 게시 버튼
+                st.divider()
+                if st.button(f"📢 {len(preview_articles)}개 기사 → {len(selected_platforms)}개 플랫폼 게시", use_container_width=True, key="sns_post", type="primary"):
+                    if not selected_platforms:
+                        st.error("플랫폼을 선택하세요.")
+                    else:
+                        progress = st.progress(0, text="카드 뉴스 생성 중...")
+                        total = len(preview_articles)
+                        all_results = []
+
+                        for i, a in enumerate(preview_articles):
+                            progress.progress((i + 1) / total, text=f"📢 게시 중... ({i + 1}/{total})")
+
+                            # 카드 이미지 생성
+                            card_path = generate_single_card(a)
+
+                            # 선택한 플랫폼에 업로드
+                            results = post_article(a, selected_platforms, card_path)
+                            all_results.extend(results)
+
+                        progress.empty()
+
+                        # 결과 표시
+                        success_count = sum(1 for r in all_results if r.get("success"))
+                        fail_count = len(all_results) - success_count
+
+                        if success_count > 0:
+                            st.success(f"✅ {success_count}건 게시 성공!")
+                        if fail_count > 0:
+                            st.warning(f"⚠️ {fail_count}건 실패")
+                            for r in all_results:
+                                if not r.get("success"):
+                                    st.caption(f"❌ {r.get('platform', '?')}: {r.get('error', '')}")
+
+        else:  # 브리핑 모드
+            st.markdown("#### 📋 오늘의 브리핑 카드 뉴스")
+            briefings = safe_read_json(BRIEFINGS_PATH, [])
+            today_br = next((b for b in briefings if b.get("date") == today_str()), None)
+
+            if not today_br:
+                st.info("오늘의 브리핑이 없습니다. 먼저 브리핑을 생성하세요.")
+            else:
+                st.caption(f"📅 {today_br.get('date', '')}")
+
+                # 미리보기
+                top = today_br.get("top_articles", [])
+                for i, item in enumerate(top[:5], 1):
+                    if isinstance(item, dict):
+                        headline = item.get("headline", item.get("title", ""))
+                        st.markdown(f"**#{i}** {headline}")
+
+                st.divider()
+                if st.button(f"📢 브리핑 → {len(selected_platforms)}개 플랫폼 게시", use_container_width=True, key="sns_post_br", type="primary"):
+                    if not selected_platforms:
+                        st.error("플랫폼을 선택하세요.")
+                    else:
+                        with st.spinner("📸 브리핑 카드 생성 중..."):
+                            card_path = generate_briefing_card(today_br)
+
+                        with st.spinner("📢 게시 중..."):
+                            results = post_briefing(today_br, selected_platforms, card_path)
+
+                        success_count = sum(1 for r in results if r.get("success"))
+                        if success_count > 0:
+                            st.success(f"✅ {success_count}개 플랫폼에 게시 완료!")
+                        for r in results:
+                            if not r.get("success"):
+                                st.caption(f"❌ {r.get('platform', '?')}: {r.get('error', '')}")
+
+        # ── 카드 이미지 미리보기 (생성만) ──
+        st.divider()
+        st.markdown("#### 🖼️ 카드 이미지 생성 (다운로드용)")
+        if st.button("🖼️ 선택 카테고리 카드 생성", use_container_width=True, key="gen_cards_only"):
+            with st.spinner("카드 이미지 생성 중..."):
+                card_paths = []
+                for a in (sns_articles if sns_mode == "📰 개별 기사" else articles)[:5]:
+                    path = generate_single_card(a)
+                    if path:
+                        card_paths.append(path)
+
+            if card_paths:
+                st.success(f"✅ {len(card_paths)}개 카드 생성!")
+                # 이미지 미리보기
+                preview_cols = st.columns(min(len(card_paths), 3))
+                for idx, cp in enumerate(card_paths[:3]):
+                    with preview_cols[idx]:
+                        st.image(cp, use_container_width=True)
+                        with open(cp, "rb") as f:
+                            st.download_button(
+                                f"📥 다운로드",
+                                data=f.read(),
+                                file_name=os.path.basename(cp),
+                                mime="image/png",
+                                key=f"dl_card_{idx}",
+                                use_container_width=True,
+                            )
+
+# ═══════════════════════════════════════════════
+# 탭 8: 타임라인
 # ═══════════════════════════════════════════════
 with tab_timeline:
     st.markdown("### ⏰ 뉴스 타임라인")
