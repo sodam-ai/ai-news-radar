@@ -199,6 +199,177 @@ def post_to_discord(text: str, image_path: str = None) -> dict:
 
 
 # ═══════════════════════════════════════════════
+# Threads 어댑터 (Meta Threads API)
+# ═══════════════════════════════════════════════
+
+def post_to_threads(text: str, image_path: str = None) -> dict:
+    """Threads에 포스트 (Meta Threads Publishing API)
+
+    필요 설정:
+      THREADS_ACCESS_TOKEN — Meta 개발자 포털에서 발급
+      THREADS_USER_ID — Threads 사용자 ID
+
+    발급 방법:
+      1. developers.facebook.com → 앱 만들기 → Threads API 추가
+      2. Access Token 발급 (threads_manage_posts 권한)
+      3. 사용자 ID 확인: GET https://graph.threads.net/v1.0/me
+    """
+    access_token = os.getenv("THREADS_ACCESS_TOKEN", "")
+    user_id = os.getenv("THREADS_USER_ID", "")
+
+    if not access_token or not user_id:
+        return {"success": False, "error": "THREADS_ACCESS_TOKEN 또는 THREADS_USER_ID가 .env에 설정되지 않았습니다"}
+
+    base_url = "https://graph.threads.net/v1.0"
+
+    try:
+        # Step 1: 미디어 컨테이너 생성
+        create_params = {
+            "text": text[:500],
+            "access_token": access_token,
+        }
+
+        if image_path and os.path.exists(image_path):
+            # 이미지 포스트: 이미지 URL 필요 (로컬 파일 직접 업로드 불가)
+            # 로컬 파일은 텍스트 전용으로 게시
+            create_params["media_type"] = "TEXT"
+        else:
+            create_params["media_type"] = "TEXT"
+
+        resp = req.post(
+            f"{base_url}/{user_id}/threads",
+            data=create_params,
+            timeout=30,
+        )
+        result = resp.json()
+
+        if "id" not in result:
+            return {"success": False, "error": result.get("error", {}).get("message", str(result))}
+
+        container_id = result["id"]
+
+        # Step 2: 게시
+        publish_resp = req.post(
+            f"{base_url}/{user_id}/threads_publish",
+            data={"creation_id": container_id, "access_token": access_token},
+            timeout=30,
+        )
+        publish_result = publish_resp.json()
+
+        if "id" in publish_result:
+            post_id = publish_result["id"]
+            log(f"[Threads] 포스트 성공: {post_id}")
+            return {"success": True, "platform": "Threads", "post_id": post_id}
+        else:
+            return {"success": False, "error": publish_result.get("error", {}).get("message", str(publish_result))}
+
+    except Exception as e:
+        log(f"[Threads 오류] {e}")
+        return {"success": False, "error": str(e)}
+
+
+# ═══════════════════════════════════════════════
+# Instagram 어댑터 (Meta Graph API)
+# ═══════════════════════════════════════════════
+
+def post_to_instagram(text: str, image_path: str = None) -> dict:
+    """Instagram에 이미지 포스트 (Meta Graph API)
+
+    필요 설정:
+      INSTAGRAM_ACCESS_TOKEN — Meta 개발자 포털에서 발급
+      INSTAGRAM_ACCOUNT_ID — Instagram 비즈니스/크리에이터 계정 ID
+      INSTAGRAM_IMAGE_HOST — 이미지를 호스팅할 공개 URL 베이스 (선택)
+
+    발급 방법:
+      1. Facebook 페이지 + Instagram 비즈니스 계정 연결
+      2. developers.facebook.com → 앱 만들기 → Instagram Graph API 추가
+      3. Access Token 발급 (instagram_basic, instagram_content_publish 권한)
+      4. 계정 ID: GET /me/accounts → instagram_business_account.id
+
+    주의: Instagram API는 공개 URL의 이미지만 업로드 가능.
+    로컬 파일은 별도 호스팅(예: Imgur, Cloudinary)이 필요합니다.
+    """
+    access_token = os.getenv("INSTAGRAM_ACCESS_TOKEN", "")
+    account_id = os.getenv("INSTAGRAM_ACCOUNT_ID", "")
+
+    if not access_token or not account_id:
+        return {"success": False, "error": "INSTAGRAM_ACCESS_TOKEN 또는 INSTAGRAM_ACCOUNT_ID가 .env에 설정되지 않았습니다"}
+
+    base_url = "https://graph.facebook.com/v21.0"
+
+    try:
+        # Instagram은 이미지 필수 (텍스트 전용 포스트 불가)
+        if not image_path or not os.path.exists(image_path):
+            return {"success": False, "error": "Instagram은 이미지가 필수입니다"}
+
+        # 이미지를 공개 URL로 호스팅 (간이 방법: Imgur 업로드)
+        image_url = _upload_image_for_instagram(image_path)
+        if not image_url:
+            return {"success": False, "error": "이미지 호스팅 실패. IMGUR_CLIENT_ID를 .env에 설정하세요"}
+
+        # Step 1: 미디어 컨테이너 생성
+        create_resp = req.post(
+            f"{base_url}/{account_id}/media",
+            data={
+                "image_url": image_url,
+                "caption": text[:2200],
+                "access_token": access_token,
+            },
+            timeout=30,
+        )
+        create_result = create_resp.json()
+
+        if "id" not in create_result:
+            return {"success": False, "error": create_result.get("error", {}).get("message", str(create_result))}
+
+        container_id = create_result["id"]
+
+        # Step 2: 게시
+        import time
+        time.sleep(5)  # Meta 서버 이미지 처리 대기
+
+        publish_resp = req.post(
+            f"{base_url}/{account_id}/media_publish",
+            data={"creation_id": container_id, "access_token": access_token},
+            timeout=30,
+        )
+        publish_result = publish_resp.json()
+
+        if "id" in publish_result:
+            post_id = publish_result["id"]
+            log(f"[Instagram] 포스트 성공: {post_id}")
+            return {"success": True, "platform": "Instagram", "post_id": post_id}
+        else:
+            return {"success": False, "error": publish_result.get("error", {}).get("message", str(publish_result))}
+
+    except Exception as e:
+        log(f"[Instagram 오류] {e}")
+        return {"success": False, "error": str(e)}
+
+
+def _upload_image_for_instagram(image_path: str) -> str | None:
+    """이미지를 Imgur에 업로드하여 공개 URL 반환 (Instagram API용)"""
+    client_id = os.getenv("IMGUR_CLIENT_ID", "")
+    if not client_id:
+        return None
+
+    try:
+        with open(image_path, "rb") as f:
+            resp = req.post(
+                "https://api.imgur.com/3/image",
+                headers={"Authorization": f"Client-ID {client_id}"},
+                files={"image": f},
+                timeout=30,
+            )
+        result = resp.json()
+        if result.get("success"):
+            return result["data"]["link"]
+    except Exception as e:
+        log(f"[Imgur 업로드 오류] {e}")
+    return None
+
+
+# ═══════════════════════════════════════════════
 # 통합 포스터
 # ═══════════════════════════════════════════════
 
@@ -206,6 +377,8 @@ PLATFORM_ADAPTERS = {
     "x": {"name": "X (Twitter)", "icon": "🐦", "func": post_to_x, "max_text": 280, "env_keys": ["X_API_KEY"]},
     "telegram": {"name": "Telegram", "icon": "📨", "func": post_to_telegram, "max_text": 1024, "env_keys": ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHANNEL_ID"]},
     "discord": {"name": "Discord", "icon": "💬", "func": post_to_discord, "max_text": 2000, "env_keys": ["DISCORD_WEBHOOK_URL"]},
+    "threads": {"name": "Threads", "icon": "🧵", "func": post_to_threads, "max_text": 500, "env_keys": ["THREADS_ACCESS_TOKEN", "THREADS_USER_ID"]},
+    "instagram": {"name": "Instagram", "icon": "📸", "func": post_to_instagram, "max_text": 2200, "env_keys": ["INSTAGRAM_ACCESS_TOKEN", "INSTAGRAM_ACCOUNT_ID"]},
 }
 
 
