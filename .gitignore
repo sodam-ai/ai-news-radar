@@ -17,13 +17,15 @@ data/reading_log.json
 data/user_pref.json
 data/chat_sessions.json
 data/chroma/
+data/audio/
+data/glossary.json
 
 # Streamlit 캐시 (config.toml은 커밋해야 함)
 .streamlit/secrets.toml
 
 # 가상환경 / 패키지
 Lib/
-Scripts/
+/Scripts/
 Include/
 etc/
 share/

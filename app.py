@@ -1,4 +1,5 @@
 """AI News Radar — Streamlit 메인 대시보드"""
+import os
 import streamlit as st
 from datetime import datetime, timedelta
 
@@ -16,6 +17,9 @@ from export.exporter import (
 )
 from reader.article_reader import fetch_clean_content
 from ai.chat import chat as ai_chat
+from ai.voice_briefing import generate_voice_briefing, get_available_voices
+from ai.factcheck import get_factcheck_badge
+from ai.glossary import get_glossary, extract_terms_from_articles, search_glossary
 
 # ── 페이지 설정 ──
 st.set_page_config(
@@ -276,8 +280,8 @@ def is_watchlisted(article):
 BOOKMARKS_PATH = DATA_DIR / "bookmarks.json"
 
 # 탭 구성
-tab_briefing, tab_list, tab_search, tab_chat, tab_timeline, tab_bookmarks, tab_sources = st.tabs(
-    ["📋 브리핑", "📰 뉴스", "🔍 검색", "💬 AI 채팅", "⏰ 타임라인", "⭐ 북마크", "📡 소스"]
+tab_briefing, tab_list, tab_search, tab_chat, tab_glossary, tab_timeline, tab_bookmarks, tab_sources = st.tabs(
+    ["📋 브리핑", "📰 뉴스", "🔍 검색", "💬 AI 채팅", "📚 용어 사전", "⏰ 타임라인", "⭐ 북마크", "📡 소스"]
 )
 
 # ── 탭 1: 오늘의 브리핑 ──
@@ -324,6 +328,47 @@ with tab_briefing:
                 )
             except Exception as e:
                 st.caption(f"PDF 생성 불가: {e}")
+
+        # ── 음성 브리핑 ──
+        st.divider()
+        st.subheader("🔊 음성 브리핑")
+        voice_col1, voice_col2 = st.columns([2, 1])
+        with voice_col2:
+            voices = get_available_voices()
+            voice_choice = st.selectbox(
+                "음성 선택",
+                options=[v["id"] for v in voices],
+                format_func=lambda x: next(v["name"] for v in voices if v["id"] == x),
+                key="voice_select",
+            )
+        with voice_col1:
+            if st.button("🎙️ 음성 생성", use_container_width=True, key="gen_voice"):
+                try:
+                    with st.spinner("음성을 생성하고 있습니다... (약 10~20초)"):
+                        audio_path = generate_voice_briefing(today_briefing, voice=voice_choice)
+                    if audio_path:
+                        st.session_state.voice_audio_path = audio_path
+                        st.success("음성 생성 완료!")
+                    else:
+                        st.warning("음성 생성에 실패했습니다.")
+                except ImportError:
+                    st.error("edge-tts가 설치되지 않았습니다. `pip install edge-tts`를 실행하세요.")
+                except Exception as e:
+                    st.error(f"음성 생성 오류: {e}")
+
+        # 오디오 재생기 + 다운로드
+        audio_path = st.session_state.get("voice_audio_path")
+        if audio_path and os.path.exists(audio_path):
+            with open(audio_path, "rb") as f:
+                audio_bytes = f.read()
+            st.audio(audio_bytes, format="audio/mp3")
+            st.download_button(
+                "📥 MP3 다운로드",
+                data=audio_bytes,
+                file_name=f"ai_briefing_{today_str()}.mp3",
+                mime="audio/mpeg",
+                use_container_width=True,
+            )
     else:
         st.info("아직 오늘의 브리핑이 없습니다. 사이드바에서 '📋 브리핑 생성'을 클릭하세요.")
 
@@ -481,10 +526,14 @@ with tab_list:
                 if tags:
                     st.caption(" ".join([f"`{t}`" for t in tags]))
 
-                # 중복 매체
+                # 팩트체크 배지 + 중복 매체
+                fc = get_factcheck_badge(article)
+                st.caption(f"{fc['label']}")
                 related = article.get("related_articles", [])
                 if related:
-                    st.caption(f"▶ {len(related)}개 매체 추가 보도")
+                    with st.expander(f"▶ {len(related)}개 매체 추가 보도"):
+                        for rel in related:
+                            st.caption(f"• [{rel.get('title', '')}]({rel.get('url', '')})")
 
             with col_meta:
                 st.write(f"{importance}")
@@ -569,6 +618,7 @@ with tab_search:
             sentiment_emoji = {"positive": "😊", "negative": "😠", "neutral": "😐"}.get(a.get("sentiment"), "")
             importance = "⭐" * a.get("importance", 0)
             read_mark = "✅" if a.get("is_read") else ""
+            fc = get_factcheck_badge(a)
             with st.container(border=True):
                 st.markdown(f"{importance} {sentiment_emoji} {read_mark} [{a['title']}]({a['url']})")
                 summary = a.get("summary_text", "")
@@ -577,6 +627,7 @@ with tab_search:
                 tags = a.get("tags", [])
                 if tags:
                     st.caption(" ".join([f"`{t}`" for t in tags]))
+                st.caption(fc["label"])
     else:
         st.info("검색어를 입력하거나 필터를 선택하세요.")
 
@@ -635,7 +686,69 @@ with tab_chat:
             for s in suggestions:
                 st.caption(f"• {s}")
 
-# ── 탭 5: 타임라인 ──
+# ── 탭 5: AI 용어 사전 ──
+with tab_glossary:
+    st.header("📚 AI 용어 사전")
+    st.caption("뉴스에 등장하는 AI 전문 용어를 초보자도 이해할 수 있게 설명합니다.")
+
+    gl_col1, gl_col2 = st.columns([3, 1])
+    with gl_col1:
+        gl_search = st.text_input("용어 검색", placeholder="예: LLM, RAG, Transformer", key="gl_search", label_visibility="collapsed")
+    with gl_col2:
+        if st.button("🔄 용어 추출", use_container_width=True, key="extract_terms"):
+            if not _active_provider:
+                st.error("LLM API 키를 먼저 설정해주세요.")
+            else:
+                try:
+                    with st.spinner("뉴스에서 AI 용어를 추출하고 있습니다..."):
+                        extract_terms_from_articles()
+                    st.success("용어 추출 완료!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"용어 추출 오류: {e}")
+
+    # 난이도 필터
+    diff_filter = st.selectbox(
+        "난이도",
+        ["전체", "⭐ 쉬움", "⭐⭐ 보통", "⭐⭐⭐ 어려움"],
+        key="gl_diff",
+    )
+
+    # 용어 목록 표시
+    if gl_search:
+        terms = search_glossary(gl_search)
+    else:
+        terms = get_glossary()
+
+    # 난이도 필터 적용
+    if diff_filter != "전체":
+        diff_map = {"⭐ 쉬움": 1, "⭐⭐ 보통": 2, "⭐⭐⭐ 어려움": 3}
+        target_diff = diff_map.get(diff_filter, 0)
+        terms = [t for t in terms if t.get("difficulty") == target_diff]
+
+    if not terms:
+        st.info("아직 추출된 용어가 없습니다. '🔄 용어 추출' 버튼을 클릭하세요.")
+    else:
+        st.caption(f"총 {len(terms)}개 용어")
+
+        # 카테고리별 그룹핑 옵션
+        cat_labels = {
+            "model": "🤖 모델", "technique": "⚙️ 기술", "concept": "💡 개념",
+            "product": "📦 제품", "company": "🏢 기업", "other": "📌 기타",
+        }
+
+        for term in terms:
+            diff_stars = "⭐" * term.get("difficulty", 1)
+            cat = cat_labels.get(term.get("category", "other"), "📌 기타")
+
+            with st.expander(f"**{term.get('term', '')}** ({term.get('term_ko', '')}) — {term.get('short_desc', '')}"):
+                st.caption(f"{cat} | 난이도: {diff_stars}")
+                st.write(term.get("full_desc", ""))
+                example = term.get("example", "")
+                if example:
+                    st.info(f"💡 예시: {example}")
+
+# ── 탭 6: 타임라인 ──
 with tab_timeline:
     st.header("⏰ 타임라인")
 

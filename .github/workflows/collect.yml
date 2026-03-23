@@ -1,0 +1,65 @@
+name: AI News Radar — 자동 수집
+
+on:
+  # 매일 06:00, 12:00, 18:00 KST (UTC 21:00, 03:00, 09:00)
+  schedule:
+    - cron: '0 21 * * *'   # 매일 06:00 KST
+    - cron: '0 3 * * *'    # 매일 12:00 KST
+    - cron: '0 9 * * *'    # 매일 18:00 KST
+  # 수동 실행
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '실행 모드'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - crawl
+          - process
+          - briefing
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run collection
+        env:
+          # GitHub Secrets에서 API 키 주입
+          LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          MODE="${{ github.event.inputs.mode || 'all' }}"
+          if [ "$MODE" = "all" ]; then
+            python scripts/collect.py
+          else
+            python scripts/collect.py --$MODE
+          fi
+
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/*.json
+          # 변경사항이 있을 때만 커밋
+          git diff --cached --quiet || git commit -m "chore: auto-collect $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push

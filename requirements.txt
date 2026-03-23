@@ -6,3 +6,5 @@ apscheduler>=3.10.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 fpdf2>=2.8.0
+edge-tts>=6.1.0
+python-telegram-bot>=21.0
