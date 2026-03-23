@@ -470,14 +470,32 @@ with tab_briefing:
             st.info(f"💡 **총평:** {today_briefing['summary']}")
 
         # TOP 기사 (넘버 배지 + 카드)
+        # 기사 URL 매핑용
+        all_arts_map = {a["id"]: a for a in load_articles()}
+        # 제목으로도 URL 검색
+        title_url_map = {a.get("title", "").lower(): a.get("url", "") for a in load_articles() if a.get("url")}
+
         top = today_briefing.get("top_articles", [])
         if isinstance(top, list):
             for i, item in enumerate(top, 1):
                 if isinstance(item, dict):
                     headline = item.get("headline", item.get("title", ""))
                     why = item.get("why_important", item.get("summary", ""))
+
+                    # URL 찾기: article_id → url 필드 → 제목 매칭
+                    url = item.get("url", "")
+                    if not url and item.get("article_id"):
+                        matched = all_arts_map.get(item["article_id"])
+                        if matched:
+                            url = matched.get("url", "")
+                    if not url:
+                        url = title_url_map.get(headline.lower(), "")
+
                     with st.container(border=True):
-                        st.markdown(f"**#{i}** &nbsp; {headline}")
+                        if url:
+                            st.markdown(f"**#{i}** &nbsp; [{headline}]({url})")
+                        else:
+                            st.markdown(f"**#{i}** &nbsp; {headline}")
                         if why:
                             st.caption(f"→ {why}")
 
