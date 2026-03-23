@@ -25,12 +25,17 @@ from utils.helpers import log
 # ── 시스템 프롬프트 ──
 
 CLASSIFICATION_SYSTEM = """너는 AI 뉴스 분류 전문가야. 각 뉴스 기사에 대해 다음을 JSON으로 반환해:
-- category: ai_tool | ai_research | ai_trend | ai_tutorial | ai_business | ai_other
+- category: ai_tool | ai_research | ai_trend | ai_tutorial | ai_business | ai_image_video | ai_coding | ai_ontology | ai_other
 - importance: 1~5 (5가 가장 중요)
 - sentiment: positive | negative | neutral
 - sentiment_reason: 감성 판단 이유 한 줄
 - tags: 핵심 키워드 3~5개 배열
 - summary: 한국어 3줄 요약
+
+카테고리 분류 기준:
+- ai_image_video: AI 이미지 생성(Midjourney, Stable Diffusion, DALL-E, Flux), AI 영상 생성(Sora, Runway, Kling, Pika), ComfyUI, LoRA 등
+- ai_coding: 바이브코딩, AI 코딩 도구(Claude Code, Cursor, Copilot, v0, Bolt, Windsurf, Devin), 코드 생성, 에이전트 코딩
+- ai_ontology: 온톨로지, 지식그래프, Knowledge Graph, 시맨틱웹, RDF, OWL, 네오포제이(Neo4j), 그래프DB
 
 반드시 유효한 JSON 배열로만 응답해. 다른 텍스트 없이."""
 

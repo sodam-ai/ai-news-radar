@@ -13,5 +13,21 @@
   {"id": "src_012", "name": "인공지능신문", "url": "https://www.aitimes.kr/rss/allArticle.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
   {"id": "src_013", "name": "GeekNews", "url": "https://news.hada.io/rss/news", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
   {"id": "src_014", "name": "디지털투데이", "url": "https://www.digitaltoday.co.kr/rss/allArticle.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
-  {"id": "src_015", "name": "전자신문 AI", "url": "https://www.etnews.com/rss/Section903.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"}
+  {"id": "src_015", "name": "전자신문 AI", "url": "https://www.etnews.com/rss/Section903.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
+
+  {"id": "src_101", "name": "Stability AI Blog", "url": "https://stability.ai/blog/feed", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_image_video"},
+  {"id": "src_102", "name": "Civitai Articles", "url": "https://civitai.com/api/rss/articles", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_image_video"},
+  {"id": "src_103", "name": "PetaPixel AI", "url": "https://petapixel.com/category/ai/feed/", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_image_video"},
+  {"id": "src_104", "name": "80 Level (CG/AI Art)", "url": "https://80.lv/feed/", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_image_video"},
+  {"id": "src_105", "name": "Runway ML Blog", "url": "https://runwayml.com/blog/rss.xml", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_image_video"},
+
+  {"id": "src_201", "name": "Cursor Blog", "url": "https://www.cursor.com/blog/rss.xml", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_coding"},
+  {"id": "src_202", "name": "GitHub Blog", "url": "https://github.blog/feed/", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_coding"},
+  {"id": "src_203", "name": "Dev.to AI", "url": "https://dev.to/feed/tag/ai", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_coding"},
+  {"id": "src_204", "name": "Anthropic Blog", "url": "https://www.anthropic.com/blog/rss.xml", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_coding"},
+  {"id": "src_205", "name": "Simon Willison Blog", "url": "https://simonwillison.net/atom/everything/", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_coding"},
+
+  {"id": "src_301", "name": "Ontology Lookout", "url": "https://ontologylookout.com/feed/", "type": "rss", "is_preset": true, "crawl_interval": 240, "is_active": true, "lang": "en", "focus": "ai_ontology"},
+  {"id": "src_302", "name": "Neo4j Blog", "url": "https://neo4j.com/blog/feed/", "type": "rss", "is_preset": true, "crawl_interval": 240, "is_active": true, "lang": "en", "focus": "ai_ontology"},
+  {"id": "src_303", "name": "Towards Data Science", "url": "https://towardsdatascience.com/feed", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_ontology"}
 ]

@@ -43,6 +43,9 @@ CATEGORIES = {
     "ai_trend": "업계 트렌드/동향",
     "ai_tutorial": "활용법/튜토리얼",
     "ai_business": "AI 비즈니스/투자",
+    "ai_image_video": "AI 이미지/영상",
+    "ai_coding": "바이브코딩/AI코딩",
+    "ai_ontology": "온톨로지/지식그래프",
     "ai_other": "기타",
 }
 

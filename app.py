@@ -107,6 +107,9 @@ button[data-baseweb="tab"][aria-selected="true"] {
 .cat-ai_trend { background: rgba(255,152,0,0.15); color: #FF9800; }
 .cat-ai_tutorial { background: rgba(76,175,80,0.15); color: #4CAF50; }
 .cat-ai_business { background: rgba(233,30,99,0.15); color: #E91E63; }
+.cat-ai_image_video { background: rgba(255,64,129,0.15); color: #FF4081; }
+.cat-ai_coding { background: rgba(0,230,118,0.15); color: #00E676; }
+.cat-ai_ontology { background: rgba(124,77,255,0.15); color: #7C4DFF; }
 .cat-ai_other { background: rgba(158,158,158,0.15); color: #9E9E9E; }
 
 /* 팩트체크 배지 */
@@ -222,7 +225,7 @@ BRIEFINGS_PATH = DATA_DIR / "briefings.json"
 BOOKMARKS_PATH = DATA_DIR / "bookmarks.json"
 
 SENTIMENT_COLORS = {"positive": "#6bcb77", "neutral": "#ffd93d", "negative": "#ff6b6b"}
-CAT_NAMES = {"ai_tool": "도구", "ai_research": "연구", "ai_trend": "트렌드", "ai_tutorial": "튜토리얼", "ai_business": "비즈니스", "ai_other": "기타"}
+CAT_NAMES = {"ai_tool": "도구", "ai_research": "연구", "ai_trend": "트렌드", "ai_tutorial": "튜토리얼", "ai_business": "비즈니스", "ai_image_video": "이미지/영상", "ai_coding": "바이브코딩", "ai_ontology": "온톨로지", "ai_other": "기타"}
 
 
 # ── 데이터 로드 ──
