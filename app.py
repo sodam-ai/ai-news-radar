@@ -35,154 +35,162 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── 글로벌 CSS (향상된 UI) ──
+# ── 글로벌 CSS (Premium UI) ──
 ENHANCED_CSS = """
 <style>
-/* 글로벌 폰트 + 부드러운 전환 */
-* { transition: all 0.15s ease; }
+/* ── 베이스 ── */
+* { transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1); }
+html { scroll-behavior: smooth; }
 
-/* 메트릭 카드 스타일 */
+/* ── 메트릭 카드 ── */
 [data-testid="stMetric"] {
-    background: linear-gradient(135deg, rgba(79,195,247,0.08) 0%, rgba(129,212,250,0.04) 100%);
-    border: 1px solid rgba(79,195,247,0.15);
-    border-radius: 12px;
-    padding: 12px 16px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 18px;
+    backdrop-filter: blur(8px);
 }
-[data-testid="stMetricValue"] { font-size: 1.8rem !important; font-weight: 700 !important; }
+[data-testid="stMetricValue"] {
+    font-size: 1.9rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.5px !important;
+}
+[data-testid="stMetricLabel"] { font-size: 0.78rem !important; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* 탭 스타일 개선 */
+/* ── 탭 (언더라인 스타일) ── */
 button[data-baseweb="tab"] {
-    font-size: 0.95rem !important;
-    font-weight: 600 !important;
-    padding: 10px 16px !important;
-    border-radius: 8px 8px 0 0 !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    padding: 10px 14px !important;
+    border-radius: 0 !important;
+    border-bottom: 2px solid transparent !important;
+    background: transparent !important;
+    letter-spacing: -0.2px;
 }
 button[data-baseweb="tab"][aria-selected="true"] {
-    background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%) !important;
-    color: white !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid #60a5fa !important;
+    color: #60a5fa !important;
+    background: transparent !important;
 }
+button[data-baseweb="tab"]:hover { color: #93c5fd !important; }
 
-/* 카드 컨테이너 호버 */
+/* ── 카드 ── */
 [data-testid="stVerticalBlock"] > div[data-testid="stContainer"] {
-    border-radius: 12px !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 14px !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
 }
 [data-testid="stVerticalBlock"] > div[data-testid="stContainer"]:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(79,195,247,0.12);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    border-color: rgba(96,165,250,0.15) !important;
 }
 
-/* 챗 메시지 둥글게 */
-[data-testid="stChatMessage"] { border-radius: 16px !important; }
+/* ── 챗 ── */
+[data-testid="stChatMessage"] { border-radius: 18px !important; border: 1px solid rgba(255,255,255,0.04) !important; }
 
-/* 버튼 스타일 */
+/* ── 버튼 ── */
 .stButton > button {
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     font-weight: 600 !important;
-    transition: all 0.2s ease !important;
+    letter-spacing: -0.2px !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
 }
 .stButton > button:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important;
+    border-color: rgba(96,165,250,0.3) !important;
+}
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    border: none !important;
+}
+.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%) !important;
 }
 
-/* Expander 둥글게 */
-[data-testid="stExpander"] { border-radius: 10px !important; }
-
-/* 감성 컬러 바 */
-.sentiment-bar {
-    height: 4px;
-    border-radius: 2px;
-    margin-bottom: 8px;
+/* ── Expander ── */
+[data-testid="stExpander"] {
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,0.05) !important;
 }
-.sentiment-positive { background: linear-gradient(90deg, #6bcb77, #4caf50); }
-.sentiment-neutral { background: linear-gradient(90deg, #ffd93d, #ffc107); }
-.sentiment-negative { background: linear-gradient(90deg, #ff6b6b, #f44336); }
 
-/* 카테고리 pill 배지 */
+/* ── 감성 바 ── */
+.sentiment-bar { height: 3px; border-radius: 2px; margin-bottom: 10px; opacity: 0.8; }
+.sentiment-positive { background: linear-gradient(90deg, #34d399, #10b981); }
+.sentiment-neutral { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.sentiment-negative { background: linear-gradient(90deg, #f87171, #ef4444); }
+
+/* ── 카테고리 pill ── */
 .cat-pill {
     display: inline-block;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.72rem;
     font-weight: 600;
-    margin-right: 4px;
+    margin-right: 6px;
+    letter-spacing: 0.2px;
+    border: 1px solid transparent;
 }
-.cat-ai_tool { background: rgba(33,150,243,0.15); color: #2196F3; }
-.cat-ai_research { background: rgba(156,39,176,0.15); color: #9C27B0; }
-.cat-ai_trend { background: rgba(255,152,0,0.15); color: #FF9800; }
-.cat-ai_tutorial { background: rgba(76,175,80,0.15); color: #4CAF50; }
-.cat-ai_business { background: rgba(233,30,99,0.15); color: #E91E63; }
-.cat-ai_image_video { background: rgba(255,64,129,0.15); color: #FF4081; }
-.cat-ai_coding { background: rgba(0,230,118,0.15); color: #00E676; }
-.cat-ai_ontology { background: rgba(124,77,255,0.15); color: #7C4DFF; }
-.cat-ai_other { background: rgba(158,158,158,0.15); color: #9E9E9E; }
+.cat-ai_tool { background: rgba(59,130,246,0.12); color: #60a5fa; border-color: rgba(59,130,246,0.2); }
+.cat-ai_research { background: rgba(168,85,247,0.12); color: #a78bfa; border-color: rgba(168,85,247,0.2); }
+.cat-ai_trend { background: rgba(251,146,60,0.12); color: #fb923c; border-color: rgba(251,146,60,0.2); }
+.cat-ai_tutorial { background: rgba(52,211,153,0.12); color: #34d399; border-color: rgba(52,211,153,0.2); }
+.cat-ai_business { background: rgba(244,114,182,0.12); color: #f472b6; border-color: rgba(244,114,182,0.2); }
+.cat-ai_image_video { background: rgba(251,113,133,0.12); color: #fb7185; border-color: rgba(251,113,133,0.2); }
+.cat-ai_coding { background: rgba(52,211,153,0.12); color: #2dd4bf; border-color: rgba(52,211,153,0.2); }
+.cat-ai_ontology { background: rgba(139,92,246,0.12); color: #a78bfa; border-color: rgba(139,92,246,0.2); }
+.cat-ai_other { background: rgba(148,163,184,0.1); color: #94a3b8; border-color: rgba(148,163,184,0.15); }
 
-/* 팩트체크 배지 */
+/* ── 팩트체크 배지 ── */
 .fc-badge {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.7rem;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
     font-weight: 600;
+    letter-spacing: 0.2px;
 }
-.fc-high { background: rgba(76,175,80,0.15); color: #4CAF50; }
-.fc-medium { background: rgba(76,175,80,0.10); color: #66BB6A; }
-.fc-low { background: rgba(255,152,0,0.15); color: #FF9800; }
-.fc-single { background: rgba(244,67,54,0.10); color: #EF5350; }
+.fc-high { background: rgba(52,211,153,0.12); color: #34d399; }
+.fc-medium { background: rgba(52,211,153,0.08); color: #6ee7b7; }
+.fc-low { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.fc-single { background: rgba(248,113,113,0.08); color: #fca5a5; }
 
-/* 타임라인 스타일 */
-.timeline-dot {
-    display: inline-block;
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-.timeline-dot-today { background: #4FC3F7; }
-.timeline-dot-yesterday { background: #81C784; }
-.timeline-dot-week { background: #FFB74D; }
-.timeline-dot-old { background: #90A4AE; }
+/* ── 페이지네이션 ── */
+.page-info { text-align: center; padding: 8px 0; color: #94a3b8; font-size: 0.85rem; }
 
-/* 페이드인 애니메이션 */
+/* ── 페이드인 ── */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
-.main .block-container { animation: fadeIn 0.3s ease; }
+.main .block-container { animation: fadeIn 0.25s ease; }
 
-/* 히어로 그라데이션 헤더 */
-.hero-header {
-    background: linear-gradient(135deg, #1a237e 0%, #0d47a1 40%, #01579b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-size: 1.1rem;
-    font-weight: 700;
-}
-
-/* ── 반응형 (모바일/태블릿) ── */
+/* ── 반응형 ── */
 @media (max-width: 768px) {
     [data-testid="stMetric"] { padding: 8px 10px; }
     [data-testid="stMetricValue"] { font-size: 1.3rem !important; }
-    button[data-baseweb="tab"] { font-size: 0.8rem !important; padding: 6px 8px !important; }
-    .cat-pill { font-size: 0.65rem; padding: 1px 6px; }
-    .fc-badge { font-size: 0.6rem; padding: 1px 5px; }
+    button[data-baseweb="tab"] { font-size: 0.78rem !important; padding: 6px 8px !important; }
+    .cat-pill { font-size: 0.62rem; padding: 2px 8px; }
 }
-
-/* ── 데스크톱 와이드 (1600px+) ── */
 @media (min-width: 1600px) {
     .main .block-container { max-width: 1400px; }
 }
 
-/* 스크롤바 커스텀 (다크모드) */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
-::-webkit-scrollbar-thumb { background: rgba(79,195,247,0.3); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(79,195,247,0.5); }
+/* ── 스크롤바 ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.4); }
+::selection { background: rgba(96,165,250,0.25); }
 
-/* 선택 텍스트 하이라이트 */
-::selection { background: rgba(79,195,247,0.3); }
+/* ── 링크 ── */
+a { color: #60a5fa !important; text-decoration: none !important; }
+a:hover { color: #93c5fd !important; }
+
+/* ── 구분선 ── */
+hr { border-color: rgba(255,255,255,0.04) !important; }
 </style>
 """
 st.markdown(ENHANCED_CSS, unsafe_allow_html=True)
@@ -784,7 +792,44 @@ with tab_list:
         st.markdown("아직 뉴스가 없습니다.")
         st.caption("사이드바에서 '🔄 수집' → '🤖 AI 처리'를 순서대로 실행하세요.")
     else:
-        for article in articles:
+        # ── 페이지네이션 ──
+        ITEMS_PER_PAGE = 10
+        total_pages = max(1, -(-len(articles) // ITEMS_PER_PAGE))  # ceil division
+
+        if "news_page" not in st.session_state:
+            st.session_state.news_page = 1
+        current_page = st.session_state.news_page
+        if current_page > total_pages:
+            current_page = total_pages
+            st.session_state.news_page = current_page
+
+        start_idx = (current_page - 1) * ITEMS_PER_PAGE
+        end_idx = start_idx + ITEMS_PER_PAGE
+        page_articles = articles[start_idx:end_idx]
+
+        # 페이지 네비게이션 (상단)
+        if total_pages > 1:
+            nav_cols = st.columns([1, 1, 2, 1, 1])
+            with nav_cols[0]:
+                if st.button("⏮", key="pg_first", use_container_width=True, disabled=current_page <= 1):
+                    st.session_state.news_page = 1
+                    st.rerun()
+            with nav_cols[1]:
+                if st.button("◀", key="pg_prev", use_container_width=True, disabled=current_page <= 1):
+                    st.session_state.news_page = current_page - 1
+                    st.rerun()
+            with nav_cols[2]:
+                st.markdown(f'<div class="page-info">{current_page} / {total_pages} 페이지 ({len(articles)}개 중 {start_idx+1}-{min(end_idx, len(articles))})</div>', unsafe_allow_html=True)
+            with nav_cols[3]:
+                if st.button("▶", key="pg_next", use_container_width=True, disabled=current_page >= total_pages):
+                    st.session_state.news_page = current_page + 1
+                    st.rerun()
+            with nav_cols[4]:
+                if st.button("⏭", key="pg_last", use_container_width=True, disabled=current_page >= total_pages):
+                    st.session_state.news_page = total_pages
+                    st.rerun()
+
+        for article in page_articles:
             watched = is_watchlisted(article)
             prefix = "👀 " if watched else ""
             importance = "⭐" * article.get("importance", 0)
@@ -870,6 +915,29 @@ with tab_list:
                             st.rerun()
                     else:
                         st.caption("✅ 읽음")
+
+        # 하단 페이지네이션
+        if total_pages > 1:
+            st.markdown("")
+            bnav_cols = st.columns([1, 1, 2, 1, 1])
+            with bnav_cols[0]:
+                if st.button("⏮", key="pg_first_b", use_container_width=True, disabled=current_page <= 1):
+                    st.session_state.news_page = 1
+                    st.rerun()
+            with bnav_cols[1]:
+                if st.button("◀", key="pg_prev_b", use_container_width=True, disabled=current_page <= 1):
+                    st.session_state.news_page = current_page - 1
+                    st.rerun()
+            with bnav_cols[2]:
+                st.markdown(f'<div class="page-info">{current_page} / {total_pages}</div>', unsafe_allow_html=True)
+            with bnav_cols[3]:
+                if st.button("▶", key="pg_next_b", use_container_width=True, disabled=current_page >= total_pages):
+                    st.session_state.news_page = current_page + 1
+                    st.rerun()
+            with bnav_cols[4]:
+                if st.button("⏭", key="pg_last_b", use_container_width=True, disabled=current_page >= total_pages):
+                    st.session_state.news_page = total_pages
+                    st.rerun()
 
 # ═══════════════════════════════════════════════
 # 탭 3: 검색
