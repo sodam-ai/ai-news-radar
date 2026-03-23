@@ -22,6 +22,8 @@ from ai.factcheck import get_factcheck_badge
 from ai.glossary import get_glossary, extract_terms_from_articles, search_glossary
 from ai.weekly_report import generate_weekly_report, get_latest_report, export_weekly_report_markdown
 from ai.competitor import get_competitor_analysis, COMPETITOR_GROUPS
+from ai.trend import get_trend_data, get_keyword_trend, get_hot_keywords
+from ai.debate import generate_debate, get_debate_pairs
 
 # ── 페이지 설정 ──
 st.set_page_config(
@@ -1113,6 +1115,172 @@ with tab_competitor:
                         for a in tool["top_articles"][:3]:
                             emoji = {"positive": "😊", "negative": "😠", "neutral": "😐"}.get(a.get("sentiment", ""), "")
                             st.caption(f"{emoji} [{a['title'][:40]}...]({a['url']})")
+
+        # ── 트렌드 차트 ──
+        st.divider()
+        st.markdown("#### 📈 언급량 트렌드")
+
+        trend_days = st.selectbox("기간", [7, 14, 30], index=1, format_func=lambda x: f"최근 {x}일", key="trend_days", label_visibility="collapsed")
+
+        trend_data = get_trend_data(comp_group, days=trend_days)
+        if trend_data["tools"]:
+            import plotly.graph_objects as go
+
+            fig_trend = go.Figure()
+            for tool in trend_data["tools"]:
+                fig_trend.add_trace(go.Scatter(
+                    x=trend_data["dates"],
+                    y=tool["counts"],
+                    name=f"{tool['name']} ({tool['total']})",
+                    line=dict(color=tool["color"], width=2),
+                    mode="lines+markers",
+                    marker=dict(size=4),
+                    hovertemplate=f"<b>{tool['name']}</b><br>%{{x}}: %{{y}}건<extra></extra>",
+                ))
+            fig_trend.update_layout(
+                height=350,
+                margin=dict(t=10, b=10, l=0, r=0),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font={"color": "gray"},
+                legend=dict(orientation="h", yanchor="bottom", y=1.02),
+                xaxis=dict(showgrid=False),
+                yaxis=dict(showgrid=True, gridcolor="rgba(128,128,128,0.1)", title="언급 수"),
+                hovermode="x unified",
+            )
+            st.plotly_chart(fig_trend, use_container_width=True)
+        else:
+            st.caption("트렌드 데이터가 아직 충분하지 않습니다. 며칠간 수집하면 차트가 나타납니다.")
+
+        # ── 커스텀 키워드 트렌드 ──
+        st.markdown("#### 🔍 키워드 트렌드 검색")
+        kw_input = st.text_input("키워드", placeholder="예: Flux, ComfyUI, Claude Code", key="trend_kw", label_visibility="collapsed")
+        if kw_input:
+            kw_trend = get_keyword_trend(kw_input, days=trend_days)
+            if kw_trend["total"] > 0:
+                import plotly.graph_objects as go
+
+                fig_kw = go.Figure(go.Bar(
+                    x=kw_trend["dates"],
+                    y=kw_trend["counts"],
+                    marker_color="#4FC3F7",
+                    marker_cornerradius=4,
+                    hovertemplate=f"<b>{kw_input}</b><br>%{{x}}: %{{y}}건<extra></extra>",
+                ))
+                fig_kw.update_layout(
+                    height=250,
+                    margin=dict(t=10, b=10, l=0, r=0),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font={"color": "gray"},
+                    xaxis=dict(showgrid=False),
+                    yaxis=dict(showgrid=True, gridcolor="rgba(128,128,128,0.1)"),
+                )
+                st.plotly_chart(fig_kw, use_container_width=True)
+                st.caption(f"'{kw_input}' 최근 {trend_days}일간 총 {kw_trend['total']}건 언급")
+            else:
+                st.caption(f"'{kw_input}' — 최근 {trend_days}일간 언급 없음")
+
+        # ── 급상승 키워드 ──
+        st.markdown("#### 🔥 급상승 키워드")
+        hot = get_hot_keywords(top_n=10, days=7)
+        if hot:
+            hot_cols = st.columns(5)
+            for idx, h in enumerate(hot[:10]):
+                with hot_cols[idx % 5]:
+                    change = h["change_pct"]
+                    if change >= 999:
+                        badge = "🆕"
+                    elif change > 0:
+                        badge = f"🔺{change}%"
+                    elif change < 0:
+                        badge = f"🔻{abs(change)}%"
+                    else:
+                        badge = "➡️"
+                    with st.container(border=True):
+                        st.markdown(f"**`{h['keyword']}`**")
+                        st.caption(f"{h['count']}건 {badge}")
+        else:
+            st.caption("급상승 키워드를 분석할 데이터가 아직 부족합니다.")
+
+        # ── 디베이트 모드 ──
+        st.divider()
+        st.markdown("#### 🎭 AI 토론 — 도구 비교 디베이트")
+
+        # 추천 대결 쌍 또는 수동 선택
+        pairs = get_debate_pairs(comp_group)
+        group_tools = COMPETITOR_GROUPS.get(comp_group, {}).get("tools", [])
+        tool_names = [t["name"] for t in group_tools]
+
+        db_col1, db_col2, db_col3 = st.columns([2, 2, 1])
+        with db_col1:
+            tool_a_idx = st.selectbox("도구 A", range(len(tool_names)), format_func=lambda i: tool_names[i], key="debate_a")
+        with db_col2:
+            default_b = min(1, len(tool_names) - 1)
+            tool_b_idx = st.selectbox("도구 B", range(len(tool_names)), index=default_b, format_func=lambda i: tool_names[i], key="debate_b")
+        with db_col3:
+            run_debate = st.button("⚔️ 토론 시작", use_container_width=True, key="run_debate")
+
+        if run_debate:
+            if tool_a_idx == tool_b_idx:
+                st.warning("다른 도구를 선택하세요.")
+            elif not _active_provider:
+                st.error("API 키 필요")
+            else:
+                tool_a = group_tools[tool_a_idx]
+                tool_b = group_tools[tool_b_idx]
+                with st.spinner(f"🎭 {tool_a['name']} vs {tool_b['name']} 분석 중..."):
+                    debate = generate_debate(
+                        tool_a["name"], tool_b["name"],
+                        tool_a["keywords"], tool_b["keywords"],
+                    )
+                if debate:
+                    st.session_state.last_debate = debate
+                else:
+                    st.warning("토론 생성에 실패했습니다. 관련 기사가 부족할 수 있습니다.")
+
+        # 토론 결과 표시
+        debate = st.session_state.get("last_debate")
+        if debate:
+            da = debate.get("tool_a", {})
+            db = debate.get("tool_b", {})
+
+            dcol1, dcol2 = st.columns(2)
+            with dcol1:
+                with st.container(border=True):
+                    st.markdown(f"### 🔵 {da.get('name', '도구 A')}")
+                    st.markdown("**장점:**")
+                    for p in da.get("pros", []):
+                        st.markdown(f"✅ {p}")
+                    st.markdown("**단점:**")
+                    for c in da.get("cons", []):
+                        st.markdown(f"⚠️ {c}")
+
+            with dcol2:
+                with st.container(border=True):
+                    st.markdown(f"### 🔴 {db.get('name', '도구 B')}")
+                    st.markdown("**장점:**")
+                    for p in db.get("pros", []):
+                        st.markdown(f"✅ {p}")
+                    st.markdown("**단점:**")
+                    for c in db.get("cons", []):
+                        st.markdown(f"⚠️ {c}")
+
+            # 결론
+            verdict = debate.get("verdict", "")
+            rec = debate.get("recommendation", "")
+            if verdict:
+                st.info(f"🏆 **결론:** {verdict}")
+            if rec:
+                st.success(f"💡 **추천:** {rec}")
+
+        # 추천 대결 쌍 표시
+        if pairs and not debate:
+            st.caption("💡 추천 대결:")
+            pair_cols = st.columns(min(len(pairs), 3))
+            for idx, (pa, pb) in enumerate(pairs[:3]):
+                with pair_cols[idx]:
+                    st.caption(f"⚔️ {pa['name']} vs {pb['name']}")
 
 # ═══════════════════════════════════════════════
 # 탭 7: 타임라인
