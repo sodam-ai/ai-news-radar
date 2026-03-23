@@ -20,6 +20,8 @@ from ai.chat import chat as ai_chat
 from ai.voice_briefing import generate_voice_briefing, get_available_voices
 from ai.factcheck import get_factcheck_badge
 from ai.glossary import get_glossary, extract_terms_from_articles, search_glossary
+from ai.weekly_report import generate_weekly_report, get_latest_report, export_weekly_report_markdown
+from ai.competitor import get_competitor_analysis, COMPETITOR_GROUPS
 
 # ── 페이지 설정 ──
 st.set_page_config(
@@ -445,8 +447,8 @@ with m4:
 st.markdown("")  # spacer
 
 # ── 탭 구성 ──
-tab_briefing, tab_list, tab_search, tab_chat, tab_glossary, tab_timeline, tab_bookmarks, tab_sources = st.tabs(
-    ["📋 브리핑", "📰 뉴스", "🔍 검색", "💬 AI 채팅", "📚 용어 사전", "⏰ 타임라인", "⭐ 북마크", "📡 소스"]
+tab_briefing, tab_list, tab_search, tab_chat, tab_glossary, tab_competitor, tab_timeline, tab_bookmarks, tab_sources = st.tabs(
+    ["📋 브리핑", "📰 뉴스", "🔍 검색", "💬 AI 채팅", "📚 용어 사전", "🏆 도구 비교", "⏰ 타임라인", "⭐ 북마크", "📡 소스"]
 )
 
 # ═══════════════════════════════════════════════
@@ -519,6 +521,44 @@ with tab_briefing:
         st.markdown("")
         st.caption("💡 먼저 '🔄 수집' → '🤖 AI 처리' → '📋 브리핑 생성' 순서로 진행하세요.")
 
+    # ── 관심 분야별 맞춤 브리핑 ──
+    if today_briefing and today_briefing.get("focus_briefings"):
+        st.divider()
+        st.markdown("### 🎯 관심 분야별 맞춤 브리핑")
+        focus = today_briefing["focus_briefings"]
+
+        focus_cols = st.columns(len(focus))
+        for idx, (area_id, area_data) in enumerate(focus.items()):
+            with focus_cols[idx]:
+                icon = area_data.get("icon", "📌")
+                name = area_data.get("name", area_id)
+                total = area_data.get("total_count", 0)
+                st.markdown(f"#### {icon} {name}")
+                st.caption(f"관련 뉴스 {total}건")
+
+                top_arts = area_data.get("top_articles", [])
+                if top_arts:
+                    for i, item in enumerate(top_arts, 1):
+                        sentiment_emoji = {"positive": "😊", "negative": "😠", "neutral": "😐"}.get(item.get("sentiment", ""), "")
+                        stars = "⭐" * item.get("importance", 0)
+                        with st.container(border=True):
+                            st.markdown(f"**#{i}** [{item['title']}]({item['url']})")
+                            if item.get("summary"):
+                                st.caption(item["summary"][:100])
+                            st.caption(f"{stars} {sentiment_emoji}")
+                else:
+                    st.caption("관련 뉴스 없음")
+    elif articles:
+        # 브리핑 없어도 기사가 있으면 분야별 카운트만 표시
+        from ai.briefing import FOCUS_AREAS
+        st.divider()
+        st.markdown("### 🎯 관심 분야 현황")
+        fc_cols = st.columns(len(FOCUS_AREAS))
+        for idx, (area_id, area_info) in enumerate(FOCUS_AREAS.items()):
+            with fc_cols[idx]:
+                count = len([a for a in articles if a.get("category") == area_id])
+                st.metric(f"{area_info['icon']} {area_info['name']}", f"{count}건")
+
     # ── 감성 온도계 ──
     if articles:
         import plotly.graph_objects as go
@@ -586,6 +626,105 @@ with tab_briefing:
             fig_bar.update_xaxes(showgrid=False)
             fig_bar.update_yaxes(showgrid=True, gridcolor="rgba(128,128,128,0.1)")
             st.plotly_chart(fig_bar, use_container_width=True)
+
+    # ── 주간 인텔리전스 리포트 ──
+    st.divider()
+    st.markdown("### 📊 주간 AI 인텔리전스 리포트")
+
+    wr_col1, wr_col2 = st.columns([3, 1])
+    with wr_col2:
+        if st.button("📊 리포트 생성", use_container_width=True, key="gen_weekly"):
+            if not _active_provider:
+                st.error("API 키 필요")
+            else:
+                try:
+                    with st.spinner("📊 주간 리포트 생성 중..."):
+                        report = generate_weekly_report()
+                    if report:
+                        st.success("✅ 주간 리포트 완료!")
+                        st.rerun()
+                    else:
+                        st.warning("기사 부족")
+                except Exception as e:
+                    st.error(f"오류: {e}")
+
+    latest_report = get_latest_report()
+    if latest_report:
+        with wr_col1:
+            st.caption(f"📅 {latest_report['week_start']} ~ {latest_report['week_end']}")
+
+        stats = latest_report.get("stats", {})
+        trends = latest_report.get("trends")
+
+        # 통계 메트릭
+        wr_m1, wr_m2, wr_m3, wr_m4 = st.columns(4)
+        with wr_m1:
+            st.metric("총 기사", f"{stats.get('total', 0)}개")
+        with wr_m2:
+            st.metric("평균 중요도", f"{stats.get('avg_importance', 0)}")
+        with wr_m3:
+            focus_c = stats.get("focus_counts", {})
+            total_focus = sum(focus_c.values())
+            st.metric("관심 분야", f"{total_focus}건")
+        with wr_m4:
+            pos = stats.get("sentiment", {}).get("positive", 0)
+            total_s = stats.get("total", 1) or 1
+            st.metric("긍정 비율", f"{round(pos / total_s * 100)}%")
+
+        # 트렌드
+        if trends:
+            st.markdown("#### 🔥 핵심 트렌드")
+            for i, t in enumerate(trends.get("key_trends", []), 1):
+                st.markdown(f"**{i}.** {t}")
+
+            # 분야별 동향
+            fc1, fc2, fc3 = st.columns(3)
+            with fc1:
+                with st.container(border=True):
+                    st.markdown(f"**🎨 이미지/영상**")
+                    st.caption(trends.get("image_video_trend", "-"))
+            with fc2:
+                with st.container(border=True):
+                    st.markdown(f"**💻 바이브코딩**")
+                    st.caption(trends.get("coding_trend", "-"))
+            with fc3:
+                with st.container(border=True):
+                    st.markdown(f"**🔮 온톨로지**")
+                    st.caption(trends.get("ontology_trend", "-"))
+
+            # 전망 + 실천 제안
+            if trends.get("outlook"):
+                st.markdown("#### 🔭 다음 주 전망")
+                st.info(trends["outlook"])
+
+            actions = trends.get("action_items", [])
+            if actions:
+                st.markdown("#### ✅ 실천 제안")
+                for a in actions:
+                    st.markdown(f"- {a}")
+
+        # TOP 10 + 내보내기
+        top_arts = latest_report.get("top_articles", [])
+        if top_arts:
+            with st.expander(f"📰 주목할 뉴스 TOP {len(top_arts)}"):
+                for i, a in enumerate(top_arts, 1):
+                    stars = "⭐" * a.get("importance", 0)
+                    st.markdown(f"{i}. {stars} [{a['title']}]({a['url']})")
+                    if a.get("summary"):
+                        st.caption(f"   {a['summary']}")
+
+        # Markdown 내보내기
+        md_report = export_weekly_report_markdown(latest_report)
+        st.download_button(
+            "📥 주간 리포트 Markdown",
+            data=md_report,
+            file_name=f"weekly_report_{latest_report['week_start']}.md",
+            mime="text/markdown",
+            use_container_width=True,
+        )
+    else:
+        with wr_col1:
+            st.caption("아직 주간 리포트가 없습니다. '📊 리포트 생성' 버튼을 클릭하세요.")
 
 # ═══════════════════════════════════════════════
 # 탭 2: 뉴스 목록
@@ -890,7 +1029,93 @@ with tab_glossary:
                         st.info(f"💡 {example}")
 
 # ═══════════════════════════════════════════════
-# 탭 6: 타임라인
+# 탭 6: 경쟁 도구 모니터링
+# ═══════════════════════════════════════════════
+with tab_competitor:
+    st.markdown("### 🏆 경쟁 도구 모니터링")
+    st.caption("AI 도구별 뉴스 언급량, 감성, 트렌드를 비교합니다.")
+
+    # 분야 선택
+    comp_group = st.selectbox(
+        "분야 선택",
+        options=list(COMPETITOR_GROUPS.keys()),
+        format_func=lambda x: f"{COMPETITOR_GROUPS[x]['icon']} {COMPETITOR_GROUPS[x]['name']}",
+        key="comp_group",
+        label_visibility="collapsed",
+    )
+
+    analysis = get_competitor_analysis(comp_group)
+    group_data = analysis.get(comp_group, {})
+    tools = group_data.get("tools", [])
+
+    if not tools or all(t["mention_count"] == 0 for t in tools):
+        st.markdown("")
+        st.markdown("아직 비교할 데이터가 없습니다.")
+        st.caption("'🔄 수집' → '🤖 AI 처리'를 실행하면 도구별 뉴스가 자동 분류됩니다.")
+    else:
+        # 언급량 바 차트
+        import plotly.graph_objects as go
+
+        tool_names = [t["name"] for t in tools if t["mention_count"] > 0]
+        tool_counts = [t["mention_count"] for t in tools if t["mention_count"] > 0]
+        tool_colors = [t["color"] for t in tools if t["mention_count"] > 0]
+
+        if tool_names:
+            fig_comp = go.Figure(go.Bar(
+                x=tool_counts,
+                y=tool_names,
+                orientation="h",
+                marker_color=tool_colors,
+                marker_cornerradius=6,
+                text=tool_counts,
+                textposition="outside",
+            ))
+            fig_comp.update_layout(
+                height=max(200, len(tool_names) * 45),
+                margin=dict(t=10, b=10, l=0, r=40),
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font={"color": "gray"},
+                yaxis=dict(autorange="reversed"),
+                xaxis=dict(showgrid=True, gridcolor="rgba(128,128,128,0.1)"),
+            )
+            st.plotly_chart(fig_comp, use_container_width=True)
+
+        # 도구별 상세 카드
+        active_tools = [t for t in tools if t["mention_count"] > 0]
+        if active_tools:
+            card_cols = st.columns(min(len(active_tools), 3))
+            for idx, tool in enumerate(active_tools[:6]):
+                with card_cols[idx % min(len(active_tools), 3)]:
+                    with st.container(border=True):
+                        # 감성 비율 계산
+                        total_s = sum(tool["sentiment"].values()) or 1
+                        pos_pct = round(tool["sentiment"]["positive"] / total_s * 100)
+                        neg_pct = round(tool["sentiment"]["negative"] / total_s * 100)
+
+                        st.markdown(f"**{tool['name']}**")
+                        st.caption(f"📰 {tool['mention_count']}건 · ⭐ {tool['avg_importance']} · 😊 {pos_pct}%")
+
+                        # 감성 미니 바
+                        pos_w = max(pos_pct, 2)
+                        neu_w = max(100 - pos_pct - neg_pct, 2)
+                        neg_w = max(neg_pct, 2)
+                        st.markdown(
+                            f'<div style="display:flex;height:6px;border-radius:3px;overflow:hidden">'
+                            f'<div style="width:{pos_w}%;background:#6bcb77"></div>'
+                            f'<div style="width:{neu_w}%;background:#ffd93d"></div>'
+                            f'<div style="width:{neg_w}%;background:#ff6b6b"></div>'
+                            f'</div>',
+                            unsafe_allow_html=True,
+                        )
+
+                        # TOP 기사
+                        for a in tool["top_articles"][:3]:
+                            emoji = {"positive": "😊", "negative": "😠", "neutral": "😐"}.get(a.get("sentiment", ""), "")
+                            st.caption(f"{emoji} [{a['title'][:40]}...]({a['url']})")
+
+# ═══════════════════════════════════════════════
+# 탭 7: 타임라인
 # ═══════════════════════════════════════════════
 with tab_timeline:
     st.markdown("### ⏰ 뉴스 타임라인")
