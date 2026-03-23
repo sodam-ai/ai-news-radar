@@ -151,6 +151,29 @@ button[data-baseweb="tab"][aria-selected="true"] {
     font-size: 1.1rem;
     font-weight: 700;
 }
+
+/* ── 반응형 (모바일/태블릿) ── */
+@media (max-width: 768px) {
+    [data-testid="stMetric"] { padding: 8px 10px; }
+    [data-testid="stMetricValue"] { font-size: 1.3rem !important; }
+    button[data-baseweb="tab"] { font-size: 0.8rem !important; padding: 6px 8px !important; }
+    .cat-pill { font-size: 0.65rem; padding: 1px 6px; }
+    .fc-badge { font-size: 0.6rem; padding: 1px 5px; }
+}
+
+/* ── 데스크톱 와이드 (1600px+) ── */
+@media (min-width: 1600px) {
+    .main .block-container { max-width: 1400px; }
+}
+
+/* 스크롤바 커스텀 (다크모드) */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+::-webkit-scrollbar-thumb { background: rgba(79,195,247,0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(79,195,247,0.5); }
+
+/* 선택 텍스트 하이라이트 */
+::selection { background: rgba(79,195,247,0.3); }
 </style>
 """
 st.markdown(ENHANCED_CSS, unsafe_allow_html=True)

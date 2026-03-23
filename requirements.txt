@@ -9,3 +9,9 @@ fpdf2>=2.8.0
 plotly>=5.18.0
 edge-tts>=6.1.0
 python-telegram-bot>=21.0
+
+# 데스크톱 앱 (선택사항 — 웹 모드만 쓸 경우 불필요)
+pywebview>=5.0
+pystray>=0.19.0
+plyer>=2.1.0
+Pillow>=10.0.0
