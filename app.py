@@ -1304,31 +1304,72 @@ with tab_sns:
 
     configured_platforms = [p for p in platforms if p["configured"]]
 
-    if not configured_platforms:
-        st.divider()
-        st.markdown("#### ⚙️ SNS 연결 설정")
-        st.markdown("""
-`.env` 파일에 아래 키를 추가하세요:
+    # 설정 가이드 (미연결 플랫폼 있으면 항상 표시)
+    unconfigured = [p for p in platforms if not p["configured"]]
+    if unconfigured:
+        with st.expander(f"⚙️ SNS 연결 설정 가이드 ({len(unconfigured)}개 미연결)", expanded=not configured_platforms):
+            st.markdown("`.env` 파일에 아래 키를 추가하세요:")
 
-**X (Twitter):**
+            st.markdown("""
+**🐦 X (Twitter)** — [developer.x.com](https://developer.x.com/) 에서 앱 생성
 ```
 X_API_KEY=your_api_key
 X_API_SECRET=your_api_secret
 X_ACCESS_TOKEN=your_access_token
 X_ACCESS_SECRET=your_access_secret
 ```
+> 1) developer.x.com → 앱 만들기 → Keys and Tokens 탭 → 4개 키 복사
 
-**Telegram:**
+---
+
+**📨 Telegram** — @BotFather 에서 봇 생성
 ```
 TELEGRAM_BOT_TOKEN=your_bot_token
 TELEGRAM_CHANNEL_ID=@your_channel_id
 ```
+> 1) 텔레그램에서 @BotFather 검색 → /newbot → 토큰 복사
+> 2) 채널 만들고 봇을 관리자로 추가 → 채널 @아이디 입력
 
-**Discord:**
+---
+
+**💬 Discord** — 서버 설정에서 웹훅 생성 (가장 쉬움, 30초)
 ```
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
 ```
+> 1) Discord 서버 → 설정 → 연동 → 웹훅 → 새 웹훅 → URL 복사
+
+---
+
+**🧵 Threads** — [developers.facebook.com](https://developers.facebook.com/) 에서 앱 생성
+```
+THREADS_ACCESS_TOKEN=your_threads_access_token
+THREADS_USER_ID=your_threads_user_id
+```
+> 1) developers.facebook.com → 앱 만들기 → "사용 사례: 기타"
+> 2) 제품 추가 → "Threads API" 선택
+> 3) API 설정 → "threads_manage_posts" 권한 추가
+> 4) 액세스 토큰 생성 → 복사
+> 5) 사용자 ID 확인: 그래프 API 탐색기에서 GET /me 실행
+
+---
+
+**📸 Instagram** — Facebook 페이지 + 비즈니스 계정 필요
+```
+INSTAGRAM_ACCESS_TOKEN=your_instagram_access_token
+INSTAGRAM_ACCOUNT_ID=your_instagram_account_id
+IMGUR_CLIENT_ID=your_imgur_client_id
+```
+> 1) Instagram 앱 → 설정 → 계정 → "비즈니스 계정으로 전환"
+> 2) Facebook 페이지 만들기 → Instagram 계정 연결
+> 3) developers.facebook.com → 앱 → Instagram Graph API 추가
+> 4) "instagram_basic", "instagram_content_publish" 권한 추가
+> 5) 액세스 토큰 생성 → 복사
+> 6) 계정 ID: 그래프 API 탐색기에서 GET /me/accounts → instagram_business_account.id
+> 7) [api.imgur.com](https://api.imgur.com/oauth2/addclient) → 앱 등록 → Client ID 복사 (이미지 호스팅용)
 """)
+
+    if not configured_platforms:
+        pass  # 가이드만 표시
     else:
         st.divider()
 
