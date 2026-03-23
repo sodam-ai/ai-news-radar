@@ -14,7 +14,7 @@ AI News Radar is a **personal dashboard** that automatically gathers AI-related 
 
 ---
 
-## Key Features (22 features)
+## Key Features (27 features)
 
 ### Phase 1 — Core (17 features)
 
@@ -47,6 +47,16 @@ AI News Radar is a **personal dashboard** that automatically gathers AI-related 
 | Read History | Mark articles as read, filter unread articles |
 | Sentiment Gauge | Plotly charts: gauge (positive %), donut (distribution), stacked bar (by category) |
 | AI Chat | Ask questions about collected news in natural language |
+
+### Phase 2-B — Advanced (5 features)
+
+| Feature | Description |
+|---------|-------------|
+| Voice Briefing | Listen to daily briefing as AI-generated Korean speech (edge-tts, male/female voices) |
+| AI Fact-Check | Cross-reference badge: "✅ Confirmed by N outlets" vs "⚠️ Single source" |
+| AI Glossary | Auto-extract AI terms from news + beginner-friendly explanations (difficulty/category filters) |
+| Telegram Bot | `/today` briefing, `/top` news, `/search`, `/ask` AI chat — all from Telegram |
+| GitHub Actions | Auto-collect 3x daily (06/12/18 KST), manual dispatch, CLI script |
 
 ---
 
@@ -98,14 +108,15 @@ You only need **one API key** from any of these platforms:
 
 ---
 
-## Dashboard (7 Tabs)
+## Dashboard (8 Tabs)
 
 | Tab | Description |
 |-----|-------------|
-| **Briefing** | Today's Top 5 + Sentiment Gauge (3 Plotly charts) |
-| **News** | All articles + filters + bookmark/read buttons |
+| **Briefing** | Today's Top 5 + Sentiment Gauge + Voice Briefing (MP3) |
+| **News** | All articles + filters + bookmark/read + fact-check badges |
 | **Search** | Keyword + category + sentiment + read status filters |
 | **AI Chat** | Ask questions about news in natural language |
+| **Glossary** | AI term dictionary with beginner-friendly explanations |
 | **Timeline** | Chronological news flow (Today / Yesterday / This Week) |
 | **Bookmarks** | Saved articles with memo editing |
 | **Sources** | Manage 15 news sources |
@@ -209,6 +220,9 @@ Browser opens to **http://localhost:6601** — Done!
 | Mark as read | News tab → Click 📖 on article card |
 | Search articles | Search tab → Enter keyword + select filters |
 | Chat with AI | AI Chat tab → Type your question |
+| Listen to briefing | Briefing tab → Select voice → Click "Generate Voice" |
+| Look up AI terms | Glossary tab → Browse or search terms |
+| Use Telegram bot | Set `TELEGRAM_BOT_TOKEN` in `.env` → Run `python -m bot.telegram_bot` |
 | Export as PDF | Briefing/News tab → Select PDF → Download |
 | Switch dark/light | Sidebar → Toggle at top |
 | Change LLM provider | Edit `.env` → Set `LLM_PROVIDER=groq` (or any provider name) |
@@ -219,10 +233,10 @@ Browser opens to **http://localhost:6601** — Done!
 
 ```
 ai-news-radar/
-├── app.py                  # Main dashboard (7 tabs)
+├── app.py                  # Main dashboard (8 tabs)
 ├── config.py               # Settings
-├── requirements.txt        # Dependencies (8 packages)
-├── .env.example            # API key template (35 platforms)
+├── requirements.txt        # Dependencies (10 packages)
+├── .env.example            # API key template (35 platforms + Telegram)
 ├── LICENSE                 # MIT License (SoDam AI Studio)
 ├── .streamlit/config.toml  # Theme + port settings
 ├── crawler/
@@ -233,7 +247,16 @@ ai-news-radar/
 │   ├── batch_processor.py  # Batch AI processing + image analysis
 │   ├── deduplicator.py     # Duplicate news merging
 │   ├── briefing.py         # Daily Top 5 briefing
-│   └── chat.py             # AI news chat (keyword RAG)
+│   ├── chat.py             # AI news chat (keyword RAG)
+│   ├── voice_briefing.py   # Voice briefing (edge-tts)
+│   ├── factcheck.py        # Cross-source fact-check badges
+│   └── glossary.py         # AI term dictionary
+├── bot/
+│   └── telegram_bot.py     # Telegram bot (7 commands)
+├── scripts/
+│   └── collect.py          # CLI collection script (for cron/Actions)
+├── .github/workflows/
+│   └── collect.yml         # GitHub Actions auto-collect (3x daily)
 ├── reader/
 │   └── article_reader.py   # Ad-free article reader
 ├── export/
@@ -270,7 +293,7 @@ ai-news-radar/
 |-------|----------|--------|
 | Phase 1 (MVP) | Collection + AI Summary + Dashboard (17 features) | **Complete** |
 | Phase 2-A | Search + Bookmarks + Read History + Sentiment Chart + AI Chat (5 features) | **Complete** |
-| Phase 2-B | Voice Briefing + Telegram Bot + Fact-check + Glossary + GitHub Actions | Planned |
+| Phase 2-B | Voice Briefing + Telegram Bot + Fact-check + Glossary + GitHub Actions (5 features) | **Complete** |
 | Phase 3 | Agents + Prediction + Podcast + Plugins + Team mode | Planned |
 
 See [PRD/03_PHASES.md](./PRD/03_PHASES.md) for the full roadmap.
@@ -288,6 +311,9 @@ See [PRD/03_PHASES.md](./PRD/03_PHASES.md) for the full roadmap.
 | Data | Local JSON files |
 | Scheduling | APScheduler |
 | PDF | fpdf2 (Korean font support) |
+| Voice | edge-tts (Microsoft TTS, Korean) |
+| Bot | python-telegram-bot (Telegram integration) |
+| CI/CD | GitHub Actions (auto-collect 3x daily) |
 
 ---
 
