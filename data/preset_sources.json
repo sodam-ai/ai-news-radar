@@ -57,5 +57,27 @@
   {"id": "src_306", "name": "W3C Semantic Web News", "url": "https://www.w3.org/blog/category/semantic-web/feed/", "type": "rss", "is_preset": true, "crawl_interval": 360, "is_active": true, "lang": "en", "focus": "ai_ontology"},
   {"id": "src_307", "name": "Reddit r/neo4j", "url": "https://www.reddit.com/r/Neo4j/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 240, "is_active": true, "lang": "en", "focus": "ai_ontology"},
   {"id": "src_308", "name": "Stardog Blog", "url": "https://www.stardog.com/blog/feed/", "type": "rss", "is_preset": true, "crawl_interval": 360, "is_active": true, "lang": "en", "focus": "ai_ontology"},
-  {"id": "src_309", "name": "Reddit r/graphdatabases", "url": "https://www.reddit.com/r/graphdatabases/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 240, "is_active": true, "lang": "en", "focus": "ai_ontology"}
+  {"id": "src_309", "name": "Reddit r/graphdatabases", "url": "https://www.reddit.com/r/graphdatabases/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 240, "is_active": true, "lang": "en", "focus": "ai_ontology"},
+
+  {"id": "src_401", "name": "Wired AI", "url": "https://www.wired.com/feed/tag/ai/latest/rss", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "en"},
+  {"id": "src_402", "name": "The Information AI", "url": "https://www.theinformation.com/feed", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en"},
+  {"id": "src_403", "name": "Ben's Bites (AI 뉴스레터)", "url": "https://bensbites.beehiiv.com/feed", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en"},
+  {"id": "src_404", "name": "The Neuron (AI 뉴스레터)", "url": "https://www.theneurondaily.com/feed", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en"},
+  {"id": "src_405", "name": "ZDNET AI", "url": "https://www.zdnet.com/topic/artificial-intelligence/rss.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "en"},
+  {"id": "src_406", "name": "Reddit r/artificial", "url": "https://www.reddit.com/r/artificial/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en"},
+  {"id": "src_407", "name": "Reddit r/MachineLearning", "url": "https://www.reddit.com/r/MachineLearning/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en"},
+  {"id": "src_408", "name": "Product Hunt AI", "url": "https://www.producthunt.com/feed?category=artificial-intelligence", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en"},
+
+  {"id": "src_117", "name": "Reddit r/generativeAI", "url": "https://www.reddit.com/r/generativeAI/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_image_video"},
+  {"id": "src_118", "name": "Reddit r/ArtificialIntelligence (Art)", "url": "https://www.reddit.com/r/AIGenArt/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_image_video"},
+  {"id": "src_119", "name": "Reddit r/kling_ai", "url": "https://www.reddit.com/r/kling_ai/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_image_video"},
+  {"id": "src_120", "name": "Reddit r/SunoAI", "url": "https://www.reddit.com/r/SunoAI/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 180, "is_active": true, "lang": "en", "focus": "ai_image_video"},
+
+  {"id": "src_217", "name": "Reddit r/OpenAI", "url": "https://www.reddit.com/r/OpenAI/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_coding"},
+  {"id": "src_218", "name": "Reddit r/learnprogramming AI", "url": "https://www.reddit.com/r/learnprogramming/search.rss?q=AI+coding&sort=new&restrict_sr=on", "type": "rss", "is_preset": true, "crawl_interval": 240, "is_active": true, "lang": "en", "focus": "ai_coding"},
+  {"id": "src_219", "name": "Reddit r/ArtificialIntelligence", "url": "https://www.reddit.com/r/ArtificialIntelligence/hot.rss", "type": "rss", "is_preset": true, "crawl_interval": 120, "is_active": true, "lang": "en", "focus": "ai_coding"},
+
+  {"id": "src_016", "name": "블로터", "url": "https://www.bloter.net/feed", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
+  {"id": "src_017", "name": "IT조선", "url": "https://it.chosun.com/rss/allArticle.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"},
+  {"id": "src_018", "name": "ZDNet Korea", "url": "https://zdnet.co.kr/rss/allArticle.xml", "type": "rss", "is_preset": true, "crawl_interval": 60, "is_active": true, "lang": "ko"}
 ]

@@ -253,8 +253,14 @@ with tab_dash:
     briefings = safe_read_json(BRIEFINGS_PATH, [])
     today_briefing = next((b for b in briefings if b.get("date") == today_str()), None)
 
-    # 카테고리 퀵필터
-    dash_cat = st.radio("", ["전체"] + list(CATEGORIES.keys()), horizontal=True, key="dash_cat", format_func=lambda x: "전체" if x == "전체" else CATEGORIES[x], label_visibility="collapsed")
+    # 카테고리 퀵필터 (건수 표시)
+    def _cat_label_with_count(x):
+        if x == "전체":
+            return f"전체 ({len(articles)})"
+        cnt = len([a for a in articles if a.get("category") == x])
+        return f"{CATEGORIES[x]} ({cnt})" if cnt > 0 else f"{CATEGORIES[x]}"
+
+    dash_cat = st.radio("", ["전체"] + list(CATEGORIES.keys()), horizontal=True, key="dash_cat", format_func=_cat_label_with_count, label_visibility="collapsed")
 
     if today_briefing:
         st.markdown(f"### 📋 오늘의 브리핑 — {today_str()}")
@@ -380,8 +386,14 @@ with tab_news:
     view_mode = st.radio("", ["📰 전체 뉴스", "🔍 검색", "⭐ 북마크", "⏰ 타임라인"], horizontal=True, key="view_mode", label_visibility="collapsed")
 
     if view_mode == "📰 전체 뉴스":
-        # 카테고리 퀵필터
-        news_cat = st.radio("카테고리", ["전체"] + list(CATEGORIES.keys()), horizontal=True, key="news_cat", format_func=lambda x: "전체" if x == "전체" else CATEGORIES[x], label_visibility="collapsed")
+        # 카테고리 퀵필터 (건수 표시)
+        def _news_cat_label(x):
+            if x == "전체":
+                return f"전체 ({len(articles)})"
+            cnt = len([a for a in articles if a.get("category") == x])
+            return f"{CATEGORIES[x]} ({cnt})" if cnt > 0 else f"{CATEGORIES[x]}"
+
+        news_cat = st.radio("카테고리", ["전체"] + list(CATEGORIES.keys()), horizontal=True, key="news_cat", format_func=_news_cat_label, label_visibility="collapsed")
         filtered_articles = articles if news_cat == "전체" else [a for a in articles if a.get("category") == news_cat]
         st.markdown(f"### 📰 뉴스 ({len(filtered_articles)}개)")
         sort_opt = st.selectbox("정렬", ["중요도순", "최신순", "긍정 먼저"], label_visibility="collapsed")
