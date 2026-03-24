@@ -1,4 +1,4 @@
-name: AI News Radar — 자동 수집
+name: AI News Radar — 자동 수집 + SNS 게시
 
 on:
   # 매일 06:00, 12:00, 18:00 KST (UTC 21:00, 03:00, 09:00)
@@ -16,9 +16,11 @@ on:
         type: choice
         options:
           - all
+          - all-sns
           - crawl
           - process
           - briefing
+          - sns
 
 jobs:
   collect:
@@ -38,28 +40,38 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run collection
+      - name: Run pipeline
         env:
-          # GitHub Secrets에서 API 키 주입
+          # LLM API 키 (GitHub Secrets)
           LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          # SNS 키 (GitHub Secrets)
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
         run: |
           MODE="${{ github.event.inputs.mode || 'all' }}"
-          if [ "$MODE" = "all" ]; then
-            python scripts/collect.py
-          else
-            python scripts/collect.py --$MODE
-          fi
+          case "$MODE" in
+            all)       python scripts/collect.py ;;
+            all-sns)   python scripts/collect.py --all ;;
+            sns)       python scripts/collect.py --sns ;;
+            *)         python scripts/collect.py --$MODE ;;
+          esac
 
       - name: Commit updated data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/*.json
-          # 변경사항이 있을 때만 커밋
           git diff --cached --quiet || git commit -m "chore: auto-collect $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git push

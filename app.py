@@ -160,6 +160,57 @@ with st.sidebar:
                 st.error("브리핑 오류")
                 log(f"[브리핑 오류] {e}")
 
+    # ── 원클릭 풀 파이프라인 ──
+    if st.button("⚡ 원클릭 전체 실행", use_container_width=True, type="primary"):
+        if not _active_provider:
+            st.error("API 키를 먼저 설정하세요.")
+        else:
+            progress = st.progress(0, text="⚡ 파이프라인 시작...")
+            pipeline_ok = True
+
+            # 1. 수집
+            try:
+                progress.progress(10, text="📡 1/4 — RSS 수집 중...")
+                count = crawl_all()
+                progress.progress(30, text=f"📡 {count}개 수집 완료")
+            except Exception as e:
+                st.error(f"수집 오류: {e}")
+                pipeline_ok = False
+                log(f"[파이프라인 수집 오류] {e}")
+
+            # 2. AI 처리
+            if pipeline_ok:
+                try:
+                    progress.progress(35, text="🧠 2/4 — AI 분석 중...")
+                    processed = process_unprocessed()
+                    deduplicate()
+                    progress.progress(60, text=f"🧠 {processed}개 분석 완료")
+                    alerted = check_and_alert()
+                except Exception as e:
+                    st.error(f"AI 처리 오류: {e}")
+                    pipeline_ok = False
+                    log(f"[파이프라인 AI 오류] {e}")
+
+            # 3. 브리핑
+            if pipeline_ok:
+                try:
+                    progress.progress(65, text="📋 3/4 — 브리핑 생성 중...")
+                    generate_daily_briefing()
+                    progress.progress(85, text="📋 브리핑 완료")
+                except Exception as e:
+                    st.warning(f"브리핑 오류 (계속 진행): {e}")
+                    log(f"[파이프라인 브리핑 오류] {e}")
+
+            # 4. 완료
+            progress.progress(100, text="✅ 파이프라인 완료!")
+            if pipeline_ok:
+                st.success("⚡ 수집 → 분석 → 브리핑 완료!")
+                if alerted:
+                    st.info(f"🔔 {len(alerted)}건 키워드 알림 발생")
+            import time
+            time.sleep(1.5)
+            progress.empty()
+
     st.divider()
 
     with st.expander("🔍 필터"):
