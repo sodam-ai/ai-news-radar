@@ -253,6 +253,9 @@ with tab_dash:
     briefings = safe_read_json(BRIEFINGS_PATH, [])
     today_briefing = next((b for b in briefings if b.get("date") == today_str()), None)
 
+    # 카테고리 퀵필터
+    dash_cat = st.radio("", ["전체"] + list(CATEGORIES.keys()), horizontal=True, key="dash_cat", format_func=lambda x: "전체" if x == "전체" else CATEGORIES[x], label_visibility="collapsed")
+
     if today_briefing:
         st.markdown(f"### 📋 오늘의 브리핑 — {today_str()}")
         if today_briefing.get("summary"):
@@ -333,13 +336,27 @@ with tab_dash:
                 cnt = len([a for a in articles if a.get("category") == aid])
                 st.metric(f"{ai['icon']} {ai['name']}", f"{cnt}건")
 
+    # 카테고리 필터 적용
+    dash_articles = articles if dash_cat == "전체" else [a for a in articles if a.get("category") == dash_cat]
+
+    if dash_cat != "전체" and dash_articles:
+        st.divider()
+        st.markdown(f"### {CATEGORIES.get(dash_cat, '')} 뉴스 ({len(dash_articles)}개)")
+        for a in sorted(dash_articles, key=lambda x: x.get("importance", 0), reverse=True)[:5]:
+            with st.container(border=True):
+                st.markdown(render_sentiment_bar(a.get("sentiment", "neutral")), unsafe_allow_html=True)
+                st.markdown(f"{'⭐' * a.get('importance', 0)} [{a['title']}]({a['url']})")
+                st.markdown(render_cat_pill(a.get("category", "ai_other")) + " " + render_fc_badge(a), unsafe_allow_html=True)
+                if a.get("summary_text"):
+                    st.caption(a["summary_text"][:120])
+
     # 감성 온도계
-    if articles:
+    if dash_articles:
         import plotly.graph_objects as go
         st.divider()
-        pos = len([a for a in articles if a.get("sentiment") == "positive"])
-        neu = len([a for a in articles if a.get("sentiment") == "neutral"])
-        neg = len([a for a in articles if a.get("sentiment") == "negative"])
+        pos = len([a for a in dash_articles if a.get("sentiment") == "positive"])
+        neu = len([a for a in dash_articles if a.get("sentiment") == "neutral"])
+        neg = len([a for a in dash_articles if a.get("sentiment") == "negative"])
         total = pos + neu + neg
         pos_pct = round(pos / total * 100) if total else 0
 
@@ -363,23 +380,26 @@ with tab_news:
     view_mode = st.radio("", ["📰 전체 뉴스", "🔍 검색", "⭐ 북마크", "⏰ 타임라인"], horizontal=True, key="view_mode", label_visibility="collapsed")
 
     if view_mode == "📰 전체 뉴스":
-        st.markdown(f"### 📰 뉴스 ({len(articles)}개)")
+        # 카테고리 퀵필터
+        news_cat = st.radio("카테고리", ["전체"] + list(CATEGORIES.keys()), horizontal=True, key="news_cat", format_func=lambda x: "전체" if x == "전체" else CATEGORIES[x], label_visibility="collapsed")
+        filtered_articles = articles if news_cat == "전체" else [a for a in articles if a.get("category") == news_cat]
+        st.markdown(f"### 📰 뉴스 ({len(filtered_articles)}개)")
         sort_opt = st.selectbox("정렬", ["중요도순", "최신순", "긍정 먼저"], label_visibility="collapsed")
         if sort_opt == "중요도순":
-            articles.sort(key=lambda x: x.get("importance", 0), reverse=True)
+            filtered_articles.sort(key=lambda x: x.get("importance", 0), reverse=True)
         elif sort_opt == "최신순":
-            articles.sort(key=lambda x: x.get("published_at", ""), reverse=True)
+            filtered_articles.sort(key=lambda x: x.get("published_at", ""), reverse=True)
         else:
-            articles.sort(key=lambda x: {"positive": 0, "neutral": 1, "negative": 2}.get(x.get("sentiment", "neutral"), 1))
+            filtered_articles.sort(key=lambda x: {"positive": 0, "neutral": 1, "negative": 2}.get(x.get("sentiment", "neutral"), 1))
 
         # 페이지네이션
         PER_PAGE = 10
-        total_pages = max(1, -(-len(articles) // PER_PAGE))
+        total_pages = max(1, -(-len(filtered_articles) // PER_PAGE))
         if "page" not in st.session_state:
             st.session_state.page = 1
         pg = min(st.session_state.page, total_pages)
         start = (pg - 1) * PER_PAGE
-        page_arts = articles[start:start + PER_PAGE]
+        page_arts = filtered_articles[start:start + PER_PAGE]
 
         if total_pages > 1:
             nc = st.columns([1, 1, 2, 1, 1])
@@ -765,19 +785,129 @@ with tab_share:
             with pcols[idx]:
                 st.caption(f"{p['icon']} {'🟢' if p['configured'] else '⚪'}")
 
-        if not configured:
-            with st.expander("⚙️ SNS 연결 가이드", expanded=True):
+        # 미연결 플랫폼 가이드 (연결된 것이 있어도 보여줌)
+        unconfigured = [p for p in platforms if not p["configured"]]
+        if unconfigured:
+            with st.expander(f"⚙️ SNS 연결 가이드 ({len(unconfigured)}개 미연결)", expanded=not configured):
+                st.markdown("`.env` 파일을 메모장으로 열어 아래 내용을 추가하세요.")
+
+                st.markdown("---")
                 st.markdown("""
-**💬 Discord** (30초): 서버설정 → 연동 → 웹훅 → URL 복사 → `.env`에 `DISCORD_WEBHOOK_URL=URL`
+### 💬 Discord — 가장 쉬움 (30초)
 
-**📨 Telegram** (2분): @BotFather → /newbot → 토큰+채널ID → `.env`에 `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHANNEL_ID`
+> 별도 가입이나 개발자 등록 없이 URL 하나만 복사하면 됩니다.
 
-**🐦 X**: [developer.x.com](https://developer.x.com/) → 앱 → 키 4개
+**설정 방법:**
+1. Discord 앱 또는 웹에서 내 서버 열기
+2. 왼쪽 채널 목록에서 게시할 채널의 **⚙️ 톱니바퀴** (채널 편집) 클릭
+3. **연동** 탭 클릭
+4. **웹훅 만들기** 클릭
+5. 이름을 "AI News Radar"로 변경 (선택사항)
+6. **웹훅 URL 복사** 클릭
+7. `.env` 파일에 붙여넣기:
 
-**🧵 Threads**: [developers.facebook.com](https://developers.facebook.com/) → Threads API → 토큰+ID
+```
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/여기에복사한URL
+```
 
-**📸 Instagram**: Facebook 페이지 + 비즈니스 계정 + Graph API
+---
+
+### 📨 Telegram — 쉬움 (2분)
+
+> 텔레그램 앱에서 봇을 만들고 채널에 연결합니다.
+
+**설정 방법:**
+1. 텔레그램 앱에서 **@BotFather** 검색 → 대화 시작
+2. `/newbot` 입력 → 봇 이름 입력 (예: `AI News Radar`)
+3. 유저네임 입력 (예: `my_ai_news_bot`) — 반드시 `_bot`으로 끝나야 함
+4. **토큰이 표시됨** → 복사 (예: `7123456789:AAH...`)
+5. 텔레그램에서 **채널 만들기** (또는 기존 채널 사용)
+6. 채널 설정 → **관리자** → 방금 만든 봇을 관리자로 추가
+7. 채널의 **@아이디** 확인 (예: `@my_ai_news_channel`)
+8. `.env` 파일에 추가:
+
+```
+TELEGRAM_BOT_TOKEN=7123456789:AAHxxxxxx
+TELEGRAM_CHANNEL_ID=@my_ai_news_channel
+```
+
+---
+
+### 🐦 X (Twitter) — 보통 (10분)
+
+> 개발자 포털에서 앱을 만들고 키 4개를 발급받습니다.
+
+**설정 방법:**
+1. [developer.x.com](https://developer.x.com/) 접속 → 로그인
+2. **Developer Portal** → **Projects & Apps** → **+ Create App**
+3. 앱 이름 입력 (예: `AI-News-Radar`)
+4. **App Settings** → **Keys and Tokens** 탭
+5. **API Key and Secret** → Generate → **2개 키 복사**
+6. **Access Token and Secret** → Generate → **2개 키 복사**
+7. **User authentication settings** → Edit → Read and Write 권한 설정
+8. `.env` 파일에 추가:
+
+```
+X_API_KEY=발급받은_API_Key
+X_API_SECRET=발급받은_API_Key_Secret
+X_ACCESS_TOKEN=발급받은_Access_Token
+X_ACCESS_SECRET=발급받은_Access_Token_Secret
+```
+
+---
+
+### 🧵 Threads — 보통 (10분)
+
+> Meta 개발자 포털에서 Threads API를 활성화합니다.
+
+**설정 방법:**
+1. [developers.facebook.com](https://developers.facebook.com/) 접속 → 로그인
+2. **내 앱** → **앱 만들기** → 사용 사례: **"기타"** 선택
+3. 앱 이름 입력 → 만들기
+4. 왼쪽 메뉴 → **제품 추가** → **Threads API** 선택
+5. **API 설정** → `threads_manage_posts` 권한 추가
+6. **토큰 생성** → 액세스 토큰 복사
+7. 사용자 ID 확인:
+   - 그래프 API 탐색기 → GET `/me` 실행 → `id` 값 복사
+8. `.env` 파일에 추가:
+
+```
+THREADS_ACCESS_TOKEN=발급받은_액세스_토큰
+THREADS_USER_ID=발급받은_사용자_ID
+```
+
+---
+
+### 📸 Instagram — 복잡 (15분)
+
+> Facebook 페이지와 Instagram 비즈니스 계정 연결이 필요합니다.
+
+**사전 준비:**
+- Instagram 계정을 **비즈니스** 또는 **크리에이터** 계정으로 전환
+- Facebook 페이지를 만들고 Instagram 계정과 연결
+
+**설정 방법:**
+1. Instagram 앱 → 설정 → 계정 → **프로페셔널 계정으로 전환** → 비즈니스 선택
+2. Facebook 페이지 만들기 (없는 경우) → Instagram 계정 연결
+3. [developers.facebook.com](https://developers.facebook.com/) → 앱 만들기
+4. **제품 추가** → **Instagram Graph API** 선택
+5. 권한 추가: `instagram_basic`, `instagram_content_publish`
+6. **액세스 토큰 생성** → 복사
+7. **계정 ID 확인**:
+   - 그래프 API 탐색기 → GET `/me/accounts` → `instagram_business_account` → `id` 복사
+8. 이미지 호스팅용 Imgur 등록:
+   - [api.imgur.com/oauth2/addclient](https://api.imgur.com/oauth2/addclient) → 앱 등록 → Client ID 복사
+9. `.env` 파일에 추가:
+
+```
+INSTAGRAM_ACCESS_TOKEN=발급받은_액세스_토큰
+INSTAGRAM_ACCOUNT_ID=발급받은_계정_ID
+IMGUR_CLIENT_ID=발급받은_Imgur_Client_ID
+```
 """)
+
+        if not configured:
+            pass  # 가이드만 표시
         else:
             # 카테고리 선택
             sns_cats = st.multiselect("카테고리", list(CATEGORIES.keys()), default=["ai_image_video", "ai_coding", "ai_ontology"], format_func=lambda x: CATEGORIES[x], key="snsc")
