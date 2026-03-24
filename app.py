@@ -25,6 +25,8 @@ from ai.competitor import get_competitor_analysis, COMPETITOR_GROUPS
 from ai.trend import get_trend_data, get_keyword_trend, get_hot_keywords
 from ai.debate import generate_debate, get_debate_pairs
 from ai.smart_alert import check_and_alert
+from ai.release_tracker import detect_releases, get_release_history, get_tracked_tools
+from ai.translator import translate_articles, get_translation_stats
 from sns.card_generator import generate_single_card, generate_briefing_card
 from sns.poster import get_available_platforms, post_article, post_briefing, PLATFORM_ADAPTERS
 from sns.content_generator import generate_content, generate_multi_content, get_content_templates
@@ -148,17 +150,33 @@ with st.sidebar:
                     st.error("AI 처리 오류")
                     log(f"[AI 처리 오류] {e}")
 
-    if st.button("📋 브리핑 생성", use_container_width=True):
-        if not _active_provider:
-            st.error("API 키 필요")
-        else:
-            try:
-                with st.spinner("📝 생성 중..."):
-                    generate_daily_briefing()
-                st.success("✅ 완료!")
-            except Exception as e:
-                st.error("브리핑 오류")
-                log(f"[브리핑 오류] {e}")
+    c3, c4 = st.columns(2)
+    with c3:
+        if st.button("📋 브리핑", use_container_width=True):
+            if not _active_provider:
+                st.error("API 키 필요")
+            else:
+                try:
+                    with st.spinner("📝 생성 중..."):
+                        generate_daily_briefing()
+                    st.success("✅ 완료!")
+                except Exception as e:
+                    st.error("브리핑 오류")
+                    log(f"[브리핑 오류] {e}")
+    with c4:
+        if st.button("🌐 번역", use_container_width=True):
+            if not _active_provider:
+                st.error("API 키 필요")
+            else:
+                try:
+                    with st.spinner("🌐 영→한 번역 중..."):
+                        t_count = translate_articles(max_batch=10)
+                    if t_count > 0:
+                        st.success(f"✅ {t_count}개 번역!")
+                    else:
+                        st.caption("번역할 기사 없음")
+                except Exception as e:
+                    st.error(f"번역 오류: {e}")
 
     # ── 원클릭 풀 파이프라인 ──
     if st.button("⚡ 원클릭 전체 실행", use_container_width=True, type="primary"):
@@ -201,12 +219,21 @@ with st.sidebar:
                     st.warning(f"브리핑 오류 (계속 진행): {e}")
                     log(f"[파이프라인 브리핑 오류] {e}")
 
-            # 4. 완료
+            # 4. 릴리즈 감지
+            if pipeline_ok:
+                progress.progress(90, text="🔍 4/4 — 릴리즈 감지 중...")
+                releases = detect_releases()
+                if releases:
+                    progress.progress(95, text=f"🚀 {len(releases)}건 릴리즈 감지!")
+
+            # 5. 완료
             progress.progress(100, text="✅ 파이프라인 완료!")
             if pipeline_ok:
                 st.success("⚡ 수집 → 분석 → 브리핑 완료!")
                 if alerted:
-                    st.info(f"🔔 {len(alerted)}건 키워드 알림 발생")
+                    st.info(f"🔔 {len(alerted)}건 키워드 알림")
+                if releases:
+                    st.info(f"🚀 {len(releases)}건 릴리즈 감지!")
             import time
             time.sleep(1.5)
             progress.empty()
@@ -499,9 +526,12 @@ with tab_news:
                 st.markdown(render_sentiment_bar(sentiment), unsafe_allow_html=True)
                 cm, cr = st.columns([4, 1])
                 with cm:
-                    st.markdown(f"#### {prefix}[{article['title']}]({article['url']})")
+                    display_title = article.get("title_ko") or article["title"]
+                    st.markdown(f"#### {prefix}[{display_title}]({article['url']})")
+                    if article.get("title_ko") and article.get("title_ko") != article["title"]:
+                        st.caption(f"🌐 {article['title'][:80]}")
                     st.markdown(render_cat_pill(category) + " " + render_fc_badge(article), unsafe_allow_html=True)
-                    summary = article.get("summary_text", "")
+                    summary = article.get("summary_ko") or article.get("summary_text", "")
                     if summary:
                         st.write(summary)
                     with st.expander("📖 더보기"):
@@ -691,7 +721,7 @@ with tab_ai:
 # 탭 4: 인사이트 (도구 비교 + 트렌드 + 주간 리포트)
 # ══════════════════════════════════════════════
 with tab_insight:
-    ins_mode = st.radio("", ["🏆 도구 비교", "📈 트렌드", "🎭 AI 토론", "📊 주간 리포트"], horizontal=True, key="ins_mode", label_visibility="collapsed")
+    ins_mode = st.radio("", ["🏆 도구 비교", "📈 트렌드", "🚀 릴리즈", "🎭 AI 토론", "📊 주간 리포트"], horizontal=True, key="ins_mode", label_visibility="collapsed")
 
     if ins_mode == "🏆 도구 비교":
         comp_group = st.selectbox("분야", list(COMPETITOR_GROUPS.keys()), format_func=lambda x: f"{COMPETITOR_GROUPS[x]['icon']} {COMPETITOR_GROUPS[x]['name']}", key="cg", label_visibility="collapsed")
@@ -747,6 +777,38 @@ with tab_insight:
                     with st.container(border=True):
                         st.markdown(f"**`{h['keyword']}`**")
                         st.caption(f"{h['count']}건 {badge}")
+
+    elif ins_mode == "🚀 릴리즈":
+        st.markdown("### 🚀 AI 도구 릴리즈 추적")
+        st.caption(f"추적 중: {len(get_tracked_tools())}개 도구")
+
+        # 릴리즈 감지 실행
+        if st.button("🔍 릴리즈 스캔", use_container_width=True, key="scan_rel"):
+            with st.spinner("🔍 릴리즈 감지 중..."):
+                new_rels = detect_releases()
+            if new_rels:
+                st.success(f"🚀 {len(new_rels)}건 새 릴리즈 감지!")
+                st.rerun()
+            else:
+                st.caption("새 릴리즈가 감지되지 않았습니다.")
+
+        # 히스토리
+        history = get_release_history(20)
+        if history:
+            for rel in history:
+                with st.container(border=True):
+                    st.markdown(f"{rel.get('tool_icon', '📦')} **{rel.get('tool_name', '')}** — [{rel.get('article_title', '')}]({rel.get('article_url', '')})")
+                    st.caption(f"감지: {rel.get('detected_at', '')[:16]} · ⭐ {rel.get('importance', 0)}")
+        else:
+            st.caption("아직 감지된 릴리즈가 없습니다. '🔍 릴리즈 스캔'을 클릭하거나 뉴스를 수집하세요.")
+
+        # 추적 도구 목록
+        with st.expander(f"📋 추적 중인 도구 ({len(get_tracked_tools())}개)"):
+            tracked = get_tracked_tools()
+            tcols = st.columns(3)
+            for idx, (tid, tinfo) in enumerate(tracked.items()):
+                with tcols[idx % 3]:
+                    st.caption(f"{tinfo['icon']} {tinfo['name']}")
 
     elif ins_mode == "🎭 AI 토론":
         comp_group = st.selectbox("분야", list(COMPETITOR_GROUPS.keys()), format_func=lambda x: f"{COMPETITOR_GROUPS[x]['icon']} {COMPETITOR_GROUPS[x]['name']}", key="dg", label_visibility="collapsed")
