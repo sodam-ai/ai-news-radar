@@ -262,99 +262,110 @@ with tab_dash:
 
     dash_cat = st.radio("", ["전체"] + list(CATEGORIES.keys()), horizontal=True, key="dash_cat", format_func=_cat_label_with_count, label_visibility="collapsed")
 
-    if today_briefing:
-        st.markdown(f"### 📋 오늘의 브리핑 — {today_str()}")
-        if today_briefing.get("summary"):
-            st.info(f"💡 {today_briefing['summary']}")
-
-        all_arts_map = {a["id"]: a for a in load_articles()}
-        title_url_map = {a.get("title", "").lower(): a.get("url", "") for a in load_articles() if a.get("url")}
-
-        top = today_briefing.get("top_articles", [])
-        if isinstance(top, list):
-            for i, item in enumerate(top, 1):
-                if isinstance(item, dict):
-                    headline = item.get("headline", item.get("title", ""))
-                    why = item.get("why_important", item.get("summary", ""))
-                    url = item.get("url", "")
-                    if not url and item.get("article_id"):
-                        m = all_arts_map.get(item["article_id"])
-                        if m:
-                            url = m.get("url", "")
-                    if not url:
-                        url = title_url_map.get(headline.lower(), "")
-                    with st.container(border=True):
-                        if url:
-                            st.markdown(f"**#{i}** &nbsp; [{headline}]({url})")
-                        else:
-                            st.markdown(f"**#{i}** &nbsp; {headline}")
-                        if why:
-                            st.caption(f"→ {why}")
-
-        # 내보내기 + 음성 (한 줄로)
-        ec1, ec2, ec3, ec4 = st.columns(4)
-        with ec1:
-            st.download_button("📥 MD", data=export_briefing_markdown(), file_name=f"briefing_{today_str()}.md", mime="text/markdown", use_container_width=True)
-        with ec2:
-            try:
-                st.download_button("📥 PDF", data=export_briefing_pdf(), file_name=f"briefing_{today_str()}.pdf", mime="application/pdf", use_container_width=True)
-            except Exception:
-                st.caption("PDF 불가")
-        with ec3:
-            voices = get_available_voices()
-            vc = st.selectbox("음성", [v["id"] for v in voices], format_func=lambda x: next(v["name"] for v in voices if v["id"] == x), key="vc", label_visibility="collapsed")
-        with ec4:
-            if st.button("🎙️ 음성", use_container_width=True, key="gv"):
-                try:
-                    with st.spinner("🎵 생성 중..."):
-                        ap = generate_voice_briefing(today_briefing, voice=vc)
-                    if ap:
-                        st.session_state.voice_path = ap
-                        st.rerun()
-                except Exception as e:
-                    st.error(str(e)[:50])
-
-        vp = st.session_state.get("voice_path")
-        if vp and os.path.exists(vp):
-            with open(vp, "rb") as f:
-                st.audio(f.read(), format="audio/mp3")
-    else:
-        st.markdown("### 📋 브리핑")
-        st.caption("사이드바에서 🔄 수집 → 🤖 AI 처리 → 📋 브리핑 생성 순서로 진행하세요.")
-
-    # 분야별 맞춤 브리핑
-    if today_briefing and today_briefing.get("focus_briefings"):
-        st.divider()
-        st.markdown("### 🎯 관심 분야")
-        focus = today_briefing["focus_briefings"]
-        fcols = st.columns(len(focus))
-        for idx, (aid, ad) in enumerate(focus.items()):
-            with fcols[idx]:
-                st.markdown(f"**{ad.get('icon', '')} {ad.get('name', '')}** ({ad.get('total_count', 0)}건)")
-                for i, item in enumerate(ad.get("top_articles", []), 1):
-                    st.caption(f"{i}. [{item['title'][:40]}...]({item.get('url', '')})")
-    elif articles:
-        st.divider()
-        st.markdown("### 🎯 관심 분야")
-        fcols = st.columns(len(FOCUS_AREAS))
-        for idx, (aid, ai) in enumerate(FOCUS_AREAS.items()):
-            with fcols[idx]:
-                cnt = len([a for a in articles if a.get("category") == aid])
-                st.metric(f"{ai['icon']} {ai['name']}", f"{cnt}건")
-
     # 카테고리 필터 적용
     dash_articles = articles if dash_cat == "전체" else [a for a in articles if a.get("category") == dash_cat]
 
-    if dash_cat != "전체" and dash_articles:
-        st.divider()
-        st.markdown(f"### {CATEGORIES.get(dash_cat, '')} 뉴스 ({len(dash_articles)}개)")
-        for a in sorted(dash_articles, key=lambda x: x.get("importance", 0), reverse=True)[:5]:
-            with st.container(border=True):
-                st.markdown(render_sentiment_bar(a.get("sentiment", "neutral")), unsafe_allow_html=True)
-                st.markdown(f"{'⭐' * a.get('importance', 0)} [{a['title']}]({a['url']})")
-                st.markdown(render_cat_pill(a.get("category", "ai_other")) + " " + render_fc_badge(a), unsafe_allow_html=True)
-                if a.get("summary_text"):
-                    st.caption(a["summary_text"][:120])
+    if dash_cat == "전체":
+        # ── "전체" 모드: 브리핑 + 관심 분야 표시 ──
+        if today_briefing:
+            st.markdown(f"### 📋 오늘의 브리핑 — {today_str()}")
+            if today_briefing.get("summary"):
+                st.info(f"💡 {today_briefing['summary']}")
+
+            all_arts_map = {a["id"]: a for a in load_articles()}
+            title_url_map = {a.get("title", "").lower(): a.get("url", "") for a in load_articles() if a.get("url")}
+
+            top = today_briefing.get("top_articles", [])
+            if isinstance(top, list):
+                for i, item in enumerate(top, 1):
+                    if isinstance(item, dict):
+                        headline = item.get("headline", item.get("title", ""))
+                        why = item.get("why_important", item.get("summary", ""))
+                        url = item.get("url", "")
+                        if not url and item.get("article_id"):
+                            m = all_arts_map.get(item["article_id"])
+                            if m:
+                                url = m.get("url", "")
+                        if not url:
+                            url = title_url_map.get(headline.lower(), "")
+                        with st.container(border=True):
+                            if url:
+                                st.markdown(f"**#{i}** &nbsp; [{headline}]({url})")
+                            else:
+                                st.markdown(f"**#{i}** &nbsp; {headline}")
+                            if why:
+                                st.caption(f"→ {why}")
+
+            # 내보내기 + 음성
+            ec1, ec2, ec3, ec4 = st.columns(4)
+            with ec1:
+                st.download_button("📥 MD", data=export_briefing_markdown(), file_name=f"briefing_{today_str()}.md", mime="text/markdown", use_container_width=True)
+            with ec2:
+                try:
+                    st.download_button("📥 PDF", data=export_briefing_pdf(), file_name=f"briefing_{today_str()}.pdf", mime="application/pdf", use_container_width=True)
+                except Exception:
+                    st.caption("PDF 불가")
+            with ec3:
+                voices = get_available_voices()
+                vc = st.selectbox("음성", [v["id"] for v in voices], format_func=lambda x: next(v["name"] for v in voices if v["id"] == x), key="vc", label_visibility="collapsed")
+            with ec4:
+                if st.button("🎙️ 음성", use_container_width=True, key="gv"):
+                    try:
+                        with st.spinner("🎵 생성 중..."):
+                            ap = generate_voice_briefing(today_briefing, voice=vc)
+                        if ap:
+                            st.session_state.voice_path = ap
+                            st.rerun()
+                    except Exception as e:
+                        st.error(str(e)[:50])
+
+            vp = st.session_state.get("voice_path")
+            if vp and os.path.exists(vp):
+                with open(vp, "rb") as f:
+                    st.audio(f.read(), format="audio/mp3")
+        else:
+            st.markdown("### 📋 브리핑")
+            st.caption("사이드바에서 🔄 수집 → 🤖 AI 처리 → 📋 브리핑 생성 순서로 진행하세요.")
+
+        # 분야별 맞춤 브리핑
+        if today_briefing and today_briefing.get("focus_briefings"):
+            st.divider()
+            st.markdown("### 🎯 관심 분야")
+            focus = today_briefing["focus_briefings"]
+            fcols = st.columns(len(focus))
+            for idx, (aid, ad) in enumerate(focus.items()):
+                with fcols[idx]:
+                    st.markdown(f"**{ad.get('icon', '')} {ad.get('name', '')}** ({ad.get('total_count', 0)}건)")
+                    for i, item in enumerate(ad.get("top_articles", []), 1):
+                        st.caption(f"{i}. [{item['title'][:40]}...]({item.get('url', '')})")
+        elif articles:
+            st.divider()
+            st.markdown("### 🎯 관심 분야")
+            fcols = st.columns(len(FOCUS_AREAS))
+            for idx, (aid, ai) in enumerate(FOCUS_AREAS.items()):
+                with fcols[idx]:
+                    cnt = len([a for a in articles if a.get("category") == aid])
+                    st.metric(f"{ai['icon']} {ai['name']}", f"{cnt}건")
+
+    else:
+        # ── 특정 카테고리 선택 모드: 해당 카테고리 기사만 표시 ──
+        cat_label = CATEGORIES.get(dash_cat, dash_cat)
+        st.markdown(f"### {cat_label} ({len(dash_articles)}개)")
+
+        if not dash_articles:
+            st.caption(f"'{cat_label}' 카테고리에 분류된 기사가 없습니다.")
+            st.caption("🔄 수집 → 🤖 AI 처리를 실행하면 새 기사가 분류됩니다.")
+        else:
+            for a in sorted(dash_articles, key=lambda x: x.get("importance", 0), reverse=True)[:10]:
+                with st.container(border=True):
+                    st.markdown(render_sentiment_bar(a.get("sentiment", "neutral")), unsafe_allow_html=True)
+                    st.markdown(f"{'⭐' * a.get('importance', 0)} [{a['title']}]({a['url']})")
+                    st.markdown(render_cat_pill(a.get("category", "ai_other")) + " " + render_fc_badge(a), unsafe_allow_html=True)
+                    if a.get("summary_text"):
+                        st.caption(a["summary_text"][:150])
+                    tags = a.get("tags", [])
+                    if tags:
+                        st.caption(" ".join([f"`{t}`" for t in tags[:4]]))
 
     # 감성 온도계
     if dash_articles:
