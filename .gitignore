@@ -21,6 +21,8 @@ data/audio/
 data/glossary.json
 data/weekly_reports.json
 data/cards/
+data/alert_log.json
+data/newsletter_log.json
 
 # Streamlit 캐시 (config.toml은 커밋해야 함)
 .streamlit/secrets.toml

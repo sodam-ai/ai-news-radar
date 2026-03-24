@@ -24,7 +24,10 @@ from ai.weekly_report import generate_weekly_report, get_latest_report, export_w
 from ai.competitor import get_competitor_analysis, COMPETITOR_GROUPS
 from ai.trend import get_trend_data, get_keyword_trend, get_hot_keywords
 from ai.debate import generate_debate, get_debate_pairs
+from ai.smart_alert import check_and_alert
 from sns.card_generator import generate_single_card, generate_briefing_card, generate_category_cards
+from sns.content_generator import generate_content, generate_multi_content, get_content_templates
+from sns.newsletter import send_newsletter, is_smtp_configured, get_newsletter_log
 from sns.poster import get_available_platforms, post_article, post_briefing, PLATFORM_ADAPTERS
 
 # ── 페이지 설정 ──
@@ -323,6 +326,10 @@ with st.sidebar:
                         processed = process_unprocessed()
                         deduplicate()
                     st.success(f"✅ {processed}개 완료!")
+                    # 스마트 키워드 알림 체크
+                    alerted = check_and_alert()
+                    if alerted:
+                        st.info(f"🔔 {len(alerted)}건 키워드 알림 발생!")
                 except Exception as e:
                     st.error("AI 처리 오류")
                     log(f"[AI 처리 오류] {e}")
@@ -755,6 +762,48 @@ with tab_briefing:
     else:
         with wr_col1:
             st.caption("아직 주간 리포트가 없습니다. '📊 리포트 생성' 버튼을 클릭하세요.")
+
+    # ── 뉴스레터 이메일 발송 ──
+    st.divider()
+    st.markdown("### 📧 뉴스레터 발송")
+    if is_smtp_configured():
+        nl_col1, nl_col2 = st.columns(2)
+        with nl_col1:
+            if st.button("📧 일간 브리핑 발송", use_container_width=True, key="send_daily_nl"):
+                with st.spinner("📧 이메일 발송 중..."):
+                    result = send_newsletter("daily")
+                if result["success"]:
+                    st.success(f"✅ {result['sent_to']}명에게 발송 완료!")
+                else:
+                    st.error(f"발송 실패: {result['error']}")
+        with nl_col2:
+            if st.button("📊 주간 리포트 발송", use_container_width=True, key="send_weekly_nl"):
+                with st.spinner("📧 이메일 발송 중..."):
+                    result = send_newsletter("weekly")
+                if result["success"]:
+                    st.success(f"✅ {result['sent_to']}명에게 발송 완료!")
+                else:
+                    st.error(f"발송 실패: {result['error']}")
+
+        # 발송 히스토리
+        nl_logs = get_newsletter_log(5)
+        if nl_logs:
+            with st.expander("📋 발송 히스토리"):
+                for nl in reversed(nl_logs):
+                    st.caption(f"📧 {nl.get('sent_at', '')[:16]} — {nl.get('type', '')} → {nl.get('recipients', 0)}명")
+    else:
+        with st.expander("⚙️ 이메일 설정 가이드"):
+            st.markdown("""
+`.env` 파일에 추가:
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+NEWSLETTER_RECIPIENTS=friend1@email.com,friend2@email.com
+```
+> **Gmail 앱 비밀번호**: Google 계정 → 보안 → 2단계 인증 → 앱 비밀번호 생성
+""")
 
 # ═══════════════════════════════════════════════
 # 탭 2: 뉴스 목록
@@ -1602,6 +1651,69 @@ IMGUR_CLIENT_ID=your_imgur_client_id
                                 key=f"dl_card_{idx}",
                                 use_container_width=True,
                             )
+
+        # ── AI 콘텐츠 자동 생성 ──
+        st.divider()
+        st.markdown("#### ✍️ AI 콘텐츠 자동 생성")
+        st.caption("뉴스를 기반으로 SNS 콘텐츠 초안을 AI가 자동 작성합니다.")
+
+        # 기사 선택
+        target_articles = sns_articles if sns_mode == "📰 개별 기사" and sns_articles else articles
+        if target_articles:
+            article_titles = [a.get("title", "")[:60] for a in target_articles[:20]]
+            selected_idx = st.selectbox("기사 선택", range(len(article_titles)), format_func=lambda i: article_titles[i], key="content_article")
+
+            # 플랫폼 선택
+            templates = get_content_templates()
+            content_platforms = st.multiselect(
+                "콘텐츠 유형",
+                options=list(templates.keys()),
+                default=["tweet", "thread"],
+                format_func=lambda x: f"{templates[x]['icon']} {templates[x]['name']}",
+                key="content_platforms",
+            )
+
+            if st.button("✍️ 콘텐츠 생성", use_container_width=True, key="gen_content", type="primary"):
+                if not _active_provider:
+                    st.error("API 키 필요")
+                elif not content_platforms:
+                    st.warning("콘텐츠 유형을 선택하세요.")
+                else:
+                    selected_article = target_articles[selected_idx]
+                    with st.spinner("✍️ AI가 콘텐츠를 작성 중..."):
+                        results = generate_multi_content(selected_article, content_platforms)
+
+                    for r in results:
+                        tmpl = templates.get(r["platform"], {})
+                        icon = tmpl.get("icon", "📝")
+                        name = tmpl.get("name", r["platform"])
+
+                        if r["success"]:
+                            with st.expander(f"{icon} {name} ({len(r['content'])}자)", expanded=True):
+                                st.text_area(
+                                    "생성된 콘텐츠",
+                                    value=r["content"],
+                                    height=200,
+                                    key=f"content_{r['platform']}",
+                                    label_visibility="collapsed",
+                                )
+                                cc1, cc2 = st.columns(2)
+                                with cc1:
+                                    st.download_button(
+                                        f"📥 텍스트 저장",
+                                        data=r["content"],
+                                        file_name=f"{r['platform']}_{selected_article.get('id', 'news')}.txt",
+                                        mime="text/plain",
+                                        use_container_width=True,
+                                        key=f"dl_content_{r['platform']}",
+                                    )
+                                with cc2:
+                                    # 클립보드 복사용 (text_area에서 Ctrl+A → Ctrl+C)
+                                    st.caption("💡 텍스트 선택 → Ctrl+C로 복사")
+                        else:
+                            st.error(f"{icon} {name}: {r.get('error', '생성 실패')}")
+        else:
+            st.caption("콘텐츠를 생성할 기사가 없습니다.")
 
 # ═══════════════════════════════════════════════
 # 탭 8: 타임라인
