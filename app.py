@@ -199,8 +199,8 @@ with st.sidebar:
             # 2. AI 처리
             if pipeline_ok:
                 try:
-                    progress.progress(35, text="🧠 2/4 — AI 분석 중...")
-                    processed = process_unprocessed()
+                    progress.progress(35, text="🧠 2/4 — AI 분석 중 (고속 모드)...")
+                    processed = process_unprocessed(skip_images=True)
                     deduplicate()
                     progress.progress(60, text=f"🧠 {processed}개 분석 완료")
                     alerted = check_and_alert()

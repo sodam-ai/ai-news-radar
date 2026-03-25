@@ -1,15 +1,19 @@
-"""RSS 피드 수집"""
+"""RSS 피드 수집 (병렬 처리)"""
 import ssl
 import urllib.request
 import feedparser
 from datetime import datetime, timezone
 from time import mktime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from config import DATA_DIR, MAX_ARTICLES_PER_SOURCE
 from utils.helpers import generate_id, now_iso, safe_read_json, safe_write_json, log
 
 SOURCES_PATH = DATA_DIR / "sources.json"
 ARTICLES_PATH = DATA_DIR / "articles.json"
+
+# 병렬 크롤링 동시 작업 수 (네트워크 I/O 대기이므로 높여도 됨)
+MAX_WORKERS = 15
 
 
 def load_sources() -> list[dict]:
@@ -33,27 +37,33 @@ def parse_published(entry) -> str:
     return now_iso()
 
 
-def crawl_source(source: dict) -> list[dict]:
-    """단일 소스에서 새 글을 수집하여 Article 객체 리스트로 반환"""
+# SSL 컨텍스트 캐싱 (재생성 방지)
+_SSL_CTX = None
+
+
+def _get_ssl_ctx():
+    global _SSL_CTX
+    if _SSL_CTX is None:
+        _SSL_CTX = ssl.create_default_context()
+        _SSL_CTX.check_hostname = False
+        _SSL_CTX.verify_mode = ssl.CERT_NONE
+    return _SSL_CTX
+
+
+def _crawl_single(source: dict, existing_urls: set) -> tuple[dict, list[dict]]:
+    """단일 소스 크롤링 (병렬 실행용). (source, new_articles) 반환."""
     if not source.get("is_active", True):
-        return []
+        return source, []
 
     try:
-        # SSL 인증서 검증 실패하는 사이트(arXiv 등) 대응
         if "arxiv.org" in source["url"]:
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-            handlers = [urllib.request.HTTPSHandler(context=ctx)]
+            handlers = [urllib.request.HTTPSHandler(context=_get_ssl_ctx())]
             feed = feedparser.parse(source["url"], handlers=handlers)
         else:
-            feed = feedparser.parse(source["url"])
+            feed = feedparser.parse(source["url"], request_headers={"User-Agent": "AI-News-Radar/1.0"})
     except Exception as e:
         log(f"[크롤링 실패] {source['name']}: {e}")
-        return []
-
-    existing_articles = safe_read_json(ARTICLES_PATH, [])
-    existing_urls = {a["url"] for a in existing_articles}
+        return source, []
 
     new_articles = []
     for entry in feed.entries[:MAX_ARTICLES_PER_SOURCE]:
@@ -68,7 +78,6 @@ def crawl_source(source: dict) -> list[dict]:
         elif hasattr(entry, "content"):
             content = entry.content[0].value if entry.content else ""
 
-        # 이미지 URL 추출
         image_urls = []
         if hasattr(entry, "media_content"):
             for media in entry.media_content:
@@ -98,25 +107,50 @@ def crawl_source(source: dict) -> list[dict]:
         }
         new_articles.append(article)
 
-    return new_articles
+    if new_articles:
+        source["last_crawled_at"] = now_iso()
+
+    return source, new_articles
 
 
 def crawl_all() -> int:
-    """모든 활성 소스를 수집하고 articles.json에 저장. 새 글 수 반환."""
+    """모든 활성 소스를 병렬 수집. 새 글 수 반환."""
     sources = load_sources()
     existing = safe_read_json(ARTICLES_PATH, [])
-    total_new = 0
+    existing_urls = {a["url"] for a in existing}
 
-    for source in sources:
-        new_articles = crawl_source(source)
-        if new_articles:
-            existing.extend(new_articles)
-            total_new += len(new_articles)
-            source["last_crawled_at"] = now_iso()
+    total_new = 0
+    active_sources = [s for s in sources if s.get("is_active", True)]
+
+    # 병렬 크롤링
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {
+            executor.submit(_crawl_single, source, existing_urls): source
+            for source in active_sources
+        }
+
+        for future in as_completed(futures):
+            try:
+                source, new_articles = future.result()
+                if new_articles:
+                    existing.extend(new_articles)
+                    # existing_urls도 업데이트 (중복 방지)
+                    for a in new_articles:
+                        existing_urls.add(a["url"])
+                    total_new += len(new_articles)
+            except Exception as e:
+                log(f"[크롤링 오류] {e}")
 
     if total_new > 0:
         safe_write_json(ARTICLES_PATH, existing)
         safe_write_json(SOURCES_PATH, sources)
 
-    log(f"[크롤링 완료] 새 글 {total_new}개 수집")
+    log(f"[크롤링 완료] {len(active_sources)}개 소스 병렬 수집 → 새 글 {total_new}개")
     return total_new
+
+
+# 하위 호환: 단일 소스 크롤링 (테스트용)
+def crawl_source(source: dict) -> list[dict]:
+    existing_urls = {a["url"] for a in safe_read_json(ARTICLES_PATH, [])}
+    _, articles = _crawl_single(source, existing_urls)
+    return articles
