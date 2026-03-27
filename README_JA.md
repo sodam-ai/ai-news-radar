@@ -1,193 +1,273 @@
+<div align="center">
+
 # AI News Radar
 
-> **AIニュースを自動収集・要約・分類する個人用ダッシュボード — 74ソース、35 LLM、50以上の機能**
+**AIニュースを自動収集・分析・配信する個人用インテリジェンスプラットフォーム — 74ソース、35 LLM対応**
+
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.44+-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
+[![LLMs](https://img.shields.io/badge/LLMプラットフォーム-35個-blueviolet)](#35個のllmプラットフォーム)
+[![Sources](https://img.shields.io/badge/ニュースソース-74個-blue)](#74個のニュースソース)
+[![Commits](https://img.shields.io/badge/コミット-37個-orange)](#)
+[![License](https://img.shields.io/badge/ライセンス-MIT-green)](./LICENSE)
 
 **[English](./README.md) / [Korean](./README_KO.md) / Japanese / [Chinese](./README_ZH.md)**
+
+</div>
 
 ---
 
 ## これは何？
 
-AI News Radarは、世界中のAIニュースを**自動収集**し、AIが**要約・分類・重要度評価**を行う個人用ダッシュボードです。**35のLLMプラットフォーム**対応（ほとんど無料）、**Web＋デスクトップ**両対応、**5つのSNS**への自動投稿も可能です。
+AIの世界は毎時間変わっています。新モデルのリリース、ツールのアップデート、論文の発表、企業の動向 — すべてが数十のサイトに散らばっています。**AI News Radar** はそのノイズを取り除きます。**74個の厳選ソース**から継続的にニュースを収集し、AIがすべての記事を要約・分類・重要度評価・ファクトチェックして、明確で実用的なブリーフィングとして届けます。
 
-**一言で言えば：** 毎日数十のAIニュースサイトを巡回する代わりに、このアプリが代行して重要なものだけを表示します。
+**一言で言えば：** 74サイトを自分で巡回するのをやめましょう。AIがすべて読んで、重要なことだけ教えてくれます。
 
 ---
 
-## ダッシュボード（5タブ）
+## 主な特徴
 
-| タブ | 内容 |
-|------|------|
-| **Dashboard** | ブリーフィング + 関心分野 + カテゴリフィルター + 感情チャート + 週間レポート + ニュースレター |
-| **News Feed** | 全ニュース / 検索 / ブックマーク / タイムライン |
-| **AI** | ニュースチャット / AI用語辞典 |
-| **Insights** | ツール比較 / トレンド / AIディベート / 週間レポート |
-| **Share** | SNS投稿 / AIコンテンツ生成 / エクスポート |
+- **50以上の機能** — 5タブ (ダッシュボード / ニュースフィード / AI / インサイト / シェア)
+- **74ソース** — 一般AI(26) + 画像・動画(20) + バイブコーディング(19) + オントロジー(9)
+- **35 LLMプラットフォーム** — ほとんど無料、APIキーは1つだけ必要
+- **9カテゴリー** — ツール、研究、トレンド、チュートリアル、ビジネス、画像・動画、バイブコーディング、オントロジー、その他
+- **19のAIツールを追跡** — リリース自動検出
+- **5つのSNSプラットフォーム** — X、Telegram、Discord、Threads、Instagram + カードニュース自動生成
+- **5種類のコンテンツ** — ツイート、スレッド、Instagramキャプション、ブログ投稿、LinkedIn投稿
+- **音声ブリーフィング**、AIファクトチェック、AI用語集、AIディベート
+- **ワンクリック全パイプライン** — 収集 > 分析 > ブリーフィング > リリース検出
+- **デスクトップアプリ** — システムトレイ + バックグラウンド通知
+- **GitHub Actions** — 1日3回の自動収集
+- **韓国語自動翻訳** (英語 → 韓国語)
 
 ---
 
 ## 主な機能（50以上）
 
-### ダッシュボード
-| 機能 | 説明 |
-|------|------|
-| デイリーブリーフィング | AIが毎日「今日のAIニュース TOP 5」を自動生成 |
-| 関心分野ブリーフィング | 画像/動画、バイブコーディング、オントロジー分野別カスタムブリーフィング |
-| カテゴリフィルター | 9カテゴリでワンクリックフィルター（件数表示） |
-| 感情チャート | ポジティブ/ニュートラル/ネガティブ比率のPlotlyチャート |
-| 音声ブリーフィング | ブリーフィングをAI音声で聴く（女性/男性選択） |
-| 週間レポート | トレンド＋分野別動向＋予測の自動生成レポート |
-| ニュースレター | 日次/週次ブリーフィングをメール自動送信（SMTP） |
+### ダッシュボードタブ
 
-### ニュースフィード
 | 機能 | 説明 |
 |------|------|
-| 74ソース自動収集 | 全世界74のRSSソースから並列クローリングで自動収集 |
-| AI要約 | 各記事を3行で要約 |
-| 9カテゴリ | ツール、研究、トレンド、チュートリアル、ビジネス、**画像/動画**、**バイブコーディング**、**オントロジー**、その他 |
-| 重要度スコア | 各記事に1〜5つ星 |
-| 感情分析 | ポジティブ / ニュートラル / ネガティブ タグ |
-| ファクトチェック | 複数ソース照合（「3媒体確認」vs「単独報道」） |
-| 重複統合 | 同一ニュースを自動マージ |
-| キーワードウォッチリスト | 追跡キーワードを含むニュースをハイライト |
-| アプリ内リーダー | ダッシュボード内で記事を閲覧（広告なし） |
-| 検索 | キーワード＋カテゴリ＋感情＋既読状態フィルター |
-| ブックマーク＋メモ | 記事保存＋個人メモ |
-| ページネーション | 10件ずつページ送り |
+| デイリーブリーフィング | AI生成の「今日のAIニュース TOP5」（重要度ランキング付き） |
+| フォーカスブリーフィング | 画像・動画 / バイブコーディング / オントロジー専用ブリーフィング |
+| カテゴリークイックフィルター | 9カテゴリーのワンクリックフィルター |
+| センチメントゲージ | ポジティブ/ニュートラル/ネガティブ比率のPlotlyインタラクティブチャート |
+| 音声ブリーフィング | edge-ttsでブリーフィングをAI音声で聴く |
+| 週間インテリジェンスレポート | トレンド・予測・分析を含む自動生成週間レポート |
+| ニュースレター | SMTPで日次・週次ブリーフィングをメール送信 |
+
+### ニュースフィードタブ
+
+| 機能 | 説明 |
+|------|------|
+| 74ソース収集 | 15ワーカー並列クロールによる高速集約 |
+| AIサマリー | 各記事の3行韓国語サマリー |
+| 9カテゴリー分類 | AIによる自動カテゴリー分類 |
+| 重要度スコア | 記事ごとの1〜5星評価 |
+| センチメント分析 | ポジティブ / ニュートラル / ネガティブタグ付け |
+| AIファクトチェック | クロスソース検証（「3媒体確認済み」vs「単一ソース」） |
+| 重複記事マージ | 複数媒体の同一記事を自動マージ |
+| キーワードウォッチリスト | 追跡キーワードのハイライト表示とアラート |
+| インアップリーダー | アプリ内で全文記事を読む（広告なし） |
+| 高度な検索 | キーワード・カテゴリー・センチメント・既読状態でフィルター |
+| ブックマーク + メモ | 個人メモ付きで記事を保存 |
+| ページネーション | 1ページ10記事のスムーズなナビゲーション |
 | タイムラインビュー | 今日 / 昨日 / 今週で閲覧 |
+| 韓国語自動翻訳 | 英語記事の韓国語自動翻訳 |
 
-### AI機能
+### AIタブ
+
 | 機能 | 説明 |
 |------|------|
-| AIチャット | 収集ニュースについて自然言語で質問 |
-| AI用語辞典 | 専門用語を初心者にも分かりやすく自動解説 |
-| AIディベート | 「Midjourney vs Flux」— AIが賛否＋結論を生成 |
-| AIコンテンツ生成 | ツイート、スレッド、Instagram、ブログ、LinkedIn原稿の自動作成（5種） |
-| スマートアラート | ウォッチリストキーワード検出時にデスクトップ通知 |
-| ツール比較 | 19のAIツールをカテゴリ別にニュース言及量＋感情チャートで比較 |
-| トレンドチャート | キーワード別時系列チャート＋急上昇キーワード |
+| AIニュースチャット | 収集したニュースについて自然言語で質問 |
+| AI用語集 | 自動抽出AIタームと初心者向けの解説 |
 
-### 共有＋エクスポート
+### インサイトタブ
+
 | 機能 | 説明 |
 |------|------|
-| SNS自動投稿 | X、Telegram、Discord、Threads、Instagramにカードニュースを投稿 |
-| カードニュース | 1080x1080カード画像自動生成（ダークテーマ、カテゴリ別カラー） |
-| エクスポート | Markdown / PDF ダウンロード |
+| AIツールリリーストラッカー | 19ツールの自動リリース検出 |
+| トレンドチャート | 日次言及頻度のPlotlyラインチャート |
+| ホットキーワード | 前週比上昇率のキーワード |
+| AIディベート | 「Midjourney vs Flux」— AI生成の長所・短所・結論 |
+| 週間インテリジェンスレポート | 深掘り週間分析と予測 |
 
-### デスクトップ＋自動化
+### シェアタブ
+
 | 機能 | 説明 |
 |------|------|
-| デスクトップアプリ | ネイティブウィンドウ（pywebview）＋ システムトレイ ＋ バックグラウンド通知 |
-| GitHub Actions | 1日3回自動収集・処理（CI/CD） |
-| ワンクリックパイプライン | 収集→AI処理→ブリーフィング生成を一括実行 |
-| リリース追跡 | 主要AIツールの新バージョン・更新情報を自動監視 |
-| 自動翻訳 | ニュース記事の多言語翻訳対応 |
+| SNS自動投稿 | X、Telegram、Discord、Threads、Instagramに投稿 |
+| カードニュースジェネレーター | 1080×1080カード画像自動生成（ダークテーマ、カテゴリー別カラー） |
+| AIコンテンツ生成 | ツイート・スレッド・Instagramキャプション・ブログ・LinkedIn自動生成 |
+| ニュースレターメール | 購読者リストへのフォーマット済みブリーフィング送信 |
+| エクスポート | MarkdownまたはPDFダウンロード |
+
+### システム機能
+
+| 機能 | 説明 |
+|------|------|
+| ワンクリック全パイプライン | 収集 > AI処理 > ブリーフィング > リリース検出をワンクリックで |
+| 並列クロール | 15同時ワーカーによる高速収集 |
+| バッチ並列処理 | 大量記事の効率的AIバッチ処理 |
+| スマートキーワードアラート | 監視キーワード出現時のデスクトップ通知 |
+| デスクトップアプリ | pywebviewネイティブウィンドウ + システムトレイ + バックグラウンドモード |
+| GitHub Actions | 1日3回の自動収集（設定可能） |
+| Telegramボット | 7コマンドでどこからでもアクセス |
 
 ---
 
-## 74のニュースソース
+## 74個のニュースソース
 
-| カテゴリ | 件数 | 例 |
-|----------|------|-----|
-| 一般AI | 26 | TechCrunch, The Verge, MIT Tech Review, Wired, ZDNET, Ben's Bites |
-| 画像/動画 | 20 | Stability AI, Civitai, Runway, Reddit (StableDiffusion, midjourney, flux_ai, comfyui) |
-| バイブコーディング | 19 | Cursor, GitHub, Anthropic, Simon Willison, Reddit (vibecoding, ClaudeAI, cursor) |
-| オントロジー | 9 | Neo4j, Stardog, W3C, Reddit (semanticweb, KnowledgeGraphs) |
+| カテゴリー | 数 | 例 |
+|-----------|:--:|-----|
+| **一般AI** | 26 | TechCrunch, The Verge, MIT Tech Review, Wired, ZDNET, Ben's Bites, Ars Technica |
+| **画像・動画** | 20 | Stability AI, Civitai, Runway, Reddit (StableDiffusion, midjourney, flux_ai, comfyui) |
+| **バイブコーディング** | 19 | Cursor, GitHub, Anthropic, Simon Willison, Reddit (vibecoding, ClaudeAI, cursor) |
+| **オントロジー** | 9 | Neo4j, Stardog, W3C, Reddit (semanticweb, KnowledgeGraphs) |
 
 ---
 
-## 35のLLMプラットフォーム
+## 35個のLLMプラットフォーム
 
-APIキーは**どれか1つ**だけで動作します：
+以下のプラットフォームから**APIキー1つだけ**あれば使えます：
 
 | ティア | プラットフォーム |
-|--------|-----------------|
+|--------|----------------|
 | **無料（推奨）** | Gemini, Groq, Cerebras, SambaNova, xAI, Mistral, Cohere, HuggingFace, NVIDIA, Cloudflare, Zhipu, Kluster, GLHF, Hyperbolic |
-| **クレジット / 低価格** | Together AI, OpenRouter, Fireworks, DeepSeek, DeepInfra, Perplexity, AI21, Upstage, Lepton, Novita, Nebius, Chutes, Replicate, Alibaba, Moonshot, Yi, Baichuan |
+| **クレジット/安価** | Together AI, OpenRouter, Fireworks, DeepSeek, DeepInfra, Perplexity, AI21, Upstage, Lepton, Novita, Nebius, Chutes, Replicate, Alibaba, Moonshot, Yi, Baichuan |
 | **プレミアム** | OpenAI, Azure OpenAI, Anthropic Claude, Reka AI |
+
+> **ヒント：** GeminiとGroqが無料枠が充実していて最もセットアップが簡単です。
 
 ---
 
-## はじめ方（完全初心者向け）
+## ダッシュボード構成（5タブ）
 
-> **プログラミング経験は不要です。** 一つずつ順番に進めてください。
+| タブ | 内容 |
+|------|------|
+| **ダッシュボード** | デイリーブリーフィング、フォーカスブリーフィング、カテゴリークイックフィルター、センチメントチャート、週間レポート、ニュースレター |
+| **ニュースフィード** | 全ニュース、高度な検索、ブックマーク、タイムラインビュー、ページネーション |
+| **AI** | ニュースチャット、AI用語集 |
+| **インサイト** | リリーストラッカー、トレンドチャート、ホットキーワード、AIディベート、週間レポート |
+| **シェア** | SNS投稿、AIコンテンツ生成、カードニュース、ニュースレター、エクスポート |
 
-### ステップ1：Pythonインストール
+---
+
+## はじめに — 7ステップ入門ガイド
+
+> **コーディング経験ゼロでOK。** 各ステップを丁寧に進めてください。
+
+### ステップ1 — Pythonのインストール
 
 1. [python.org/downloads](https://www.python.org/downloads/) にアクセス
-2. 大きな黄色い **"Download Python"** ボタンをクリック
+2. 大きな黄色の **"Download Python"** ボタンをクリック
 3. ダウンロードしたファイルを実行
-4. **重要：** 下部の **"Add Python to PATH"** を必ずチェック！
+4. **必須：** インストール画面下部の **"Add Python to PATH"** チェックボックスを必ずチェック
 5. **"Install Now"** をクリック
 
-**確認：** コマンドプロンプト（`Win + R` > `cmd` > Enter）で：
-```
+**インストール確認：** ターミナルを開き（`Win + R` → `cmd` → Enter）次を実行：
+
+```bash
 python --version
 ```
-`Python 3.13.x` のように表示されればOKです。
 
-### ステップ2：プロジェクトのダウンロード
+`Python 3.11.x` 以上が表示されれば成功です。
 
-**方法A：Git（推奨）**
-```
+### ステップ2 — プロジェクトのダウンロード
+
+**方法A：Gitを使用（推奨）**
+
+```bash
 git clone https://github.com/sodam-ai/ai-news-radar.git
 cd ai-news-radar
 ```
 
 **方法B：直接ダウンロード**
-1. [GitHubページ](https://github.com/sodam-ai/ai-news-radar) にアクセス
-2. 緑色の **"Code"** ボタン > **"Download ZIP"** をクリック
-3. ZIPファイルを解凍
 
-### ステップ3：パッケージインストール
+1. [GitHubリポジトリ](https://github.com/sodam-ai/ai-news-radar) にアクセス
+2. 緑色の **"Code"** ボタン → **"Download ZIP"** をクリック
+3. 任意のフォルダにZIPを解凍
+4. そのフォルダでターミナルを開く
 
-プロジェクトフォルダでコマンドプロンプトを開き：
+### ステップ3 — 仮想環境の作成（推奨）
+
+```bash
+python -m venv venv
 ```
+
+有効化：
+
+```bash
+# Windows
+venv\Scripts\activate
+
+# macOS / Linux
+source venv/bin/activate
+```
+
+ターミナルの先頭に `(venv)` が表示されれば成功です。
+
+### ステップ4 — 依存関係のインストール
+
+```bash
 pip install -r requirements.txt
 ```
-14個のパッケージが自動インストールされます。完了まで待ちます。
 
-### ステップ4：APIキーの取得（無料）
+必要なすべてのパッケージがインストールされます。1〜2分かかることがあります。
 
-**Groq推奨（最も簡単）：**
+### ステップ5 — 無料APIキーの取得
+
+**下記から1つだけ選んでください。** 最速セットアップは **Groq** をお勧めします：
+
 1. [console.groq.com/keys](https://console.groq.com/keys) にアクセス
-2. Googleアカウントで登録
+2. Googleアカウントでサインアップ（10秒）
 3. **"Create API Key"** をクリック
 4. キーをコピー（`gsk_` で始まります）
 
-### ステップ5：APIキーの設定
+> 他の無料オプション：[Gemini](https://aistudio.google.com/apikey), [Cerebras](https://cloud.cerebras.ai/), [SambaNova](https://cloud.sambanova.ai/)
 
-1. プロジェクトフォルダの `.env.example` を見つける
+### ステップ6 — APIキーの設定
+
+1. プロジェクトフォルダ内の `.env.example` ファイルを見つける
 2. コピーして名前を `.env` に変更
-3. メモ帳で `.env` を開く
-4. キーを入力：
+3. `.env` をメモ帳などのテキストエディタで開く
+4. APIキーを貼り付け：
+
+```env
+# 1つ以上選択：
+GROQ_API_KEY=gsk_実際のキーをここに貼り付け
+# GEMINI_API_KEY=your_gemini_key
+# OPENAI_API_KEY=sk-your_openai_key
 ```
-GROQ_API_KEY=gsk_ここに実際のキーを入力
-```
+
 5. 保存して閉じる
 
-> **セキュリティ：** `.env` ファイルはGitHubに自動的に除外されます。絶対に共有しないでください。
+> **セキュリティ注意：** `.env` ファイルは `.gitignore` に含まれており、GitHubには絶対にアップロードされません。このファイルを公開しないでください。
 
-### ステップ6：アプリの起動
+### ステップ7 — アプリの起動
 
-**Webモード（ブラウザ）：**
-```
+**Webモード（ブラウザで開く）：**
+
+```bash
 streamlit run app.py
 ```
-ブラウザが **http://localhost:6601** を自動的に開きます。
+
+ブラウザで **http://localhost:6601** が自動的に開きます。
 
 **デスクトップモード（ネイティブウィンドウ）：**
-```
+
+```bash
 python desktop.py
 ```
-または `AI_News_Radar.bat` をダブルクリック
 
-### ステップ7：初回使用
+またはWindowsで **`AI_News_Radar.bat`** をダブルクリック。
 
-1. サイドバーの **「収集」** をクリック → 74ソースからニュース収集
-2. **「AI処理」** をクリック → 全記事をAI分析
-3. **「ブリーフィング生成」** をクリック → 今日のTOP 5を生成
-4. ダッシュボードで自由に探索！
+### 最初の使用
+
+1. サイドバーの **"収集"** をクリック — 74ソースからニュースを収集（約1分）
+2. **"AI処理"** をクリック — AIがすべての記事を分析・要約・分類
+3. **"ブリーフィング生成"** をクリック — 今日のTOP5ブリーフィング生成
+4. 5つのタブを探索してすべての機能を発見してください！
 
 ---
 
@@ -195,112 +275,194 @@ python desktop.py
 
 | やりたいこと | 方法 |
 |------------|------|
-| 今日の要約を見る | Dashboardタブ > ブリーフィング |
-| 画像/動画ニュースだけ見る | Dashboardタブ > カテゴリ選択 |
-| 特定テーマを検索 | News Feedタブ > 検索ビュー > キーワード入力 |
-| AIに質問 | AIタブ > チャット > 質問入力 |
-| AIツールを比較 | Insightsタブ > ツール比較 |
-| トレンドを見る | Insightsタブ > トレンド |
-| SNSコンテンツ生成 | Shareタブ > コンテンツ生成 > 記事+プラットフォーム選択 |
-| SNSに投稿 | Shareタブ > SNS投稿 > プラットフォーム選択 > 投稿 |
-| 音声で聴く | Dashboardタブ > 音声選択 > 「音声」クリック |
-| PDFエクスポート | Shareタブ > エクスポート |
-| 記事を保存 | News Feedタブ > 記事の☆をクリック |
-| キーワード追跡 | サイドバー > ウォッチリスト > キーワード入力 |
+| 今日の要約を読む | ダッシュボードタブ > ブリーフィングセクション |
+| カテゴリーでフィルター | ダッシュボードタブ > カテゴリークイックフィルタークリック |
+| 特定のトピックを検索 | ニュースフィードタブ > 検索ビュー > キーワード入力 |
+| AIにニュースを質問 | AIタブ > チャットビュー > 質問を入力 |
+| AI用語を学ぶ | AIタブ > 用語集ビュー > 閲覧または検索 |
+| AIツールリリースを追跡 | インサイトタブ > リリーストラッカー |
+| トレンドキーワードを確認 | インサイトタブ > トレンド |
+| AIディベートを実行 | インサイトタブ > AIディベート > ツール2つ選択 |
+| SNSコンテンツ生成 | シェアタブ > コンテンツ生成 > 記事+プラットフォーム選択 |
+| SNSに投稿 | シェアタブ > SNS投稿 > プラットフォーム選択 > 投稿 |
+| ブリーフィングを聴く | ダッシュボードタブ > 音声選択 > "音声" クリック |
+| PDFエクスポート | シェアタブ > エクスポートビュー |
+| 記事を保存 | ニュースフィードタブ > 記事のブックマークアイコンクリック |
+| キーワードアラート設定 | サイドバー > ウォッチリスト > キーワード入力 |
+| 全パイプライン実行 | サイドバー > "ワンクリックパイプライン" ボタン |
+
+---
+
+## SNSプラットフォーム設定
+
+| プラットフォーム | 設定時間 | 難易度 | ガイド |
+|----------------|:--------:|:------:|--------|
+| Discord | 30秒 | 非常に簡単 | チャンネル設定でWebhook URLを作成 |
+| Telegram | 2分 | 簡単 | @BotFatherでボット作成 |
+| X (Twitter) | 10分 | 中程度 | 開発者アカウント申請 |
+| Threads | 10分 | 中程度 | Meta開発者ポータル |
+| Instagram | 15分 | 複雑 | Instagram Graph APIセットアップ |
+
+詳細なステップバイステップの説明はアプリ内の **シェアタブ > SNS投稿** セクションで確認できます。
 
 ---
 
 ## プロジェクト構成
 
 ```
-ai-news-radar/          （ソース74個 / モジュール24個 / コミット36個）
-├── app.py                    # メインダッシュボード（5タブ）
-├── desktop.py                # デスクトップアプリ（pywebview + トレイ）
-├── config.py                 # 設定（9カテゴリ、3感情）
-├── requirements.txt          # 14パッケージ
-├── ai/                       # AIモジュール群
-│   ├── model_router.py       #   35 LLMプロバイダー
-│   ├── briefing.py           #   デイリー＋関心分野ブリーフィング
-│   ├── chat.py               #   AIニュースチャット
-│   ├── voice_briefing.py     #   TTS音声（edge-tts）
-│   ├── factcheck.py          #   複数ソース照合
-│   ├── glossary.py           #   AI用語辞典
-│   ├── weekly_report.py      #   週間インテリジェンスレポート
-│   ├── competitor.py         #   19ツール監視
-│   ├── trend.py              #   キーワードトレンド分析
-│   ├── debate.py             #   AIディベート
-│   └── smart_alert.py        #   デスクトップ通知
-├── sns/                      # SNSモジュール
-│   ├── card_generator.py     #   カードニュース画像（Pillow）
-│   ├── poster.py             #   5プラットフォームアダプター
-│   ├── content_generator.py  #   AIコンテンツ（5種）
-│   └── newsletter.py         #   メールニュースレター（SMTP）
-├── bot/telegram_bot.py       # Telegramボット（7コマンド）
-├── scripts/                  # CLIツール
-├── .github/workflows/        # GitHub Actions（1日3回）
-├── crawler/                  # RSS収集（並列クローリング）
-├── reader/                   # 広告なし記事リーダー
-├── export/                   # Markdown + PDFエクスポート
-├── data/                     # 74プリセットソース
-└── PRD/                      # 設計ドキュメント
+ai-news-radar/
+├── app.py                       # メインダッシュボード（5タブ）
+├── desktop.py                   # デスクトップアプリ（pywebview + システムトレイ）
+├── config.py                    # 設定（9カテゴリー、ポート、パス）
+├── requirements.txt             # 必要パッケージ一覧
+├── .env.example                 # APIキーテンプレート
+├── AI_News_Radar.bat            # Windowsランチャー（Webモード）
+├── AI_News_Radar_Silent.vbs     # サイレントランチャー（コンソールなし）
+│
+├── ai/                          # AIモジュール14個
+│   ├── model_router.py          #   35 LLMプロバイダールーティング
+│   ├── briefing.py              #   日次+フォーカスブリーフィング生成
+│   ├── chat.py                  #   自然言語ニュースチャット
+│   ├── voice_briefing.py        #   TTS音声出力（edge-tts）
+│   ├── factcheck.py             #   クロスソースファクト検証
+│   ├── glossary.py              #   AI用語集
+│   ├── weekly_report.py         #   週間インテリジェンスレポート
+│   ├── competitor.py            #   AIツールリリース監視
+│   ├── release_tracker.py       #   自動リリース検出
+│   ├── trend.py                 #   キーワードトレンド分析
+│   ├── debate.py                #   AIディベートモード
+│   ├── smart_alert.py           #   デスクトップキーワード通知
+│   ├── translator.py            #   韓国語自動翻訳
+│   ├── deduplicator.py          #   重複記事マージ
+│   └── batch_processor.py       #   バッチ並列処理
+│
+├── sns/                         # SNS・シェアモジュール
+│   ├── card_generator.py        #   1080×1080カードニュース画像（Pillow）
+│   ├── poster.py                #   5プラットフォームSNS投稿
+│   ├── content_generator.py     #   AIコンテンツ（5種類）
+│   └── newsletter.py            #   メールニュースレター（SMTP）
+│
+├── crawler/                     # データ収集
+│   ├── rss_crawler.py           #   RSSクローラー（15並列ワーカー）
+│   └── scheduler.py             #   APSchedulerスケジューリング
+│
+├── bot/                         # Telegram連携
+│   └── telegram_bot.py          #   Telegramボット（7コマンド）
+│
+├── reader/                      # 記事読み取り
+│   └── article_reader.py        #   インアップ記事リーダー（広告なし）
+│
+├── export/                      # データエクスポート
+│   └── exporter.py              #   Markdown + PDFエクスポート
+│
+├── utils/                       # 共有ユーティリティ
+│   └── helpers.py               #   共通ヘルパー関数
+│
+├── scripts/                     # CLIツール
+│   ├── collect.py               #   スタンドアロン収集スクリプト
+│   └── reclassify.py            #   カテゴリー再分類ツール
+│
+├── data/                        # ローカルデータストレージ
+│   ├── preset_sources.json      #   74ソース定義
+│   ├── sources.json             #   アクティブソース設定
+│   ├── articles.json            #   収集記事
+│   ├── briefings.json           #   生成ブリーフィング
+│   ├── weekly_reports.json      #   週間レポートアーカイブ
+│   ├── release_log.json         #   ツールリリース履歴
+│   ├── audio/                   #   音声ブリーフィングファイル
+│   └── cards/                   #   生成カードニュース画像
+│
+├── .github/workflows/
+│   └── collect.yml              #   GitHub Actions（1日3回自動収集）
+│
+└── PRD/                         #   製品設計ドキュメント
 ```
+
+**8ディレクトリに24モジュール** — **37コミット** 進行中。
+
+---
+
+## テックスタック
+
+| コンポーネント | 技術 |
+|--------------|------|
+| **言語** | Python 3.11+ |
+| **ダッシュボード** | Streamlit 1.44+ |
+| **AIエンジン** | 統合モデルルーター経由の35 LLMプラットフォーム |
+| **チャート** | Plotly（インタラクティブトレンドチャート、センチメントゲージ） |
+| **音声** | edge-tts（MicrosoftニューラルTTS） |
+| **画像生成** | Pillow（ダークテーマカードニュース） |
+| **デスクトップ** | pywebview + pystray（ネイティブウィンドウ + システムトレイ） |
+| **通知** | plyer（クロスプラットフォームデスクトップアラート） |
+| **RSSパース** | feedparser（74ソースフィード） |
+| **Webスクレイピング** | BeautifulSoup4 + requests |
+| **Telegramボット** | python-telegram-bot |
+| **SNS API** | tweepy (X), Telegram API, Discord Webhook, Threads API, Instagram Graph API |
+| **メール** | smtplib（SMTPニュースレター） |
+| **PDFエクスポート** | fpdf2（韓国語フォントサポート） |
+| **スケジューリング** | APScheduler（インアップ）、GitHub Actions（CI/CD） |
+| **データストレージ** | ローカルJSON（データベース設定不要） |
 
 ---
 
 ## トラブルシューティング
 
 | 問題 | 解決方法 |
-|------|----------|
-| `pip` が見つからない | Python再インストール時に「Add to PATH」をチェック |
-| `streamlit` が見つからない | `pip install streamlit` を実行 |
-| 「APIキー未設定」の警告 | `.env` ファイルにAPIキーを入力 |
-| 記事が表示されない | 「収集」→「AI処理」の順にクリック |
-| カテゴリフィルターで0件 | `python scripts/reclassify.py` で既存記事を再分類 |
-| ポート使用中 | `streamlit run app.py --server.port 7429` を使用 |
-| PDFエクスポート失敗 | Windows専用（韓国語フォント使用） |
+|------|---------|
+| `python` が見つからない | **"Add to PATH"** にチェックしてPythonを再インストール |
+| `pip` が見つからない | `python -m pip install -r requirements.txt` を使用 |
+| `streamlit` が見つからない | `pip install streamlit` を実行、仮想環境の有効化を確認 |
+| "APIキー未設定" 警告 | `.env` ファイルにAPIキーを1つ以上入力（ステップ6参照） |
+| 記事が表示されない | **"収集"** をクリックしてから **"AI処理"** を実行 |
+| カテゴリーに記事が0件 | `python scripts/reclassify.py` を実行 |
+| ポート6601が使用中 | `streamlit run app.py --server.port 7777` を使用 |
+| macOS/LinuxでPDFエクスポート失敗 | `NanumGothic` フォントをインストール |
+| デスクトップモードが起動しない | `pip install pywebview` を確認 |
+| 収集が遅い | 正常 — 74ソースを15並列ワーカーで約60秒かかります |
+| edge-tts音声エラー | インターネット接続を確認（edge-ttsはオンライン必要） |
 
 ---
 
 ## ロードマップ
 
-| Phase | 機能 | 状態 |
-|-------|------|------|
-| Phase 1 | 収集＋AI要約＋ダッシュボード（17機能） | **完了** |
-| Phase 2-A | 検索＋ブックマーク＋感情分析＋チャット（5機能） | **完了** |
-| Phase 2-B | 音声＋Telegram＋ファクトチェック＋用語辞典＋Actions（5機能） | **完了** |
-| Tier 1 | 関心分野ブリーフィング＋週間レポート＋ツール比較（3機能） | **完了** |
-| Tier 2 | トレンドチャート＋AIディベート（2機能） | **完了** |
-| S-Tier | スマートアラート＋コンテンツ生成＋ニュースレター＋SNS（4機能） | **完了** |
-| UI/UX | 5タブリデザイン＋ページネーション＋プレミアムCSS | **完了** |
-| Desktop | pywebview＋システムトレイ＋通知 | **完了** |
-| Next | 自動翻訳、ChromaDB、Ollama、ゲーミフィケーション | 予定 |
+| フェーズ | 機能 | 状態 |
+|---------|------|:----:|
+| **Phase 1** | 収集 + AIサマリー + ダッシュボード（17機能） | ✅ 完了 |
+| **Phase 2-A** | 検索 + ブックマーク + センチメント + チャット（5機能） | ✅ 完了 |
+| **Phase 2-B** | 音声 + Telegram + ファクトチェック + 用語集 + Actions（5機能） | ✅ 完了 |
+| **Tier 1** | フォーカスブリーフィング + 週間レポート + リリーストラッカー（3機能） | ✅ 完了 |
+| **Tier 2** | トレンドチャート + AIディベート + ホットキーワード（3機能） | ✅ 完了 |
+| **S-Tier** | スマートアラート + コンテンツ生成 + ニュースレター + SNS（4機能） | ✅ 完了 |
+| **UI/UX** | 5タブリデザイン + ページネーション + カテゴリークイックフィルター + プレミアムCSS | ✅ 完了 |
+| **デスクトップ** | pywebview + システムトレイ + バックグラウンド通知 | ✅ 完了 |
+| **パイプライン** | ワンクリック全パイプライン + 並列クロール + バッチ処理 | ✅ 完了 |
+| **翻訳** | 韓国語自動翻訳 + 重複排除 | ✅ 完了 |
+| **次期** | ChromaDBベクター検索、OllamaローカルLLM、ゲーミフィケーション、モバイルPWA | 📋 予定 |
 
 ---
 
-## 技術スタック
+## コントリビューション
 
-| コンポーネント | 技術 |
-|--------------|------|
-| 言語 | Python 3.11+ |
-| ダッシュボード | Streamlit |
-| AI | 35 LLMプラットフォーム |
-| チャート | Plotly |
-| 音声 | edge-tts（Microsoft TTS） |
-| 画像 | Pillow（カードニュース） |
-| デスクトップ | pywebview + pystray |
-| ボット | python-telegram-bot |
-| SNS | tweepy (X), Telegram API, Discord Webhook, Threads API, Instagram Graph API |
-| CI/CD | GitHub Actions |
-| データ | ローカルJSON |
+プルリクエストを歓迎します！
+
+1. リポジトリをフォーク
+2. フィーチャーブランチを作成（`git checkout -b feature/amazing-feature`）
+3. 変更をコミット（`git commit -m 'Add amazing feature'`）
+4. ブランチにプッシュ（`git push origin feature/amazing-feature`）
+5. プルリクエストを開く
 
 ---
 
 ## ライセンス
 
-MIT License - Copyright (c) 2026 **SoDam AI Studio**
+MITライセンス — Copyright (c) 2026 **SoDam AI Studio**
 
-詳細は [LICENSE](./LICENSE) を参照してください。
+詳細は [LICENSE](./LICENSE) をご参照ください。
 
 ---
 
-*Streamlit + 35のAIプラットフォームで構築 — SoDam AI Studio*
+<div align="center">
+
+*Streamlit + 35 AIプラットフォームで構築 — SoDam AI Studio*
+
+</div>

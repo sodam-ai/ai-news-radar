@@ -8,6 +8,7 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.44+-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
 [![LLMs](https://img.shields.io/badge/LLM_Platforms-35-blueviolet)](#35-llm-platforms)
 [![Sources](https://img.shields.io/badge/News_Sources-74-blue)](#74-news-sources)
+[![Commits](https://img.shields.io/badge/Commits-37-orange)](#)
 [![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
 
 **Language** &nbsp;/&nbsp; [Korean](./README_KO.md) &nbsp;/&nbsp; [Japanese](./README_JA.md) &nbsp;/&nbsp; [Chinese](./README_ZH.md)
@@ -62,7 +63,7 @@ The AI landscape changes by the hour. New models drop, tools update, papers publ
 | 74-Source Collection | Parallel crawling with 15 workers for fast aggregation |
 | AI Summary | 3-line Korean summary for every article |
 | 9-Category Classification | Automatic categorization with AI |
-| Importance Scoring | 1-5 star rating per article |
+| Importance Scoring | 1–5 star rating per article |
 | Sentiment Analysis | Positive / Neutral / Negative tagging |
 | AI Fact-Check | Cross-source verification ("3 outlets confirmed" vs "single source") |
 | Duplicate Merging | Same story from multiple outlets merged automatically |
@@ -96,7 +97,7 @@ The AI landscape changes by the hour. New models drop, tools update, papers publ
 | Feature | Description |
 |---------|-------------|
 | SNS Auto-Post | Post to X, Telegram, Discord, Threads, and Instagram |
-| Card News Generator | Auto-generate 1080x1080 card images (dark theme, per-category colors) |
+| Card News Generator | Auto-generate 1080×1080 card images (dark theme, per-category colors) |
 | AI Content Generation | Auto-generate tweets, threads, Instagram captions, blog posts, LinkedIn posts |
 | Newsletter Email | Send formatted briefings to subscriber lists |
 | Export | Download as Markdown or PDF |
@@ -212,7 +213,7 @@ You should see `(venv)` at the beginning of your terminal prompt.
 pip install -r requirements.txt
 ```
 
-This installs all 16 required packages. Wait until the process completes (may take 1-2 minutes).
+This installs all required packages. Wait until the process completes (may take 1–2 minutes).
 
 ### Step 5 — Get a Free API Key
 
@@ -313,7 +314,7 @@ ai-news-radar/
 ├── app.py                       # Main dashboard (5 tabs)
 ├── desktop.py                   # Desktop app (pywebview + system tray)
 ├── config.py                    # Settings (9 categories, ports, paths)
-├── requirements.txt             # 16 packages
+├── requirements.txt             # Required packages
 ├── .env.example                 # API key template
 ├── AI_News_Radar.bat            # Windows launcher (web mode)
 ├── AI_News_Radar_Silent.vbs     # Silent launcher (no console window)
@@ -336,7 +337,7 @@ ai-news-radar/
 │   └── batch_processor.py       #   Batch parallel processing
 │
 ├── sns/                         # SNS & sharing modules
-│   ├── card_generator.py        #   1080x1080 card news images (Pillow)
+│   ├── card_generator.py        #   1080×1080 card news images (Pillow)
 │   ├── poster.py                #   5-platform SNS posting
 │   ├── content_generator.py     #   AI content (5 types)
 │   └── newsletter.py            #   Email newsletter (SMTP)
@@ -372,12 +373,12 @@ ai-news-radar/
 │   └── cards/                   #   Generated card news images
 │
 ├── .github/workflows/
-│   └── collect.yml              #   GitHub Actions (3x daily auto-collect)
+│   └── collect.yml              #   GitHub Actions (3× daily auto-collect)
 │
 └── PRD/                         #   Product design documents
 ```
 
-**24 modules** across 8 directories — **36 commits** and counting.
+**24 modules** across 8 directories — **37 commits** and counting.
 
 ---
 
@@ -426,17 +427,17 @@ ai-news-radar/
 
 | Phase | Features | Status |
 |-------|----------|:------:|
-| **Phase 1** | Collection + AI Summary + Dashboard (17 features) | Done |
-| **Phase 2-A** | Search + Bookmarks + Sentiment + Chat (5 features) | Done |
-| **Phase 2-B** | Voice + Telegram + Fact-check + Glossary + Actions (5 features) | Done |
-| **Tier 1** | Focus Briefing + Weekly Report + Release Tracker (3 features) | Done |
-| **Tier 2** | Trend Charts + AI Debate + Hot Keywords (3 features) | Done |
-| **S-Tier** | Smart Alert + Content Gen + Newsletter + SNS (4 features) | Done |
-| **UI/UX** | 5-tab redesign + Pagination + Category Quick Filter + Premium CSS | Done |
-| **Desktop** | pywebview + System Tray + Background Notifications | Done |
-| **Pipeline** | One-Click Full Pipeline + Parallel Crawling + Batch Processing | Done |
-| **Translation** | Auto Korean Translation + Deduplication | Done |
-| **Next** | ChromaDB vector search, Ollama local LLM, Gamification, Mobile PWA | Planned |
+| **Phase 1** | Collection + AI Summary + Dashboard (17 features) | ✅ Done |
+| **Phase 2-A** | Search + Bookmarks + Sentiment + Chat (5 features) | ✅ Done |
+| **Phase 2-B** | Voice + Telegram + Fact-check + Glossary + Actions (5 features) | ✅ Done |
+| **Tier 1** | Focus Briefing + Weekly Report + Release Tracker (3 features) | ✅ Done |
+| **Tier 2** | Trend Charts + AI Debate + Hot Keywords (3 features) | ✅ Done |
+| **S-Tier** | Smart Alert + Content Gen + Newsletter + SNS (4 features) | ✅ Done |
+| **UI/UX** | 5-tab redesign + Pagination + Category Quick Filter + Premium CSS | ✅ Done |
+| **Desktop** | pywebview + System Tray + Background Notifications | ✅ Done |
+| **Pipeline** | One-Click Full Pipeline + Parallel Crawling + Batch Processing | ✅ Done |
+| **Translation** | Auto Korean Translation + Deduplication | ✅ Done |
+| **Next** | ChromaDB vector search, Ollama local LLM, Gamification, Mobile PWA | 📋 Planned |
 
 ---
 
