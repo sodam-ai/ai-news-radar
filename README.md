@@ -2,16 +2,15 @@
 
 # AI News Radar
 
-**Your AI-powered news intelligence platform — auto-collects, analyzes, and delivers AI news from 74 sources with 35 LLM support.**
+**Your AI-powered news intelligence platform — auto-collects, analyzes, and delivers AI news from 74 sources with 35 LLM platform support.**
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://python.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.44+-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
 [![LLMs](https://img.shields.io/badge/LLM_Platforms-35-blueviolet)](#35-llm-platforms)
 [![Sources](https://img.shields.io/badge/News_Sources-74-blue)](#74-news-sources)
-[![Commits](https://img.shields.io/badge/Commits-37-orange)](#)
-[![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
+[![License](https://img.shields.io/badge/License-SoDam_AI_Studio-green)](./LICENSE)
 
-**Language** &nbsp;/&nbsp; [Korean](./README_KO.md) &nbsp;/&nbsp; [Japanese](./README_JA.md) &nbsp;/&nbsp; [Chinese](./README_ZH.md)
+**Language** &nbsp;/&nbsp; [Korean 한국어](./README_KO.md) &nbsp;/&nbsp; [Japanese 日本語](./README_JA.md) &nbsp;/&nbsp; [Chinese 中文](./README_ZH.md)
 
 </div>
 
@@ -19,26 +18,91 @@
 
 ## Why AI News Radar?
 
-The AI landscape changes by the hour. New models drop, tools update, papers publish, and companies pivot — all across dozens of scattered sources. **AI News Radar** eliminates the noise. It continuously collects news from **74 curated sources**, uses AI to summarize, categorize, score, and fact-check every article, then delivers a clean, actionable briefing — in your language, on your schedule, across your preferred platforms.
+The AI landscape changes by the hour. New models drop, tools update, papers publish, and companies pivot — all across dozens of scattered sources. AI News Radar eliminates the noise. It continuously collects news from 74 curated sources, uses AI to summarize, categorize, score, and fact-check every article, then delivers a clean, actionable briefing — in your language, on your schedule.
 
 **In one sentence:** Stop visiting 74 sites. Let AI read them all and tell you what matters.
 
 ---
 
+## 🔒 Security & Privacy — Read This First
+
+### Your API Key Is 100% Private — Never Uploaded
+
+When you download this project, **it contains NO API keys, NO passwords, and NO personal data.**
+
+How it works:
+- You create a file called `.env` on your own computer
+- You put YOUR API key in that file (a key you get for free from Google/Groq/etc.)
+- That file **never leaves your computer** — it is blocked from upload by `.gitignore`
+- Every person who downloads this app uses their **own** key with **their own** quota
+
+### Proof It's Safe
+
+| Check | Result |
+|-------|--------|
+| `.env` file in GitHub repository | ❌ Does NOT exist (blocked by .gitignore) |
+| API keys in source code | ❌ None — all code reads from environment variables |
+| Your key shared with others | ❌ Impossible — each user sets up their own |
+| App connects to any server except AI providers | ❌ Only connects to news RSS feeds and your chosen AI API |
+
+### What Each User Must Do
+
+Every person who downloads this app must:
+1. Get their own free API key (10 seconds, no credit card needed for free options)
+2. Create their own `.env` file with their own key
+3. That's it — they use their own quota, you use yours
+
+---
+
+## Features — What Works Without API Key vs What Needs One
+
+### ✅ Works Immediately — No API Key Required
+
+These features work the moment you download and run the app:
+
+| Feature | How |
+|---------|-----|
+| **News collection from 74 sources** | RSS feed reading (just internet connection) |
+| **Article list & viewing** | Local file reading |
+| **Bookmarks & reading history** | Saved on your computer |
+| **Advanced search & filters** | Local data processing |
+| **Export (PDF / Markdown)** | Local file generation |
+| **In-app article reader** | Web page fetch |
+| **Timeline view** | Local data display |
+
+### 🔑 Requires API Key (Free Options Available)
+
+These features use AI — you need one free API key:
+
+| Feature | Why API Key |
+|---------|-------------|
+| **AI news categorization** | AI reads and classifies each article |
+| **3-line Korean summary** | AI summarizes each article |
+| **Daily briefing (Top 5)** | AI selects and explains top news |
+| **English → Korean translation** | AI translates article content |
+| **AI news chatbot** | AI answers your questions about news |
+| **Fact-check** | AI cross-verifies sources |
+| **AI debate** | AI generates pros/cons for any two tools |
+| **AI glossary** | AI explains technical terms |
+| **Weekly intelligence report** | AI generates weekly analysis |
+| **One-click full pipeline** | Runs all AI features at once |
+
+> **The free Gemini API key** (from Google) allows 1,000 AI calls per day — more than enough for personal daily use.
+
+---
+
 ## Highlights
 
-- **50+ features** across 5 tabs (Dashboard / News Feed / AI / Insights / Share)
+- **50+ features** across 5 tabs
 - **74 sources** — General AI (26) + Image & Video (20) + Vibe Coding (19) + Ontology (9)
 - **35 LLM platforms** — most with free tiers, only one API key needed
 - **9 categories** — Tools, Research, Trends, Tutorials, Business, Image/Video, Vibe Coding, Ontology, Other
 - **19 tracked AI tools** with automatic release detection
-- **5 SNS platforms** — X, Telegram, Discord, Threads, Instagram + auto-generated card news
-- **5 content types** — Tweet, Thread, Instagram caption, Blog post, LinkedIn post
+- **5 SNS platforms** — X, Telegram, Discord, Threads, Instagram + auto card news
 - **Voice briefing**, AI fact-check, AI glossary, AI debate
 - **One-click full pipeline** — Collect > Analyze > Brief > Detect releases
 - **Desktop app** with system tray + background notifications
 - **GitHub Actions** — automated collection 3 times daily
-- **Auto Korean translation** (English to Korean)
 
 ---
 
@@ -65,13 +129,13 @@ The AI landscape changes by the hour. New models drop, tools update, papers publ
 | 9-Category Classification | Automatic categorization with AI |
 | Importance Scoring | 1–5 star rating per article |
 | Sentiment Analysis | Positive / Neutral / Negative tagging |
-| AI Fact-Check | Cross-source verification ("3 outlets confirmed" vs "single source") |
+| AI Fact-Check | Cross-source verification |
 | Duplicate Merging | Same story from multiple outlets merged automatically |
 | Keyword Watchlist | Highlight and alert on your tracked keywords |
 | In-App Reader | Read full articles inside the dashboard (ad-free) |
 | Advanced Search | Filter by keyword, category, sentiment, and read status |
 | Bookmarks + Memo | Save articles with personal notes |
-| Pagination | 10 articles per page with smooth navigation |
+| Pagination | 10 articles per page |
 | Timeline View | Browse by Today / Yesterday / This Week |
 | Auto Korean Translation | English articles translated to Korean automatically |
 
@@ -89,7 +153,7 @@ The AI landscape changes by the hour. New models drop, tools update, papers publ
 | AI Tool Release Tracker | Track 19 AI tools with automatic release detection |
 | Trend Charts | Daily mention frequency with interactive Plotly line charts |
 | Hot Keywords | Rising keywords with week-over-week change rate |
-| AI Debate | "Midjourney vs Flux" — AI generates pros, cons, and verdict |
+| AI Debate | AI generates pros, cons, and verdict for any two tools |
 | Weekly Intelligence Report | Deep-dive weekly analysis with predictions |
 
 ### Share Tab
@@ -97,7 +161,7 @@ The AI landscape changes by the hour. New models drop, tools update, papers publ
 | Feature | Description |
 |---------|-------------|
 | SNS Auto-Post | Post to X, Telegram, Discord, Threads, and Instagram |
-| Card News Generator | Auto-generate 1080×1080 card images (dark theme, per-category colors) |
+| Card News Generator | Auto-generate 1080×1080 card images (dark theme) |
 | AI Content Generation | Auto-generate tweets, threads, Instagram captions, blog posts, LinkedIn posts |
 | Newsletter Email | Send formatted briefings to subscriber lists |
 | Export | Download as Markdown or PDF |
@@ -108,7 +172,6 @@ The AI landscape changes by the hour. New models drop, tools update, papers publ
 |---------|-------------|
 | One-Click Full Pipeline | Collect > AI Process > Briefing > Release Detection in one click |
 | Parallel Crawling | 15 concurrent workers for fast collection |
-| Batch Parallel Processing | Efficient batch AI processing for large article sets |
 | Smart Keyword Alert | Desktop notification when watched keywords appear |
 | Desktop App | Native window via pywebview + system tray + background mode |
 | GitHub Actions | Automated collection 3 times daily (configurable) |
@@ -133,141 +196,144 @@ You only need **one API key** from any platform below:
 
 | Tier | Platforms |
 |------|-----------|
-| **Free (Recommended)** | Gemini, Groq, Cerebras, SambaNova, xAI, Mistral, Cohere, HuggingFace, NVIDIA, Cloudflare, Zhipu, Kluster, GLHF, Hyperbolic |
+| **Free (Recommended)** | Gemini ⭐, Groq ⭐, Cerebras, SambaNova, xAI, Mistral, Cohere, HuggingFace, NVIDIA, Cloudflare, Zhipu, Kluster, GLHF, Hyperbolic |
 | **Credits / Budget** | Together AI, OpenRouter, Fireworks, DeepSeek, DeepInfra, Perplexity, AI21, Upstage, Lepton, Novita, Nebius, Chutes, Replicate, Alibaba, Moonshot, Yi, Baichuan |
 | **Premium** | OpenAI, Azure OpenAI, Anthropic Claude, Reka AI |
 
-> **Tip:** Gemini and Groq are the easiest to set up with generous free tiers.
+> ⭐ **Recommended for beginners:** Gemini (1,000 free calls/day) and Groq (14,400 free calls/day) — no credit card needed.
 
 ---
 
-## Dashboard Overview (5 Tabs)
+## Getting Started — Complete Beginner Guide (Step by Step)
 
-| Tab | What's Inside |
-|-----|---------------|
-| **Dashboard** | Daily briefing, Focus briefings, Category quick filter, Sentiment charts, Weekly report, Newsletter |
-| **News Feed** | All news, Advanced search, Bookmarks, Timeline view, Pagination |
-| **AI** | News chat, AI glossary |
-| **Insights** | Release tracker, Trend charts, Hot keywords, AI debate, Weekly report |
-| **Share** | SNS posting, AI content generation, Card news, Newsletter, Export |
-
----
-
-## Getting Started (7-Step Beginner Guide)
-
-> **Zero coding experience needed.** Follow each step carefully.
+> **Zero coding experience needed.** If you can copy and paste text, you can set this up. Follow each step carefully.
 
 ### Step 1 — Install Python
 
-1. Go to [python.org/downloads](https://www.python.org/downloads/)
+Python is the programming language this app is built with. You need to install it once.
+
+1. Go to: **https://www.python.org/downloads/**
 2. Click the big yellow **"Download Python"** button
-3. Run the downloaded file
-4. **CRITICAL:** Check the **"Add Python to PATH"** checkbox at the bottom of the installer
+3. Run the downloaded file (the `.exe` file on Windows)
+4. ⚠️ **VERY IMPORTANT:** At the bottom of the installer screen, check the box that says **"Add Python to PATH"**
 5. Click **"Install Now"**
+6. Wait for it to finish, then click "Close"
 
-**Verify installation:** Open a terminal (`Win + R` > type `cmd` > Enter) and run:
-
-```bash
+**Verify it worked:** Press `Win + R`, type `cmd`, press Enter. In the black window that appears, type:
+```
 python --version
 ```
+You should see something like `Python 3.11.9`. If you do, Python is installed correctly.
 
-You should see `Python 3.11.x` or higher.
+---
 
-### Step 2 — Download the Project
+### Step 2 — Download This Project
 
-**Option A: Using Git (recommended)**
+**Option A: Direct Download (Easiest)**
+1. Go to: **https://github.com/sodam-ai/ai-news-radar**
+2. Click the green **"Code"** button
+3. Click **"Download ZIP"**
+4. Find the downloaded ZIP file (usually in your Downloads folder)
+5. Right-click it > **"Extract All"** > Choose a folder > Click "Extract"
+6. You now have a folder called `ai-news-radar-main` (or similar)
 
+**Option B: Git Clone (if you have Git installed)**
 ```bash
 git clone https://github.com/sodam-ai/ai-news-radar.git
 cd ai-news-radar
 ```
 
-**Option B: Direct download**
+---
 
-1. Go to the [GitHub repository](https://github.com/sodam-ai/ai-news-radar)
-2. Click the green **"Code"** button > **"Download ZIP"**
-3. Extract the ZIP to a folder of your choice
-4. Open a terminal in that folder
+### Step 3 — Open a Terminal in the Project Folder
 
-### Step 3 — Create a Virtual Environment (Recommended)
+1. Open the extracted folder (the one containing `app.py`)
+2. Click in the address bar at the top of File Explorer
+3. Type `cmd` and press Enter
+4. A black terminal window opens, already inside the correct folder ✅
 
-```bash
-python -m venv venv
-```
+---
 
-Activate it:
+### Step 4 — Install Required Packages
 
-```bash
-# Windows
-venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-```
-
-You should see `(venv)` at the beginning of your terminal prompt.
-
-### Step 4 — Install Dependencies
-
+In the terminal window, type this and press Enter:
 ```bash
 pip install -r requirements.txt
 ```
+Wait until it finishes (1–3 minutes). You'll see many lines of text scrolling — this is normal.
 
-This installs all required packages. Wait until the process completes (may take 1–2 minutes).
+---
 
-### Step 5 — Get a Free API Key
+### Step 5 — Get Your Free API Key
 
-Choose **any one** platform. We recommend **Groq** for the fastest setup:
+You need a free API key to use AI features. Here's the fastest option:
 
-1. Go to [console.groq.com/keys](https://console.groq.com/keys)
-2. Sign up with a Google account (takes 10 seconds)
+**Option A: Google Gemini (Recommended — 1,000 free calls/day)**
+1. Go to: **https://aistudio.google.com/apikey**
+2. Sign in with your Google account
+3. Click **"Create API Key"**
+4. Click **"Create API key in new project"**
+5. Copy the key that appears (it looks like `AIzaSy...`)
+
+**Option B: Groq (Also free — 14,400 free calls/day, faster)**
+1. Go to: **https://console.groq.com/keys**
+2. Sign up with Google (10 seconds)
 3. Click **"Create API Key"**
 4. Copy the key (starts with `gsk_`)
 
-> Other free options: [Gemini](https://aistudio.google.com/apikey), [Cerebras](https://cloud.cerebras.ai/), [SambaNova](https://cloud.sambanova.ai/)
+> ✅ **No credit card required** for either option. You will NOT be charged anything.
 
-### Step 6 — Configure Your API Key
+---
 
-1. Find the file `.env.example` in the project folder
-2. Copy it and rename the copy to `.env`
-3. Open `.env` with any text editor (Notepad works fine)
-4. Paste your API key:
+### Step 6 — Set Up Your API Key
 
-```env
-# Pick one (or more):
-GROQ_API_KEY=gsk_YourActualKeyHere
-# GEMINI_API_KEY=your_gemini_key
-# OPENAI_API_KEY=sk-your_openai_key
+1. In the project folder, find the file named **`.env.example`**
+2. Copy that file and rename the copy to **`.env`** (remove the `.example` part)
+   - On Windows: Right-click > Copy > Paste > Rename
+3. Open `.env` with Notepad (right-click > Open with > Notepad)
+4. Find the line for your chosen provider and add your key:
+
+**If you got a Gemini key:**
+```
+GEMINI_API_KEY=AIzaSy_paste_your_key_here
+```
+
+**If you got a Groq key:**
+```
+GROQ_API_KEY=gsk_paste_your_key_here
 ```
 
 5. Save and close the file
 
-> **Security note:** The `.env` file is listed in `.gitignore` and will never be uploaded to GitHub. Never share this file publicly.
+> 🔒 **Your key is safe.** This `.env` file stays on your computer only. It will never be uploaded to GitHub or shared with anyone.
+
+---
 
 ### Step 7 — Launch the App
 
 **Web mode (opens in your browser):**
-
 ```bash
 streamlit run app.py
 ```
-
-Your browser opens to **http://localhost:6601**
+Your browser automatically opens to **http://localhost:6601**
 
 **Desktop mode (native window):**
-
 ```bash
 python desktop.py
 ```
 
-Or double-click **`AI_News_Radar.bat`** on Windows.
+**Windows shortcut:** Double-click **`AI_News_Radar.bat`** in the project folder.
 
-### First Use
+---
 
-1. Click **"Collect"** in the sidebar — gathers news from 74 sources (~1 min)
-2. Click **"AI Process"** — AI analyzes, summarizes, and categorizes all articles
-3. Click **"Generate Briefing"** — creates today's Top 5 briefing
-4. Explore the 5 tabs and discover all features!
+### First Use — What to Do After Launch
+
+1. In the sidebar (left panel), click **"📡 Collect"** — waits about 1 minute to gather news from 74 sources
+2. Click **"🤖 AI Process"** — AI reads and analyzes all articles (needs API key)
+3. Click **"📋 Briefing"** — generates today's Top 5 summary
+4. Explore the 5 tabs: Dashboard / News Feed / AI / Insights / Share
+
+> 💡 **Tip:** If you don't have an API key yet, you can still click "Collect" to gather news. The list will appear but without AI summaries or categories. Add your API key later to unlock AI features.
 
 ---
 
@@ -283,13 +349,13 @@ Or double-click **`AI_News_Radar.bat`** on Windows.
 | Track AI tool releases | Insights tab > Release Tracker |
 | See trending keywords | Insights tab > Trends |
 | Run an AI debate | Insights tab > AI Debate > Pick two tools |
-| Generate SNS content | Share tab > Content Generation > Select article + platform |
-| Post to social media | Share tab > SNS Posting > Select platforms > Post |
+| Generate SNS content | Share tab > Content Generation |
+| Post to social media | Share tab > SNS Posting |
 | Listen to briefing | Dashboard tab > Select voice > Click "Voice" |
 | Export as PDF | Share tab > Export view |
-| Save an article | News Feed tab > Click bookmark icon on any article |
+| Save an article | News Feed tab > Click bookmark icon |
 | Set keyword alerts | Sidebar > Watchlist > Enter keyword |
-| Run full pipeline | Sidebar > "One-Click Pipeline" button |
+| Run full pipeline | Sidebar > "⚡ One-Click Pipeline" button |
 
 ---
 
@@ -315,7 +381,9 @@ ai-news-radar/
 ├── desktop.py                   # Desktop app (pywebview + system tray)
 ├── config.py                    # Settings (9 categories, ports, paths)
 ├── requirements.txt             # Required packages
-├── .env.example                 # API key template
+├── .env.example                 # API key template (safe to share)
+├── .env                         # YOUR API keys (local only, never uploaded)
+├── .gitignore                   # Blocks .env from being uploaded
 ├── AI_News_Radar.bat            # Windows launcher (web mode)
 ├── AI_News_Radar_Silent.vbs     # Silent launcher (no console window)
 │
@@ -327,7 +395,6 @@ ai-news-radar/
 │   ├── factcheck.py             #   Cross-source fact verification
 │   ├── glossary.py              #   AI terminology dictionary
 │   ├── weekly_report.py         #   Weekly intelligence report
-│   ├── competitor.py            #   AI tool release monitoring
 │   ├── release_tracker.py       #   Automatic release detection
 │   ├── trend.py                 #   Keyword trend analysis
 │   ├── debate.py                #   AI debate mode
@@ -337,7 +404,7 @@ ai-news-radar/
 │   └── batch_processor.py       #   Batch parallel processing
 │
 ├── sns/                         # SNS & sharing modules
-│   ├── card_generator.py        #   1080×1080 card news images (Pillow)
+│   ├── card_generator.py        #   1080×1080 card news images
 │   ├── poster.py                #   5-platform SNS posting
 │   ├── content_generator.py     #   AI content (5 types)
 │   └── newsletter.py            #   Email newsletter (SMTP)
@@ -362,23 +429,15 @@ ai-news-radar/
 │   ├── collect.py               #   Standalone collection script
 │   └── reclassify.py            #   Category reclassification tool
 │
-├── data/                        # Local data storage
+├── data/                        # Local data storage (never uploaded)
 │   ├── preset_sources.json      #   74 curated source definitions
-│   ├── sources.json             #   Active source configuration
 │   ├── articles.json            #   Collected articles
 │   ├── briefings.json           #   Generated briefings
-│   ├── weekly_reports.json      #   Weekly report archive
-│   ├── release_log.json         #   Tool release history
-│   ├── audio/                   #   Voice briefing audio files
-│   └── cards/                   #   Generated card news images
+│   └── ...
 │
-├── .github/workflows/
-│   └── collect.yml              #   GitHub Actions (3× daily auto-collect)
-│
-└── PRD/                         #   Product design documents
+└── .github/workflows/
+    └── collect.yml              #   GitHub Actions (3× daily auto-collect)
 ```
-
-**24 modules** across 8 directories — **37 commits** and counting.
 
 ---
 
@@ -389,18 +448,16 @@ ai-news-radar/
 | **Language** | Python 3.11+ |
 | **Dashboard** | Streamlit 1.44+ |
 | **AI Engine** | 35 LLM platforms via unified model router |
-| **Charts** | Plotly (interactive trend charts, sentiment gauges) |
+| **Charts** | Plotly |
 | **Voice** | edge-tts (Microsoft neural TTS) |
-| **Image Generation** | Pillow (card news with dark theme) |
-| **Desktop** | pywebview + pystray (native window + system tray) |
-| **Notifications** | plyer (cross-platform desktop alerts) |
+| **Image Generation** | Pillow |
+| **Desktop** | pywebview + pystray |
+| **Notifications** | plyer |
 | **RSS Parsing** | feedparser (74 source feeds) |
 | **Web Scraping** | BeautifulSoup4 + requests |
 | **Telegram Bot** | python-telegram-bot |
-| **SNS APIs** | tweepy (X), Telegram API, Discord Webhook, Threads API, Instagram Graph API |
-| **Email** | smtplib (SMTP newsletter) |
-| **PDF Export** | fpdf2 (Korean font support) |
-| **Scheduling** | APScheduler (in-app), GitHub Actions (CI/CD) |
+| **PDF Export** | fpdf2 |
+| **Scheduling** | APScheduler + GitHub Actions |
 | **Data Storage** | Local JSON (zero database setup) |
 
 ---
@@ -410,16 +467,19 @@ ai-news-radar/
 | Problem | Solution |
 |---------|----------|
 | `python` not found | Reinstall Python with **"Add to PATH"** checked |
-| `pip` not found | Try `python -m pip install -r requirements.txt` instead |
-| `streamlit` not found | Run `pip install streamlit` or check your virtual environment is activated |
-| "API key not set" warning | Create a `.env` file with at least one API key (see Step 6) |
-| No articles appear | Click **"Collect"** first, then **"AI Process"** |
-| Categories show 0 articles | Run `python scripts/reclassify.py` to reclassify existing articles |
+| `pip` not found | Try `python -m pip install -r requirements.txt` |
+| `streamlit` not found | Run `pip install streamlit` |
+| "API key not set" warning | Create `.env` with your API key (see Step 6) |
+| No articles appear | Click **"Collect"** first, wait 1 min, then "AI Process" |
+| AI features don't work | Make sure `.env` file exists and has a valid API key |
+| Categories show 0 articles | Run `python scripts/reclassify.py` |
 | Port 6601 already in use | Use `streamlit run app.py --server.port 7777` |
-| PDF export fails on macOS/Linux | PDF export uses Windows Korean fonts; install `NanumGothic` font |
-| Desktop mode won't launch | Ensure `pywebview` is installed: `pip install pywebview` |
-| Slow collection | Normal — 74 sources with 15 parallel workers takes ~60 seconds |
-| Edge-tts voice error | Check internet connection; edge-tts requires online access |
+| Slow collection | Normal — 74 sources takes ~60 seconds |
+
+**Common API Key Mistakes:**
+- Pasting the key with extra spaces → remove all spaces
+- Using a key that has expired → generate a new one
+- Forgetting to save the `.env` file → make sure you click Save in Notepad
 
 ---
 
@@ -427,17 +487,10 @@ ai-news-radar/
 
 | Phase | Features | Status |
 |-------|----------|:------:|
-| **Phase 1** | Collection + AI Summary + Dashboard (17 features) | ✅ Done |
-| **Phase 2-A** | Search + Bookmarks + Sentiment + Chat (5 features) | ✅ Done |
-| **Phase 2-B** | Voice + Telegram + Fact-check + Glossary + Actions (5 features) | ✅ Done |
-| **Tier 1** | Focus Briefing + Weekly Report + Release Tracker (3 features) | ✅ Done |
-| **Tier 2** | Trend Charts + AI Debate + Hot Keywords (3 features) | ✅ Done |
-| **S-Tier** | Smart Alert + Content Gen + Newsletter + SNS (4 features) | ✅ Done |
-| **UI/UX** | 5-tab redesign + Pagination + Category Quick Filter + Premium CSS | ✅ Done |
-| **Desktop** | pywebview + System Tray + Background Notifications | ✅ Done |
-| **Pipeline** | One-Click Full Pipeline + Parallel Crawling + Batch Processing | ✅ Done |
-| **Translation** | Auto Korean Translation + Deduplication | ✅ Done |
-| **Next** | ChromaDB vector search, Ollama local LLM, Gamification, Mobile PWA | 📋 Planned |
+| **Phase 1** | Collection + AI Summary + Dashboard | ✅ Done |
+| **Phase 2** | Search + Bookmarks + Chat + Voice + Fact-check | ✅ Done |
+| **Phase 3** | Insights + SNS + Pipeline + Desktop | ✅ Done |
+| **Next** | ChromaDB vector search, Ollama local LLM, Mobile PWA | 📋 Planned |
 
 ---
 
@@ -455,9 +508,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License — Copyright (c) 2026 **SoDam AI Studio**
+Copyright (c) 2026 **SoDam AI Studio**
 
-See [LICENSE](./LICENSE) for details.
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
 
 ---
 
