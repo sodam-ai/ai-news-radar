@@ -3,7 +3,8 @@ port = 6601
 
 [theme]
 base = "dark"
-primaryColor = "#4FC3F7"
-backgroundColor = "#0E1117"
-secondaryBackgroundColor = "#1E1E2E"
-textColor = "#FAFAFA"
+primaryColor = "#6366f1"
+backgroundColor = "#09090b"
+secondaryBackgroundColor = "#17171c"
+textColor = "#ececef"
+font = "sans serif"
