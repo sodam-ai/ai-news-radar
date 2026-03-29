@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 chcp 65001 >nul 2>&1
 title AI News Radar - Setup
 color 0B
@@ -34,7 +35,7 @@ where python >nul 2>&1
 if %errorlevel%==0 (
     set PYTHON_CMD=python
     for /f "tokens=*" %%i in ('python --version 2^>^&1') do set PYTHON_VER=%%i
-    echo         Found: %PYTHON_VER%
+    echo         Found: !PYTHON_VER!
     goto :python_ok
 )
 
