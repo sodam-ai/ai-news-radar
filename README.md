@@ -11,7 +11,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-SoDam%20AI%20Studio-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.2.0-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/Release-v1.2.1-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
   <img src="https://img.shields.io/badge/LLM-35%20Providers-purple" alt="LLM"/>
 </p>
@@ -59,7 +59,7 @@ If Python is already installed on your computer, skip to Step 2.
 
 **Option A — From GitHub Releases (recommended):**
 1. Go to the [Releases page](https://github.com/sodam-ai/ai-news-radar/releases)
-2. Download **`AI_News_Radar_v1.2.0.zip`**
+2. Download **`Source code (zip)`**
 3. Right-click the ZIP file → **"Extract All"** → Choose a folder (e.g., Desktop) → **"Extract"**
 
 **Option B — From this page:**
@@ -81,13 +81,7 @@ AI News Radar uses AI to analyze news. You need a free API key (takes 30 seconds
 
 ### Step 4: Run the App
 
-Open the extracted folder and **double-click** one of these:
-
-| File | When to use | What it does |
-|------|-------------|-------------|
-| **`AI_News_Radar.exe`** | **Recommended** | The main app. Automatically sets up everything and launches. Has the app icon. |
-| `install_and_run.bat` | Alternative | Same as the exe, but as a batch script. |
-| `start.bat` | Quick launch | For fast startup after everything is already set up. |
+Open the extracted folder and **double-click `AI_News_Radar.exe`**.
 
 **On first run:**
 - The app will **automatically create a virtual environment** and **install all dependencies**
@@ -174,9 +168,6 @@ Open the extracted folder and **double-click** one of these:
 ai-news-radar/
 │
 ├── AI_News_Radar.exe      ← Main executable (double-click to run)
-├── install_and_run.bat     ← Alternative launcher (batch script)
-├── start.bat               ← Quick launcher
-├── desktop.bat              ← Desktop window mode (optional)
 │
 ├── app.py                  ← Streamlit web application (main UI)
 ├── config.py               ← Configuration and constants
@@ -317,8 +308,6 @@ pip install pywebview pystray plyer
 python launcher.py
 ```
 
-Or double-click `desktop.bat` on Windows.
-
 ### Build the Launcher EXE Yourself
 
 ```bash
@@ -354,7 +343,7 @@ That's normal! On the first run, it downloads and installs ~200MB of Python pack
 This happens because the exe is new and not digitally signed. Click **"More info"** → **"Run anyway"**. The exe is safe — you can verify by reading the source code in `setup_launcher.py`.
 
 ### Can I use this on Mac or Linux?
-Yes! The `.bat` and `.exe` files are Windows-only, but the core app works on any OS. Use the command line instructions in the "Advanced Usage" section.
+Yes! The `.exe` file is Windows-only, but the core app works on any OS. Use the command line instructions in the "Advanced Usage" section.
 
 ---
 

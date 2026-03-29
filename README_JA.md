@@ -11,7 +11,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white"/>
   <img src="https://img.shields.io/badge/License-SoDam%20AI%20Studio-green"/>
-  <img src="https://img.shields.io/badge/Release-v1.2.0-blue"/>
+  <img src="https://img.shields.io/badge/Release-v1.2.1-blue"/>
   <img src="https://img.shields.io/badge/LLM-35%20Providers-purple"/>
 </p>
 
@@ -36,7 +36,7 @@
 5. **「Install Now」** をクリック
 
 ### ステップ2：ダウンロード
-[Releasesページ](https://github.com/sodam-ai/ai-news-radar/releases)から **`AI_News_Radar_v1.2.0.zip`** をダウンロード → 解凍
+[Releasesページ](https://github.com/sodam-ai/ai-news-radar/releases)から **`AI_News_Radar_v1.2.1.zip`** をダウンロード → 解凍
 
 ### ステップ3：無料APIキーの取得
 1. **[aistudio.google.com/apikey](https://aistudio.google.com/apikey)** にアクセス

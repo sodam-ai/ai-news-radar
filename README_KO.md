@@ -11,7 +11,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-SoDam%20AI%20Studio-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.2.0-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/Release-v1.2.1-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/LLM-35%20Providers-purple" alt="LLM"/>
 </p>
 
@@ -78,13 +78,7 @@ AI News Radar가 뉴스를 분석하려면 AI 서비스 키가 필요합니다 (
 
 ### 4단계: 앱 실행
 
-압축 해제한 폴더를 열고 아래 파일을 **더블클릭**하세요:
-
-| 파일 | 용도 | 설명 |
-|------|------|------|
-| **`AI_News_Radar.exe`** | **추천** | 메인 실행파일. 모든 설정을 자동 처리하고 실행합니다. 앱 아이콘이 있습니다. |
-| `install_and_run.bat` | 대안 | exe와 동일하지만 배치 스크립트 형태. |
-| `start.bat` | 빠른 실행 | 이미 설치가 완료된 후 빠르게 실행할 때. |
+압축 해제한 폴더를 열고 **`AI_News_Radar.exe`** 를 **더블클릭**하세요.
 
 **처음 실행할 때:**
 - 앱이 **자동으로 가상환경을 생성**하고 **모든 의존성을 설치**합니다
@@ -172,7 +166,7 @@ GEMINI_API_KEY=AIzaSyBxxxxxxxxxxxxxxxxxxxxxxx
 정상입니다! 첫 실행 시 약 200MB의 Python 패키지를 다운로드합니다. **3~5분** 걸리며, 이후에는 몇 초 안에 시작됩니다.
 
 ### Mac이나 Linux에서도 쓸 수 있나요?
-네! `.exe`와 `.bat` 파일은 Windows 전용이지만, 핵심 앱은 모든 OS에서 작동합니다:
+네! `.exe` 파일은 Windows 전용이지만, 핵심 앱은 모든 OS에서 작동합니다:
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
