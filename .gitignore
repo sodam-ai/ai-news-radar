@@ -29,6 +29,7 @@ data/release_log.json
 .streamlit/secrets.toml
 
 # 가상환경 / 패키지
+.venv/
 Lib/
 /Scripts/
 Include/
