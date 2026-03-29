@@ -38,6 +38,8 @@ pyvenv.cfg
 *.egg-info/
 dist/
 build/
+build_venv/
+installer_output/
 
 # OS/IDE
 .DS_Store

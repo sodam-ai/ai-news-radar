@@ -37,40 +37,289 @@ st.set_page_config(page_title="AI News Radar", page_icon="📡", layout="wide", 
 
 # ── CSS ──
 st.markdown("""<style>
-* { transition: all 0.18s cubic-bezier(0.4,0,0.2,1); }
-[data-testid="stMetric"] {
-    background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
-    border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 18px;
+/* ═══ Design System — AI News Radar v3 ═══ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --surface-0: #09090b;
+    --surface-1: #0f0f12;
+    --surface-2: #17171c;
+    --surface-3: #23232a;
+    --surface-4: #2e2e38;
+    --border-subtle: rgba(255,255,255,0.05);
+    --border-default: rgba(255,255,255,0.08);
+    --border-hover: rgba(99,102,241,0.22);
+    --text-primary: #ececef;
+    --text-secondary: #9d9da7;
+    --text-muted: #636370;
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --accent-soft: rgba(99,102,241,0.12);
+    --positive: #34d399;
+    --neutral-tone: #fbbf24;
+    --negative: #f87171;
+    --radius-sm: 8px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --transition: 0.16s cubic-bezier(0.25, 0.1, 0.25, 1);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
-[data-testid="stMetricValue"] { font-size: 1.9rem !important; font-weight: 800 !important; letter-spacing: -0.5px !important; }
-[data-testid="stMetricLabel"] { font-size: 0.78rem !important; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
-button[data-baseweb="tab"] { font-size: 0.9rem !important; font-weight: 500 !important; padding: 10px 16px !important; border-radius: 0 !important; border-bottom: 2px solid transparent !important; background: transparent !important; }
-button[data-baseweb="tab"][aria-selected="true"] { font-weight: 700 !important; border-bottom: 2px solid #60a5fa !important; color: #60a5fa !important; }
-[data-testid="stVerticalBlock"] > div[data-testid="stContainer"] { border-radius: 14px !important; border: 1px solid rgba(255,255,255,0.06) !important; }
-[data-testid="stVerticalBlock"] > div[data-testid="stContainer"]:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.2); border-color: rgba(96,165,250,0.15) !important; }
-[data-testid="stChatMessage"] { border-radius: 18px !important; }
-.stButton > button { border-radius: 10px !important; font-weight: 600 !important; border: 1px solid rgba(255,255,255,0.08) !important; }
-.stButton > button:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 20px rgba(0,0,0,0.2) !important; }
-[data-testid="stExpander"] { border-radius: 12px !important; }
-.sentiment-bar { height: 3px; border-radius: 2px; margin-bottom: 10px; opacity: 0.8; }
-.sentiment-positive { background: linear-gradient(90deg, #34d399, #10b981); }
-.sentiment-neutral { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
-.sentiment-negative { background: linear-gradient(90deg, #f87171, #ef4444); }
-.cat-pill { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; margin-right: 6px; border: 1px solid transparent; }
-.cat-ai_tool { background: rgba(59,130,246,0.12); color: #60a5fa; } .cat-ai_research { background: rgba(168,85,247,0.12); color: #a78bfa; }
-.cat-ai_trend { background: rgba(251,146,60,0.12); color: #fb923c; } .cat-ai_tutorial { background: rgba(52,211,153,0.12); color: #34d399; }
-.cat-ai_business { background: rgba(244,114,182,0.12); color: #f472b6; } .cat-ai_image_video { background: rgba(251,113,133,0.12); color: #fb7185; }
-.cat-ai_coding { background: rgba(52,211,153,0.12); color: #2dd4bf; } .cat-ai_ontology { background: rgba(139,92,246,0.12); color: #a78bfa; }
-.cat-ai_other { background: rgba(148,163,184,0.1); color: #94a3b8; }
-.fc-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; }
-.fc-high,.fc-medium { background: rgba(52,211,153,0.12); color: #34d399; } .fc-low { background: rgba(251,191,36,0.12); color: #fbbf24; } .fc-single { background: rgba(248,113,113,0.08); color: #fca5a5; }
-.page-info { text-align: center; padding: 8px 0; color: #94a3b8; font-size: 0.85rem; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.main .block-container { animation: fadeIn 0.25s ease; }
-@media (max-width: 768px) { [data-testid="stMetricValue"] { font-size: 1.3rem !important; } button[data-baseweb="tab"] { font-size: 0.78rem !important; padding: 6px 8px !important; } }
-::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 3px; }
-a { color: #60a5fa !important; text-decoration: none !important; } a:hover { color: #93c5fd !important; }
-hr { border-color: rgba(255,255,255,0.04) !important; }
+
+/* ═══ Typography ═══ */
+html, body, [class*="css"] { font-family: var(--font) !important; -webkit-font-smoothing: antialiased; }
+
+/* ═══ Global transitions ═══ */
+.stButton > button, [data-testid="stVerticalBlock"] > div[data-testid="stContainer"],
+[data-testid="stExpander"], [data-testid="stMetric"] {
+    transition: all var(--transition);
+}
+
+/* ═══ Sidebar ═══ */
+[data-testid="stSidebar"] {
+    background: var(--surface-1) !important;
+    border-right: 1px solid var(--border-subtle) !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdown"] h2 {
+    font-size: 0.95rem !important; font-weight: 700 !important; letter-spacing: -0.2px;
+}
+
+.brand-header {
+    padding: 2px 0 14px; margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.brand-header h2 {
+    margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);
+    letter-spacing: -0.3px;
+}
+.brand-sub {
+    font-size: 0.62rem; color: var(--text-muted); letter-spacing: 0.8px;
+    text-transform: uppercase; margin-top: 3px;
+}
+
+/* ═══ Metrics ═══ */
+[data-testid="stMetric"] {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 18px 20px;
+    position: relative; overflow: hidden;
+}
+[data-testid="stMetric"]::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent); opacity: 0.5;
+}
+[data-testid="stMetric"]:hover {
+    border-color: var(--border-hover) !important;
+    box-shadow: 0 0 0 1px var(--accent-soft);
+}
+[data-testid="stMetricValue"] {
+    font-size: 1.75rem !important; font-weight: 800 !important;
+    letter-spacing: -0.5px !important; color: var(--text-primary) !important;
+    font-variant-numeric: tabular-nums;
+}
+[data-testid="stMetricLabel"] {
+    font-size: 0.65rem !important; color: var(--text-muted) !important;
+    text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600 !important;
+}
+
+/* ═══ Tabs ═══ */
+[data-baseweb="tab-list"] {
+    gap: 0 !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    background: transparent !important;
+}
+button[data-baseweb="tab"] {
+    font-size: 0.8rem !important; font-weight: 500 !important;
+    padding: 11px 18px !important;
+    border-radius: 0 !important;
+    border-bottom: 2px solid transparent !important;
+    background: transparent !important;
+    color: var(--text-muted) !important;
+    transition: all var(--transition) !important;
+}
+button[data-baseweb="tab"]:hover {
+    color: var(--text-secondary) !important;
+    background: rgba(255,255,255,0.015) !important;
+}
+button[data-baseweb="tab"][aria-selected="true"] {
+    font-weight: 700 !important;
+    border-bottom-color: var(--accent) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ═══ Cards ═══ */
+[data-testid="stVerticalBlock"] > div[data-testid="stContainer"] {
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--border-subtle) !important;
+    background: var(--surface-2) !important;
+}
+[data-testid="stVerticalBlock"] > div[data-testid="stContainer"]:hover {
+    border-color: var(--border-hover) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+
+/* ═══ Chat ═══ */
+[data-testid="stChatMessage"] {
+    border-radius: var(--radius-lg) !important;
+    border: 1px solid var(--border-subtle) !important;
+    background: var(--surface-2) !important;
+}
+
+/* ═══ Buttons ═══ */
+.stButton > button {
+    border-radius: var(--radius-sm) !important;
+    font-weight: 600 !important;
+    border: 1px solid var(--border-default) !important;
+    letter-spacing: 0.1px; font-size: 0.8rem !important;
+    background: var(--surface-2) !important;
+    color: var(--text-primary) !important;
+}
+.stButton > button:hover {
+    border-color: var(--border-hover) !important;
+    background: var(--surface-3) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+}
+.stButton > button:active {
+    transform: scale(0.98) !important;
+}
+.stButton > button[kind="primary"] {
+    background: var(--accent) !important;
+    border: 1px solid var(--accent) !important;
+    color: white !important;
+    font-weight: 700 !important;
+}
+.stButton > button[kind="primary"]:hover {
+    background: var(--accent-hover) !important;
+    border-color: var(--accent-hover) !important;
+    box-shadow: 0 4px 14px var(--accent-soft) !important;
+}
+
+/* ═══ Expander ═══ */
+[data-testid="stExpander"] {
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--border-subtle) !important;
+    background: var(--surface-1) !important;
+}
+
+/* ═══ Inputs ═══ */
+[data-testid="stTextInput"] input, [data-testid="stSelectbox"] > div > div {
+    border-radius: var(--radius-sm) !important;
+    border-color: var(--border-default) !important;
+    font-family: var(--font) !important;
+}
+[data-testid="stTextInput"] input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px var(--accent-soft) !important;
+}
+
+/* ═══ Sentiment Bars ═══ */
+.sentiment-bar { height: 2px; border-radius: 1px; margin-bottom: 10px; opacity: 0.8; }
+.sentiment-positive { background: var(--positive); }
+.sentiment-neutral { background: var(--neutral-tone); }
+.sentiment-negative { background: var(--negative); }
+
+/* ═══ Category Pills ═══ */
+.cat-pill {
+    display: inline-block; padding: 2px 10px; border-radius: 100px;
+    font-size: 0.65rem; font-weight: 600; margin-right: 4px;
+    border: 1px solid transparent; letter-spacing: 0.15px;
+    vertical-align: middle;
+}
+.cat-ai_tool { background: rgba(99,102,241,0.1); color: #818cf8; border-color: rgba(99,102,241,0.15); }
+.cat-ai_research { background: rgba(168,85,247,0.1); color: #c084fc; border-color: rgba(168,85,247,0.12); }
+.cat-ai_trend { background: rgba(251,146,60,0.08); color: #fb923c; border-color: rgba(251,146,60,0.1); }
+.cat-ai_tutorial { background: rgba(52,211,153,0.08); color: #34d399; border-color: rgba(52,211,153,0.1); }
+.cat-ai_business { background: rgba(244,114,182,0.08); color: #f472b6; border-color: rgba(244,114,182,0.1); }
+.cat-ai_image_video { background: rgba(251,113,133,0.08); color: #fb7185; border-color: rgba(251,113,133,0.1); }
+.cat-ai_coding { background: rgba(45,212,191,0.08); color: #2dd4bf; border-color: rgba(45,212,191,0.1); }
+.cat-ai_ontology { background: rgba(139,92,246,0.1); color: #a78bfa; border-color: rgba(139,92,246,0.12); }
+.cat-ai_other { background: rgba(148,163,184,0.05); color: #94a3b8; border-color: rgba(148,163,184,0.06); }
+
+/* ═══ Badges ═══ */
+.fc-badge {
+    display: inline-block; padding: 2px 9px; border-radius: 100px;
+    font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1px; vertical-align: middle;
+    margin-left: 4px;
+}
+.fc-high,.fc-medium { background: rgba(52,211,153,0.08); color: var(--positive); }
+.fc-low { background: rgba(251,191,36,0.08); color: var(--neutral-tone); }
+.fc-single { background: rgba(248,113,113,0.05); color: #fca5a5; }
+
+/* ═══ Pagination ═══ */
+.page-info {
+    text-align: center; padding: 10px 0;
+    color: var(--text-secondary); font-size: 0.8rem;
+    font-weight: 600; font-variant-numeric: tabular-nums;
+}
+
+/* ═══ Section headers ═══ */
+.section-header {
+    font-size: 1.1rem; font-weight: 700; color: var(--text-primary);
+    letter-spacing: -0.3px; margin: 0 0 4px;
+}
+.section-sub {
+    font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.3px; margin-bottom: 14px;
+}
+
+/* ═══ Animation ═══ */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.main .block-container { animation: fadeIn 0.2s ease-out; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.live-dot {
+    display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--positive); animation: pulse 2.5s ease-in-out infinite;
+    margin-right: 6px; vertical-align: middle;
+}
+
+/* ═══ Responsive ═══ */
+@media (max-width: 1200px) {
+    [data-testid="stMetricValue"] { font-size: 1.4rem !important; }
+}
+@media (max-width: 768px) {
+    [data-testid="stMetricValue"] { font-size: 1.15rem !important; }
+    [data-testid="stMetricLabel"] { font-size: 0.58rem !important; }
+    button[data-baseweb="tab"] { font-size: 0.7rem !important; padding: 8px 10px !important; }
+    .cat-pill { font-size: 0.58rem; padding: 2px 7px; }
+}
+
+/* ═══ Scrollbar ═══ */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.12); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.24); }
+
+/* ═══ Links ═══ */
+a { color: var(--accent-hover) !important; text-decoration: none !important; transition: color var(--transition); }
+a:hover { color: #a5b4fc !important; }
+hr { border-color: var(--border-subtle) !important; }
+
+/* ═══ Empty state ═══ */
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+.empty-state-icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.4; }
+
+/* ═══ Progress Bar ═══ */
+[data-testid="stProgress"] > div > div > div { background: var(--accent) !important; }
+
+/* ═══ Toast / Status ═══ */
+[data-testid="stToast"] { border-radius: var(--radius-md) !important; }
+
+/* ═══ Radio pills (horizontal) ═══ */
+[data-testid="stRadio"] > div { gap: 0 !important; }
+[data-testid="stRadio"] label {
+    font-size: 0.76rem !important; font-weight: 500 !important;
+}
+
+/* ═══ Download buttons ═══ */
+[data-testid="stDownloadButton"] button {
+    font-size: 0.76rem !important;
+}
+
+/* ═══ Selectbox ═══ */
+[data-testid="stSelectbox"] label { font-size: 0.76rem !important; }
+
+/* ═══ Main container padding ═══ */
+.main .block-container { padding-top: 1.5rem !important; }
 </style>""", unsafe_allow_html=True)
 
 # ── 초기화 ──
@@ -84,6 +333,19 @@ SOURCES_PATH = DATA_DIR / "sources.json"
 WATCHLIST_PATH = DATA_DIR / "watchlist.json"
 BRIEFINGS_PATH = DATA_DIR / "briefings.json"
 BOOKMARKS_PATH = DATA_DIR / "bookmarks.json"
+
+
+def _load_bookmarks():
+    """북마크 로드 (렌더링 사이클 내 캐싱)"""
+    if "_bm_cache" not in st.session_state:
+        st.session_state._bm_cache = safe_read_json(BOOKMARKS_PATH, [])
+    return st.session_state._bm_cache
+
+
+def _save_bookmarks(bookmarks):
+    """북마크 저장 + 캐시 갱신"""
+    safe_write_json(BOOKMARKS_PATH, bookmarks)
+    st.session_state._bm_cache = bookmarks
 CAT_NAMES = {"ai_tool": "도구", "ai_research": "연구", "ai_trend": "트렌드", "ai_tutorial": "튜토리얼", "ai_business": "비즈니스", "ai_image_video": "이미지/영상", "ai_coding": "바이브코딩", "ai_ontology": "온톨로지", "ai_other": "기타"}
 
 
@@ -113,12 +375,15 @@ def render_sentiment_bar(s):
 # 사이드바
 # ══════════════════════════════════════════════
 with st.sidebar:
-    st.markdown("## 📡 AI News Radar")
+    st.markdown("""<div class="brand-header">
+        <h2>📡 AI News Radar</h2>
+        <div class="brand-sub"><span class="live-dot"></span>AI-Powered News Intelligence</div>
+    </div>""", unsafe_allow_html=True)
 
     if _active_provider:
-        st.caption(f"🤖 **{PROVIDERS[_active_provider]['name']}**")
+        st.caption(f"**{PROVIDERS[_active_provider]['name']}** connected")
     else:
-        st.error("⚠️ API 키 미설정")
+        st.error("API key not configured")
 
     st.divider()
 
@@ -131,7 +396,7 @@ with st.sidebar:
                     count = crawl_all()
                 st.success(f"✅ {count}개!")
             except Exception as e:
-                st.error("수집 오류")
+                st.error(f"수집 오류: {str(e)[:60]}")
                 log(f"[수집 오류] {e}")
     with c2:
         if st.button("🤖 AI 처리", use_container_width=True):
@@ -147,7 +412,7 @@ with st.sidebar:
                     if alerted:
                         st.info(f"🔔 {len(alerted)}건 알림!")
                 except Exception as e:
-                    st.error("AI 처리 오류")
+                    st.error(f"AI 처리 오류: {str(e)[:60]}")
                     log(f"[AI 처리 오류] {e}")
 
     c3, c4 = st.columns(2)
@@ -161,7 +426,7 @@ with st.sidebar:
                         generate_daily_briefing()
                     st.success("✅ 완료!")
                 except Exception as e:
-                    st.error("브리핑 오류")
+                    st.error(f"브리핑 오류: {str(e)[:60]}")
                     log(f"[브리핑 오류] {e}")
     with c4:
         if st.button("🌐 번역", use_container_width=True):
@@ -241,9 +506,14 @@ with st.sidebar:
     st.divider()
 
     with st.expander("🔍 필터"):
-        category_filter = st.multiselect("카테고리", list(CATEGORIES.keys()), format_func=lambda x: CATEGORIES[x])
-        sentiment_filter = st.multiselect("감성", list(SENTIMENTS.keys()), format_func=lambda x: SENTIMENTS[x])
-        importance_filter = st.slider("최소 중요도", 1, 5, 1)
+        category_filter = st.multiselect("카테고리", list(CATEGORIES.keys()), format_func=lambda x: CATEGORIES[x], key="cf")
+        sentiment_filter = st.multiselect("감성", list(SENTIMENTS.keys()), format_func=lambda x: SENTIMENTS[x], key="sf")
+        importance_filter = st.slider("최소 중요도", 1, 5, 1, key="if")
+        # 필터 변경 시 페이지 리셋
+        _filter_key = f"{category_filter}_{sentiment_filter}_{importance_filter}"
+        if st.session_state.get("_last_filter_key") != _filter_key:
+            st.session_state["_last_filter_key"] = _filter_key
+            st.session_state["page"] = 1
 
     with st.expander("👀 워치리스트"):
         watchlist = safe_read_json(WATCHLIST_PATH, [])
@@ -307,14 +577,17 @@ proc_for_m = [a for a in all_for_m if a.get("ai_processed")]
 pri_for_m = [a for a in proc_for_m if a.get("is_primary", True)]
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-    st.metric("📰 기사", f"{len(all_for_m)}")
+    st.metric("ARTICLES", f"{len(all_for_m):,}", delta=f"{len(proc_for_m)} analyzed" if proc_for_m else None)
 with m2:
     p_cnt = len([a for a in pri_for_m if a.get("sentiment") == "positive"])
-    st.metric("😊 긍정", f"{round(p_cnt / max(len(pri_for_m), 1) * 100)}%")
+    pct = round(p_cnt / max(len(pri_for_m), 1) * 100)
+    st.metric("POSITIVE", f"{pct}%", delta=f"{p_cnt} articles")
 with m3:
-    st.metric("⭐ 북마크", f"{len(safe_read_json(BOOKMARKS_PATH, []))}")
+    bm_count = len(_load_bookmarks())
+    st.metric("BOOKMARKS", f"{bm_count}")
 with m4:
-    st.metric("📡 소스", f"{len([s for s in load_sources() if s.get('is_active')])}")
+    active_src = len([s for s in load_sources() if s.get("is_active")])
+    st.metric("SOURCES", f"{active_src}", delta="active")
 
 # ══════════════════════════════════════════════
 # 5탭 구성
@@ -483,6 +756,10 @@ with tab_news:
             return f"{CATEGORIES[x]} ({cnt})" if cnt > 0 else f"{CATEGORIES[x]}"
 
         news_cat = st.radio("카테고리", ["전체"] + list(CATEGORIES.keys()), horizontal=True, key="news_cat", format_func=_news_cat_label, label_visibility="collapsed")
+        # 카테고리 변경 시 페이지 리셋
+        if st.session_state.get("_last_news_cat") != news_cat:
+            st.session_state["_last_news_cat"] = news_cat
+            st.session_state["page"] = 1
         filtered_articles = articles if news_cat == "전체" else [a for a in articles if a.get("category") == news_cat]
         st.markdown(f"### 📰 뉴스 ({len(filtered_articles)}개)")
         sort_opt = st.selectbox("정렬", ["중요도순", "최신순", "긍정 먼저"], label_visibility="collapsed")
@@ -546,7 +823,7 @@ with tab_news:
                     pub = article.get("published_at", "")[:10]
                     if pub:
                         st.caption(pub)
-                    bookmarks = safe_read_json(BOOKMARKS_PATH, [])
+                    bookmarks = _load_bookmarks()
                     bm_ids = {b["article_id"] for b in bookmarks}
                     is_bm = article["id"] in bm_ids
                     if st.button("⭐" if is_bm else "☆", key=f"bm_{article['id']}", use_container_width=True):
@@ -554,7 +831,7 @@ with tab_news:
                             bookmarks = [b for b in bookmarks if b["article_id"] != article["id"]]
                         else:
                             bookmarks.append({"article_id": article["id"], "memo": "", "created_at": today_str()})
-                        safe_write_json(BOOKMARKS_PATH, bookmarks)
+                        _save_bookmarks(bookmarks)
                         st.rerun()
                     if not article.get("is_read"):
                         if st.button("📖", key=f"rd_{article['id']}", use_container_width=True, help="읽음"):
@@ -597,7 +874,7 @@ with tab_news:
 
     elif view_mode == "⭐ 북마크":
         st.markdown("### ⭐ 북마크")
-        bookmarks = safe_read_json(BOOKMARKS_PATH, [])
+        bookmarks = _load_bookmarks()
         if not bookmarks:
             st.caption("뉴스에서 ☆를 클릭하면 여기에 저장됩니다.")
         else:
@@ -611,18 +888,18 @@ with tab_news:
                     bc1, bc2 = st.columns([5, 1])
                     with bc1:
                         st.markdown(f"{'⭐' * a.get('importance', 0)} [{a['title']}]({a['url']})")
-                        memo = st.text_input("메모", value=bm.get("memo", ""), key=f"m_{bm['article_id']}", placeholder="메모...", label_visibility="collapsed")
+                        memo = st.text_input("메모", value=bm.get("memo", ""), key=f"m_{bm['article_id']}", placeholder="메모 추가...", label_visibility="collapsed")
                         if memo != bm.get("memo", ""):
                             for b in bookmarks:
                                 if b["article_id"] == bm["article_id"]:
                                     b["memo"] = memo
                                     break
-                            safe_write_json(BOOKMARKS_PATH, bookmarks)
+                            _save_bookmarks(bookmarks)
                     with bc2:
                         st.caption(bm.get("created_at", "")[:10])
                         if st.button("🗑️", key=f"db_{bm['article_id']}"):
                             bookmarks = [b for b in bookmarks if b["article_id"] != bm["article_id"]]
-                            safe_write_json(BOOKMARKS_PATH, bookmarks)
+                            _save_bookmarks(bookmarks)
                             st.rerun()
 
     elif view_mode == "⏰ 타임라인":
@@ -823,6 +1100,7 @@ with tab_insight:
             go_debate = st.button("⚔️ 토론", use_container_width=True, key="rd")
 
         if go_debate:
+            st.session_state.pop("last_debate", None)
             if ta == tb:
                 st.warning("다른 도구를 선택하세요.")
             elif not _active_provider:
