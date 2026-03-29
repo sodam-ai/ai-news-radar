@@ -11,7 +11,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white"/>
   <img src="https://img.shields.io/badge/License-SoDam%20AI%20Studio-green"/>
-  <img src="https://img.shields.io/badge/Release-v1.2.0-blue"/>
+  <img src="https://img.shields.io/badge/Release-v1.2.1-blue"/>
   <img src="https://img.shields.io/badge/LLM-35%20Providers-purple"/>
 </p>
 
@@ -36,7 +36,7 @@
 5. 点击 **"Install Now"**
 
 ### 第2步：下载
-从[Releases页面](https://github.com/sodam-ai/ai-news-radar/releases)下载 **`AI_News_Radar_v1.2.0.zip`** → 解压
+从[Releases页面](https://github.com/sodam-ai/ai-news-radar/releases)下载 **`AI_News_Radar_v1.2.1.zip`** → 解压
 
 ### 第3步：获取免费API密钥
 1. 访问 **[aistudio.google.com/apikey](https://aistudio.google.com/apikey)**
