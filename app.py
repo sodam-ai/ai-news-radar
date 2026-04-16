@@ -616,8 +616,8 @@ with m4:
 # ══════════════════════════════════════════════
 # 5탭 구성
 # ══════════════════════════════════════════════
-tab_dash, tab_news, tab_ai, tab_insight, tab_share = st.tabs(
-    ["🏠 대시보드", "📰 뉴스피드", "💬 AI", "📊 인사이트", "📢 공유"]
+tab_dash, tab_news, tab_ai, tab_insight, tab_share, tab_graph = st.tabs(
+    ["🏠 대시보드", "📰 뉴스피드", "💬 AI", "📊 인사이트", "📢 공유", "🕸️ 그래프"]
 )
 
 # ══════════════════════════════════════════════
@@ -1403,3 +1403,69 @@ IMGUR_CLIENT_ID=발급받은_Imgur_Client_ID
                                 st.download_button("📥", data=f.read(), file_name=os.path.basename(p), mime="image/png", key=f"dci_{idx}", use_container_width=True)
         else:
             st.caption("내보낼 기사가 없습니다.")
+
+# ══════════════════════════════════════════════
+# 탭 6: 지식 그래프 (Knowledge Graph)
+# ══════════════════════════════════════════════
+with tab_graph:
+    st.markdown("### 🕸️ 지식 그래프 — 태그 공동 출현 네트워크")
+    st.caption("같은 기사에 함께 등장한 태그들을 엣지로 연결합니다. 노드 크기 = 기사 수, 색상 = 주요 카테고리.")
+
+    from ai.knowledge_graph import (
+        build_graph, build_plotly_figure,
+        get_top_connected_tags, get_related_articles,
+    )
+
+    gc1, gc2, gc3, gc4 = st.columns([2, 1, 1, 1])
+    with gc1:
+        graph_cats = st.multiselect(
+            "카테고리 필터", list(CATEGORIES.keys()),
+            default=list(CATEGORIES.keys()),
+            format_func=lambda x: CATEGORIES[x], key="gcat",
+        )
+    with gc2:
+        top_n = st.slider("상위 노드 수", 20, 120, 60, 10, key="gtn")
+    with gc3:
+        min_w = st.slider("최소 엣지 가중치", 1, 5, 2, 1, key="gmw")
+    with gc4:
+        highlight = st.text_input("🔦 강조할 태그", placeholder="예: claude", key="ghl", label_visibility="visible")
+
+    graph_source = [a for a in pri_for_m if a.get("category") in graph_cats]
+
+    if not graph_source:
+        st.caption("선택한 카테고리에 기사가 없습니다. 필터를 넓혀 보세요.")
+    else:
+        @st.cache_data(ttl=120)
+        def _compute_graph(cats_key: tuple, top_n: int, min_w: int):
+            source = [a for a in load_primary_articles() if a.get("category") in cats_key]
+            return build_graph(source, top_n=top_n, min_edge_weight=min_w)
+
+        gdata = _compute_graph(tuple(sorted(graph_cats)), top_n, min_w)
+
+        gm1, gm2, gm3 = st.columns(3)
+        gm1.metric("🔵 노드", len(gdata["nodes"]))
+        gm2.metric("🔗 엣지", len(gdata["edges"]))
+        gm3.metric("📰 분석 기사", gdata["total_articles"])
+
+        left, right = st.columns([3, 1])
+        with left:
+            fig = build_plotly_figure(gdata, highlight_tag=highlight)
+            if fig is None:
+                st.info("💡 연결된 태그가 없습니다. 최소 엣지 가중치를 1로 낮춰 보세요.")
+            else:
+                st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+        with right:
+            st.markdown("**🔗 허브 태그 TOP 10**")
+            top_hubs = get_top_connected_tags(gdata, n=10)
+            if not top_hubs:
+                st.caption("허브 태그가 없습니다.")
+            else:
+                for h in top_hubs:
+                    with st.expander(f"**{h['id']}** · {h['count']}기사 (연결 {h['degree']})"):
+                        rel = get_related_articles(h["id"], graph_source, limit=5)
+                        for a in rel:
+                            importance_marks = "⭐" * a.get("importance", 0)
+                            st.markdown(f"{importance_marks} [{a['title'][:70]}]({a['url']})")
+                            if a.get("summary_text"):
+                                st.caption(a["summary_text"][:120])
