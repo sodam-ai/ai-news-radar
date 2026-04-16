@@ -1,0 +1,59 @@
+name: AI News Crawl
+
+on:
+  schedule:
+    - cron: '0 * * * *'    # 매시간 정각
+  workflow_dispatch:         # 수동 트리거 허용
+
+permissions:
+  contents: write
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install feedparser beautifulsoup4 requests python-dotenv chromadb onnxruntime httpx
+
+      - name: Restore DB cache
+        uses: actions/cache@v4
+        with:
+          path: data/radar.db
+          key: radar-db-${{ github.run_number }}
+          restore-keys: radar-db-
+
+      - name: Run crawler
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          LLM_PROVIDER: gemini
+        run: |
+          python -c "
+          from db.database import init_db
+          from crawler.rss_crawler import crawl_all
+          init_db()
+          count = crawl_all()
+          print(f'new articles: {count}')
+          "
+
+      - name: Commit DB update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/radar.db || true
+          git diff --staged --quiet || git commit -m "chore: auto crawl $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
