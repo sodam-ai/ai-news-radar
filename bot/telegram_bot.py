@@ -18,7 +18,7 @@ import os
 import sys
 import logging
 
-# 프로젝트 루트를 path에 추가 (bot/ 하위에서 실행해도 import 가능)
+# 프로젝트 루트를 path에 추가
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
@@ -33,11 +33,21 @@ from telegram.ext import (
     ContextTypes,
 )
 
-from config import DATA_DIR
-from utils.helpers import safe_read_json, safe_write_json, today_str, now_iso, log
+from db.database import (
+    init_db,
+    get_primary_articles,
+    get_briefings,
+    search_articles,
+    get_article_by_id,
+    add_watchlist_keyword,
+    get_watchlist,
+    get_article_count,
+    get_processed_count,
+)
+from utils.helpers import today_str, now_iso, log
+from utils.bookmarks import get_bookmarks
 from ai.chat import chat as ai_chat
 from ai.model_router import get_active_provider
-from utils.bookmarks import get_bookmarks
 
 logging.basicConfig(
     format="%(asctime)s [TG-BOT] %(levelname)s: %(message)s",
@@ -45,10 +55,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-ARTICLES_PATH = DATA_DIR / "articles.json"
-BRIEFINGS_PATH = DATA_DIR / "briefings.json"
-
-# ── 최대 메시지 길이 (텔레그램 제한 4096자) ──
 MAX_MSG = 4000
 
 
@@ -83,12 +89,11 @@ async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """오늘의 브리핑 표시"""
-    briefings = safe_read_json(BRIEFINGS_PATH, [])
+    briefings = get_briefings(limit=10)
     today = today_str()
     briefing = next((b for b in briefings if b.get("date") == today), None)
 
     if not briefing:
-        # 가장 최근 브리핑
         if briefings:
             briefing = max(briefings, key=lambda b: b.get("date", ""))
         else:
@@ -117,10 +122,8 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def cmd_top(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """중요도 TOP 5 뉴스"""
-    articles = safe_read_json(ARTICLES_PATH, [])
-    processed = [a for a in articles if a.get("ai_processed") and a.get("is_primary", True)]
-    processed.sort(key=lambda x: x.get("importance", 0), reverse=True)
-    top5 = processed[:5]
+    articles = get_primary_articles(limit=100)
+    top5 = sorted(articles, key=lambda x: x.get("importance", 0), reverse=True)[:5]
 
     if not top5:
         await update.message.reply_text("아직 수집된 뉴스가 없습니다.")
@@ -151,23 +154,15 @@ async def cmd_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("사용법: /search 키워드\n예: /search Claude")
         return
 
-    articles = safe_read_json(ARTICLES_PATH, [])
-    processed = [a for a in articles if a.get("ai_processed") and a.get("is_primary", True)]
-
-    q = query.lower()
-    results = [
-        a for a in processed
-        if q in a.get("title", "").lower()
-        or q in a.get("summary_text", "").lower()
-        or any(q in t.lower() for t in a.get("tags", []))
-    ]
+    # FTS5 검색 (보안: search_articles에서 길이 제한 처리)
+    results = search_articles(query.strip(), limit=10)
 
     if not results:
         await update.message.reply_text(f"'{query}'에 대한 검색 결과가 없습니다.")
         return
 
     lines = [f"🔍 *'{query}' 검색 결과* ({len(results)}개)\n"]
-    for a in results[:10]:
+    for a in results:
         sentiment = {"positive": "😊", "negative": "😠", "neutral": "😐"}.get(a.get("sentiment", ""), "")
         lines.append(f"{sentiment} [{a['title']}]({a['url']})")
         lines.append("")
@@ -202,32 +197,30 @@ async def cmd_ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """수집 통계"""
-    articles = safe_read_json(ARTICLES_PATH, [])
-    processed = [a for a in articles if a.get("ai_processed")]
-    primary = [a for a in processed if a.get("is_primary", True)]
+    total = get_article_count()
+    processed = get_processed_count()
+    articles = get_primary_articles(limit=2000)
 
     lines = [
         "📊 *AI News Radar 통계*\n",
-        f"총 기사: {len(articles)}개",
-        f"AI 처리 완료: {len(processed)}개",
-        f"대표 기사: {len(primary)}개",
+        f"총 기사: {total:,}개",
+        f"AI 처리 완료: {processed:,}개",
+        f"대표 기사: {len(articles):,}개",
     ]
 
-    # 카테고리별 분포
-    cat_count = {}
-    for a in primary:
+    cat_count: dict[str, int] = {}
+    sent_count: dict[str, int] = {}
+    for a in articles:
         cat = a.get("category", "other")
         cat_count[cat] = cat_count.get(cat, 0) + 1
+        s = a.get("sentiment", "neutral")
+        sent_count[s] = sent_count.get(s, 0) + 1
+
     if cat_count:
         lines.append("\n*카테고리 분포:*")
         for cat, cnt in sorted(cat_count.items(), key=lambda x: x[1], reverse=True):
             lines.append(f"  {cat}: {cnt}개")
 
-    # 감성 분포
-    sent_count = {}
-    for a in primary:
-        s = a.get("sentiment", "neutral")
-        sent_count[s] = sent_count.get(s, 0) + 1
     if sent_count:
         emojis = {"positive": "😊", "negative": "😠", "neutral": "😐"}
         lines.append("\n*감성 분포:*")
@@ -240,10 +233,9 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def cmd_alert(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """/alert [키워드] — 워치리스트 조회 또는 키워드 추가"""
     keyword = " ".join(context.args).strip() if context.args else ""
-    watchlist_path = DATA_DIR / "watchlist.json"
 
     if not keyword:
-        watchlist = safe_read_json(watchlist_path, [])
+        watchlist = get_watchlist()
         active = [w.get("keyword", "") for w in watchlist if w.get("is_active")]
         if active:
             items = "\n".join([f"  • `{k}`" for k in active])
@@ -255,14 +247,16 @@ async def cmd_alert(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("워치리스트가 비어있습니다.\n추가: /alert 키워드\n예: /alert Claude 5")
         return
 
-    watchlist = safe_read_json(watchlist_path, [])
-    if any(w.get("keyword", "").lower() == keyword.lower() for w in watchlist):
+    # 입력값 검증 (최대 50자)
+    keyword = keyword[:50]
+    success = add_watchlist_keyword(keyword, now_iso())
+    if success:
+        await update.message.reply_text(
+            f"✅ `{keyword}` 워치리스트 등록 완료!\n해당 키워드가 포함된 기사 수집 시 자동 알림됩니다.",
+            parse_mode="Markdown",
+        )
+    else:
         await update.message.reply_text(f"이미 등록된 키워드입니다: `{keyword}`", parse_mode="Markdown")
-        return
-
-    watchlist.append({"keyword": keyword, "is_active": True, "created_at": now_iso()})
-    safe_write_json(watchlist_path, watchlist)
-    await update.message.reply_text(f"✅ `{keyword}` 워치리스트 등록 완료!\n해당 키워드가 포함된 기사 수집 시 자동 알림됩니다.", parse_mode="Markdown")
 
 
 async def cmd_bookmark(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -270,14 +264,13 @@ async def cmd_bookmark(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bookmarks = get_bookmarks()
     if not bookmarks:
         await update.message.reply_text(
-            "북마크한 기사가 없습니다.\n웹 대시보드 뉴스피드에서 ☆ 버튼으로 북마크하세요."
+            "북마크한 기사가 없습니다.\n웹 대시보드 뉴스피드에서 🤍 버튼으로 북마크하세요."
         )
         return
 
-    arts_map = {a["id"]: a for a in safe_read_json(ARTICLES_PATH, [])}
     lines = [f"⭐ *북마크 기사* ({len(bookmarks)}개)\n"]
-    for bm in reversed(bookmarks[:10]):
-        a = arts_map.get(bm.get("article_id", ""))
+    for bm in bookmarks[:10]:
+        a = get_article_by_id(bm.get("article_id", ""))
         if not a:
             continue
         memo = bm.get("memo", "")
@@ -320,9 +313,9 @@ def run_bot():
         print("   예: TELEGRAM_BOT_TOKEN=123456:ABC-DEF...")
         return
 
+    init_db()
     app = Application.builder().token(token).build()
 
-    # 명령어 등록
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CommandHandler("today", cmd_today))
@@ -333,7 +326,6 @@ def run_bot():
     app.add_handler(CommandHandler("bookmark", cmd_bookmark))
     app.add_handler(CommandHandler("stats", cmd_stats))
 
-    # 일반 메시지 → AI 채팅
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     logger.info("🤖 AI News Radar 텔레그램 봇 시작!")
