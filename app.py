@@ -4,7 +4,16 @@ import streamlit as st
 from datetime import datetime, timedelta
 
 from config import DATA_DIR, CATEGORIES, SENTIMENTS
-from utils.helpers import safe_read_json, safe_update_json, safe_write_json, today_str, log
+from utils.helpers import today_str, log
+from db.database import (
+    init_db, get_articles, get_primary_articles, search_articles,
+    get_article_by_id, update_article_fields,
+    get_briefings, get_sources, upsert_source,
+    get_watchlist, add_watchlist_keyword, get_active_keywords,
+    get_bookmarks, add_bookmark, remove_bookmark, update_bookmark_memo,
+    get_bookmark_ids, get_article_count, get_processed_count,
+    get_weekly_reports,
+)
 from crawler.rss_crawler import crawl_all, load_sources
 from crawler.scheduler import start_scheduler
 from ai.batch_processor import process_unprocessed
@@ -323,38 +332,32 @@ hr { border-color: var(--border-subtle) !important; }
 </style>""", unsafe_allow_html=True)
 
 # ── 초기화 ──
+init_db()
 _active_provider = get_active_provider()
 if "scheduler_started" not in st.session_state:
     start_scheduler()
     st.session_state.scheduler_started = True
 
-ARTICLES_PATH = DATA_DIR / "articles.json"
-SOURCES_PATH = DATA_DIR / "sources.json"
-WATCHLIST_PATH = DATA_DIR / "watchlist.json"
-BRIEFINGS_PATH = DATA_DIR / "briefings.json"
-BOOKMARKS_PATH = DATA_DIR / "bookmarks.json"
-
-
-def _load_bookmarks():
-    """북마크 로드 (렌더링 사이클 내 캐싱)"""
-    if "_bm_cache" not in st.session_state:
-        st.session_state._bm_cache = safe_read_json(BOOKMARKS_PATH, [])
-    return st.session_state._bm_cache
-
-
-def _save_bookmarks(bookmarks):
-    """북마크 저장 + 캐시 갱신"""
-    safe_update_json(BOOKMARKS_PATH, lambda _: bookmarks, default=bookmarks)
-    st.session_state._bm_cache = bookmarks
 CAT_NAMES = {"ai_tool": "도구", "ai_research": "연구", "ai_trend": "트렌드", "ai_tutorial": "튜토리얼", "ai_business": "비즈니스", "ai_image_video": "이미지/영상", "ai_coding": "바이브코딩", "ai_ontology": "온톨로지", "ai_other": "기타"}
 
 
+@st.cache_data(ttl=60)
 def load_articles():
-    return safe_read_json(ARTICLES_PATH, [])
+    return get_articles(limit=5000)
 
 
+@st.cache_data(ttl=60)
 def load_primary_articles():
-    return [a for a in load_articles() if a.get("is_primary", True) and a.get("ai_processed")]
+    return get_primary_articles(limit=2000)
+
+
+def _toggle_bookmark(article_id: str) -> None:
+    ids = get_bookmark_ids()
+    if article_id in ids:
+        remove_bookmark(article_id)
+    else:
+        add_bookmark(article_id, "", today_str())
+    st.cache_data.clear()
 
 
 def render_cat_pill(cat):
@@ -513,7 +516,7 @@ with st.sidebar:
         try:
             with st.spinner("🧠 동기화 중..."):
                 from ai.vector_store import sync_existing_articles
-                synced = sync_existing_articles(load_articles())
+                synced = sync_existing_articles(get_articles(limit=5000))
             if synced > 0:
                 st.success(f"✅ {synced}개 동기화!")
             else:
@@ -534,12 +537,12 @@ with st.sidebar:
             st.session_state["page"] = 1
 
     with st.expander("👀 워치리스트"):
-        watchlist = safe_read_json(WATCHLIST_PATH, [])
-        watchlist_keywords = [w["keyword"] for w in watchlist if w.get("is_active")]
+        watchlist_keywords = get_active_keywords()
         new_kw = st.text_input("키워드", placeholder="예: Claude, Flux", label_visibility="collapsed")
         if new_kw and st.button("➕ 추가", key="add_kw", use_container_width=True):
-            watchlist.append({"keyword": new_kw, "is_active": True, "created_at": today_str()})
-            safe_update_json(WATCHLIST_PATH, lambda _: watchlist, default=watchlist)
+            kw_clean = new_kw.strip()[:50]
+            from utils.helpers import now_iso
+            add_watchlist_keyword(kw_clean, now_iso())
             st.rerun()
         if watchlist_keywords:
             st.markdown(" ".join([f"`{k}`" for k in watchlist_keywords]))
@@ -549,22 +552,25 @@ with st.sidebar:
         for s in sources:
             s["is_active"] = st.checkbox(s["name"], value=s.get("is_active", True), key=f"src_{s['id']}")
         if st.button("💾 저장", use_container_width=True, key="save_src"):
-            safe_update_json(SOURCES_PATH, lambda _: sources, default=sources)
+            for s in sources:
+                upsert_source(s)
             st.success("저장됨!")
 
     @st.fragment(run_every=300)
     def sidebar_stats():
-        all_a = load_articles()
-        proc = [a for a in all_a if a.get("ai_processed")]
+        total = get_article_count()
+        processed = get_processed_count()
         st.divider()
-        st.caption(f"📊 {len(all_a)}개 수집 | {len(proc)}개 분석")
+        st.caption(f"📊 {total:,}개 수집 | {processed:,}개 분석")
+        if total > 0:
+            st.progress(processed / total, text=f"AI 처리율 {processed / total:.0%}")
     sidebar_stats()
 
 
 # ── 실시간 알림 ──
 @st.fragment(run_every=300)
 def new_articles_banner():
-    total = len(load_articles())
+    total = get_article_count()
     if "last_count" not in st.session_state:
         st.session_state.last_count = total
     elif total > st.session_state.last_count:
@@ -590,18 +596,18 @@ def is_watchlisted(article):
 
 
 # ── 히어로 메트릭 ──
-all_for_m = load_articles()
-proc_for_m = [a for a in all_for_m if a.get("ai_processed")]
-pri_for_m = [a for a in proc_for_m if a.get("is_primary", True)]
+_total_count = get_article_count()
+_proc_count = get_processed_count()
+pri_for_m = load_primary_articles()
 m1, m2, m3, m4 = st.columns(4)
 with m1:
-    st.metric("ARTICLES", f"{len(all_for_m):,}", delta=f"{len(proc_for_m)} analyzed" if proc_for_m else None)
+    st.metric("ARTICLES", f"{_total_count:,}", delta=f"{_proc_count} analyzed" if _proc_count else None)
 with m2:
     p_cnt = len([a for a in pri_for_m if a.get("sentiment") == "positive"])
     pct = round(p_cnt / max(len(pri_for_m), 1) * 100)
     st.metric("POSITIVE", f"{pct}%", delta=f"{p_cnt} articles")
 with m3:
-    bm_count = len(_load_bookmarks())
+    bm_count = len(get_bookmarks())
     st.metric("BOOKMARKS", f"{bm_count}")
 with m4:
     active_src = len([s for s in load_sources() if s.get("is_active")])
@@ -619,7 +625,7 @@ tab_dash, tab_news, tab_ai, tab_insight, tab_share = st.tabs(
 # ══════════════════════════════════════════════
 with tab_dash:
     # 브리핑
-    briefings = safe_read_json(BRIEFINGS_PATH, [])
+    briefings = get_briefings(limit=10)
     today_briefing = next((b for b in briefings if b.get("date") == today_str()), None)
 
     # 카테고리 퀵필터 (건수 표시)
@@ -841,26 +847,15 @@ with tab_news:
                     pub = article.get("published_at", "")[:10]
                     if pub:
                         st.caption(pub)
-                    bookmarks = _load_bookmarks()
-                    bm_ids = {b["article_id"] for b in bookmarks}
+                    bm_ids = get_bookmark_ids()
                     is_bm = article["id"] in bm_ids
                     if st.button("⭐" if is_bm else "☆", key=f"bm_{article['id']}", use_container_width=True):
-                        if is_bm:
-                            bookmarks = [b for b in bookmarks if b["article_id"] != article["id"]]
-                        else:
-                            bookmarks.append({"article_id": article["id"], "memo": "", "created_at": today_str()})
-                        _save_bookmarks(bookmarks)
+                        _toggle_bookmark(article["id"])
                         st.rerun()
                     if not article.get("is_read"):
                         if st.button("📖", key=f"rd_{article['id']}", use_container_width=True, help="읽음"):
-                            safe_update_json(
-                                ARTICLES_PATH,
-                                lambda current: [
-                                    {**a, "is_read": True} if a["id"] == article["id"] else a
-                                    for a in current
-                                ],
-                                default=[],
-                            )
+                            update_article_fields(article["id"], {"is_read": True})
+                            st.cache_data.clear()
                             st.rerun()
                     else:
                         st.caption("✅")
@@ -875,10 +870,10 @@ with tab_news:
             s_sent = st.selectbox("감성", ["전체", "positive", "neutral", "negative"], format_func=lambda x: "전체" if x == "전체" else SENTIMENTS.get(x, x), key="ss")
 
         if sq or s_cat != "전체" or s_sent != "전체":
-            results = load_primary_articles()
             if sq:
-                q = sq.lower()
-                results = [a for a in results if q in a.get("title", "").lower() or q in a.get("summary_text", "").lower() or any(q in t.lower() for t in a.get("tags", []))]
+                results = search_articles(sq.strip()[:200], limit=200)
+            else:
+                results = load_primary_articles()
             if s_cat != "전체":
                 results = [a for a in results if a.get("category") == s_cat]
             if s_sent != "전체":
@@ -894,7 +889,7 @@ with tab_news:
 
     elif view_mode == "⭐ 북마크":
         st.markdown("### ⭐ 북마크")
-        bookmarks = _load_bookmarks()
+        bookmarks = get_bookmarks()
         if not bookmarks:
             st.caption("뉴스에서 ☆를 클릭하면 여기에 저장됩니다.")
         else:
@@ -910,16 +905,13 @@ with tab_news:
                         st.markdown(f"{'⭐' * a.get('importance', 0)} [{a['title']}]({a['url']})")
                         memo = st.text_input("메모", value=bm.get("memo", ""), key=f"m_{bm['article_id']}", placeholder="메모 추가...", label_visibility="collapsed")
                         if memo != bm.get("memo", ""):
-                            for b in bookmarks:
-                                if b["article_id"] == bm["article_id"]:
-                                    b["memo"] = memo
-                                    break
-                            _save_bookmarks(bookmarks)
+                            update_bookmark_memo(bm["article_id"], memo)
+                            st.cache_data.clear()
                     with bc2:
                         st.caption(bm.get("created_at", "")[:10])
                         if st.button("🗑️", key=f"db_{bm['article_id']}"):
-                            bookmarks = [b for b in bookmarks if b["article_id"] != bm["article_id"]]
-                            _save_bookmarks(bookmarks)
+                            remove_bookmark(bm["article_id"])
+                            st.cache_data.clear()
                             st.rerun()
 
     elif view_mode == "⏰ 타임라인":
