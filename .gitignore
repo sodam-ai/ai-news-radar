@@ -50,3 +50,4 @@ installer_output/
 Thumbs.db
 .vscode/
 .idea/
+.omc/
