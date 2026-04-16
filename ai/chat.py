@@ -5,10 +5,8 @@ import os
 import requests as req
 
 from ai.model_router import PROVIDERS, get_active_provider
-from config import DATA_DIR
-from utils.helpers import log, safe_read_json
-
-ARTICLES_PATH = DATA_DIR / "articles.json"
+from db.database import get_primary_articles, search_articles
+from utils.helpers import log
 
 CHAT_SYSTEM = """You are the AI News Radar assistant.
 Answer using the provided AI news context when relevant.
@@ -18,26 +16,30 @@ If the retrieved context is insufficient, say that clearly.
 
 
 def _find_relevant_articles(query: str, max_articles: int = 10) -> list[dict]:
-    articles = safe_read_json(ARTICLES_PATH, [])
-    processed = {a["id"]: a for a in articles if a.get("ai_processed") and a.get("is_primary", True)}
-    if not processed:
-        return []
-
     # ChromaDB 시맨틱 검색 우선 시도
     try:
         from ai.vector_store import search, get_count
         if get_count() > 0:
             ids = search(query, n_results=max_articles)
-            results = [processed[i] for i in ids if i in processed]
-            if results:
-                return results
+            if ids:
+                # DB에서 해당 ID의 기사 조회
+                from db.database import get_article_by_id
+                results = [a for a in (get_article_by_id(i) for i in ids) if a]
+                if results:
+                    return results
     except Exception:
         pass
 
-    # fallback: 키워드 매칭
-    query_words = [word.strip().lower() for word in query.split() if len(word.strip()) >= 2]
+    # FTS5 전문 검색 fallback
+    results = search_articles(query, limit=max_articles)
+    if results:
+        return results
+
+    # 키워드 매칭 fallback (FTS5 실패 시)
+    articles = get_primary_articles(limit=500)
+    query_words = [w.strip().lower() for w in query.split() if len(w.strip()) >= 2]
     scored = []
-    for article in processed.values():
+    for article in articles:
         text = (
             f"{article.get('title', '')} "
             f"{article.get('summary_text', '')} "

@@ -1,14 +1,9 @@
 """Desktop alerts for watchlist hits and high-importance articles."""
 
-from config import DATA_DIR
-from utils.helpers import log, now_iso, safe_read_json, safe_update_json
-
-WATCHLIST_PATH = DATA_DIR / "watchlist.json"
-ARTICLES_PATH = DATA_DIR / "articles.json"
-ALERT_LOG_PATH = DATA_DIR / "alert_log.json"
+from db.database import get_active_keywords, get_primary_articles, mark_alerted, get_alert_log
+from utils.helpers import log, now_iso
 
 IMPORTANCE_ALERT_THRESHOLD = 5
-MAX_ALERT_LOG_ENTRIES = 500
 
 
 def _show_desktop_notification(title: str, message: str):
@@ -27,19 +22,11 @@ def _show_desktop_notification(title: str, message: str):
 
 
 def _already_alerted(article_id: str) -> bool:
-    alert_log = safe_read_json(ALERT_LOG_PATH, [])
-    return article_id in alert_log
+    return article_id in get_alert_log(limit=500)
 
 
 def _mark_alerted(article_id: str):
-    def updater(current: list[str]):
-        updated = [item for item in current if item != article_id]
-        updated.append(article_id)
-        if len(updated) > MAX_ALERT_LOG_ENTRIES:
-            updated = updated[-MAX_ALERT_LOG_ENTRIES:]
-        return updated
-
-    safe_update_json(ALERT_LOG_PATH, updater, default=[])
+    mark_alerted(article_id, now_iso())
 
 
 def _send_telegram_notification(article: dict, matched_keywords: list[str]):
@@ -79,18 +66,13 @@ def _send_telegram_notification(article: dict, matched_keywords: list[str]):
 
 
 def check_and_alert(articles: list[dict] = None) -> list[dict]:
-    """Show alerts for matching keywords or highly important articles."""
-    if articles is None:
-        articles = safe_read_json(ARTICLES_PATH, [])
-
-    watchlist = safe_read_json(WATCHLIST_PATH, [])
-    active_keywords = [
-        item["keyword"].lower()
-        for item in watchlist
-        if item.get("is_active") and item.get("keyword")
-    ]
+    """워치리스트 키워드 매칭 또는 고중요도 기사에 알림."""
+    active_keywords = get_active_keywords()
     if not active_keywords:
         return []
+
+    if articles is None:
+        articles = get_primary_articles(limit=500)
 
     alerted = []
 
@@ -135,5 +117,4 @@ def check_and_alert(articles: list[dict] = None) -> list[dict]:
 
 
 def get_alert_history(limit: int = 20) -> list[str]:
-    alert_log = safe_read_json(ALERT_LOG_PATH, [])
-    return alert_log[-limit:]
+    return get_alert_log(limit=limit)
