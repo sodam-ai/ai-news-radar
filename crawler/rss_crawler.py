@@ -1,27 +1,35 @@
-"""RSS ë‰´ìŠ¤ ìˆ˜ì§‘."""
+"""RSS 뉴스 수집."""
 import feedparser
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from time import mktime
 
 from config import DATA_DIR, MAX_ARTICLES_PER_SOURCE
-from utils.helpers import generate_id, log, now_iso, safe_read_json, safe_update_json, safe_write_json
+from db.database import (
+    init_db,
+    get_sources,
+    upsert_source,
+    upsert_articles,
+    update_source_crawled,
+    get_connection,
+)
+from utils.helpers import generate_id, log, now_iso, safe_read_json
 
-SOURCES_PATH = DATA_DIR / "sources.json"
-ARTICLES_PATH = DATA_DIR / "articles.json"
 MAX_WORKERS = 15
 REQUEST_HEADERS = {"User-Agent": "AI-News-Radar/1.0"}
 
 
 def load_sources() -> list[dict]:
-    sources = safe_read_json(SOURCES_PATH, [])
+    """소스 목록 반환 — DB 우선, 없으면 preset_sources.json으로 초기화"""
+    init_db()
+    sources = get_sources()
     if not sources:
         preset = safe_read_json(DATA_DIR / "preset_sources.json", [])
         for source in preset:
-            source["last_crawled_at"] = None
-            source["created_at"] = now_iso()
-        safe_write_json(SOURCES_PATH, preset)
-        return preset
+            source.setdefault("last_crawled_at", None)
+            source.setdefault("created_at", now_iso())
+            upsert_source(source)
+        sources = get_sources()
     return sources
 
 
@@ -93,39 +101,15 @@ def _crawl_single(source: dict, existing_urls: set[str]) -> tuple[dict, list[dic
     return source, new_articles
 
 
-def _merge_articles(current: list[dict], new_articles: list[dict]) -> list[dict]:
-    by_url = {article["url"]: article for article in current if article.get("url")}
-    for article in new_articles:
-        by_url.setdefault(article["url"], article)
-    return list(by_url.values())
-
-
-def _merge_sources(current: list[dict], updated_sources: list[dict]) -> list[dict]:
-    updated_by_id = {source["id"]: source for source in updated_sources if source.get("id")}
-    merged = []
-    seen_ids = set()
-
-    for source in current:
-        source_id = source.get("id")
-        latest = updated_by_id.get(source_id)
-        if latest:
-            merged.append({**source, **latest})
-            seen_ids.add(source_id)
-        else:
-            merged.append(source)
-
-    for source_id, source in updated_by_id.items():
-        if source_id not in seen_ids:
-            merged.append(source)
-
-    return merged
-
-
 def crawl_all() -> int:
     """모든 활성 소스를 수집하고 신규 기사 수를 반환."""
     sources = load_sources()
-    existing = safe_read_json(ARTICLES_PATH, [])
-    existing_urls = {article["url"] for article in existing if article.get("url")}
+
+    # DB에서 기존 URL 조회 (중복 방지) — JSON 5MB 파싱 불필요
+    conn = get_connection()
+    existing_urls: set[str] = {
+        r[0] for r in conn.execute("SELECT url FROM articles WHERE url != ''").fetchall()
+    }
 
     total_new = 0
     aggregated_new_articles: list[dict] = []
@@ -139,33 +123,34 @@ def crawl_all() -> int:
 
         for future in as_completed(futures):
             try:
-                _, new_articles = future.result()
+                updated_src, new_articles = future.result()
                 if new_articles:
                     aggregated_new_articles.extend(new_articles)
                     for article in new_articles:
                         existing_urls.add(article["url"])
                     total_new += len(new_articles)
+                # 소스 마지막 수집 시각 업데이트
+                if updated_src.get("last_crawled_at"):
+                    update_source_crawled(updated_src["id"], updated_src["last_crawled_at"])
             except Exception as e:
                 log(f"[crawl:error] {e}")
 
     if aggregated_new_articles:
-        safe_update_json(
-            ARTICLES_PATH,
-            lambda current: _merge_articles(current, aggregated_new_articles),
-            default=[],
-        )
-
-    safe_update_json(
-        SOURCES_PATH,
-        lambda current: _merge_sources(current, sources),
-        default=sources,
-    )
+        upsert_articles(aggregated_new_articles)
 
     log(f"[crawl:done] sources={len(active_sources)} new_articles={total_new}")
     return total_new
 
 
 def crawl_source(source: dict) -> list[dict]:
-    existing_urls = {article["url"] for article in safe_read_json(ARTICLES_PATH, []) if article.get("url")}
-    _, articles = _crawl_single(source, existing_urls)
-    return articles
+    """단일 소스 수집 (앱 UI에서 수동 수집 시 호출)"""
+    conn = get_connection()
+    existing_urls: set[str] = {
+        r[0] for r in conn.execute("SELECT url FROM articles WHERE url != ''").fetchall()
+    }
+    updated_src, new_articles = _crawl_single(source, existing_urls)
+    if new_articles:
+        upsert_articles(new_articles)
+    if updated_src.get("last_crawled_at"):
+        update_source_crawled(updated_src["id"], updated_src["last_crawled_at"])
+    return new_articles
