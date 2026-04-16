@@ -4,7 +4,7 @@ import streamlit as st
 from datetime import datetime, timedelta
 
 from config import DATA_DIR, CATEGORIES, SENTIMENTS
-from utils.helpers import safe_read_json, safe_write_json, today_str, log
+from utils.helpers import safe_read_json, safe_update_json, safe_write_json, today_str, log
 from crawler.rss_crawler import crawl_all, load_sources
 from crawler.scheduler import start_scheduler
 from ai.batch_processor import process_unprocessed
@@ -344,7 +344,7 @@ def _load_bookmarks():
 
 def _save_bookmarks(bookmarks):
     """북마크 저장 + 캐시 갱신"""
-    safe_write_json(BOOKMARKS_PATH, bookmarks)
+    safe_update_json(BOOKMARKS_PATH, lambda _: bookmarks, default=bookmarks)
     st.session_state._bm_cache = bookmarks
 CAT_NAMES = {"ai_tool": "도구", "ai_research": "연구", "ai_trend": "트렌드", "ai_tutorial": "튜토리얼", "ai_business": "비즈니스", "ai_image_video": "이미지/영상", "ai_coding": "바이브코딩", "ai_ontology": "온톨로지", "ai_other": "기타"}
 
@@ -503,6 +503,24 @@ with st.sidebar:
             time.sleep(1.5)
             progress.empty()
 
+    # ── ChromaDB 벡터 동기화 ──
+    try:
+        from ai.vector_store import get_count
+        _vec_count = get_count()
+    except Exception:
+        _vec_count = 0
+    if st.button(f"🧠 벡터 동기화 ({_vec_count}개)", use_container_width=True, help="기존 기사를 시맨틱 검색 DB에 동기화 (최초 1회)"):
+        try:
+            with st.spinner("🧠 동기화 중..."):
+                from ai.vector_store import sync_existing_articles
+                synced = sync_existing_articles(load_articles())
+            if synced > 0:
+                st.success(f"✅ {synced}개 동기화!")
+            else:
+                st.caption("이미 최신 상태")
+        except Exception as e:
+            st.error(f"동기화 오류: {str(e)[:60]}")
+
     st.divider()
 
     with st.expander("🔍 필터"):
@@ -521,7 +539,7 @@ with st.sidebar:
         new_kw = st.text_input("키워드", placeholder="예: Claude, Flux", label_visibility="collapsed")
         if new_kw and st.button("➕ 추가", key="add_kw", use_container_width=True):
             watchlist.append({"keyword": new_kw, "is_active": True, "created_at": today_str()})
-            safe_write_json(WATCHLIST_PATH, watchlist)
+            safe_update_json(WATCHLIST_PATH, lambda _: watchlist, default=watchlist)
             st.rerun()
         if watchlist_keywords:
             st.markdown(" ".join([f"`{k}`" for k in watchlist_keywords]))
@@ -531,7 +549,7 @@ with st.sidebar:
         for s in sources:
             s["is_active"] = st.checkbox(s["name"], value=s.get("is_active", True), key=f"src_{s['id']}")
         if st.button("💾 저장", use_container_width=True, key="save_src"):
-            safe_write_json(SOURCES_PATH, sources)
+            safe_update_json(SOURCES_PATH, lambda _: sources, default=sources)
             st.success("저장됨!")
 
     @st.fragment(run_every=300)
@@ -835,12 +853,14 @@ with tab_news:
                         st.rerun()
                     if not article.get("is_read"):
                         if st.button("📖", key=f"rd_{article['id']}", use_container_width=True, help="읽음"):
-                            all_a = safe_read_json(ARTICLES_PATH, [])
-                            for a in all_a:
-                                if a["id"] == article["id"]:
-                                    a["is_read"] = True
-                                    break
-                            safe_write_json(ARTICLES_PATH, all_a)
+                            safe_update_json(
+                                ARTICLES_PATH,
+                                lambda current: [
+                                    {**a, "is_read": True} if a["id"] == article["id"] else a
+                                    for a in current
+                                ],
+                                default=[],
+                            )
                             st.rerun()
                     else:
                         st.caption("✅")

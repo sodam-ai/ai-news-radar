@@ -1,386 +1,281 @@
-# AI News Radar
+# 📡 AI News Radar
 
 <p align="center">
-  <img src="assets/icon.png" width="80" alt="AI News Radar Icon" />
+  <img src="assets/icon.png" width="80" alt="AI News Radar 아이콘" />
 </p>
+
 <p align="center">
-  <strong>Your Personal AI News Intelligence Platform</strong><br/>
-  Automatically collects, summarizes, and analyzes AI news from 74 sources
+  <strong>나만의 AI 뉴스 인텔리전스 플랫폼</strong><br/>
+  74개 소스에서 AI 뉴스를 자동 수집·요약·분석하는 개인용 대시보드
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
-  <img src="https://img.shields.io/badge/License-SoDam%20AI%20Studio-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.2.1-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
+  <img src="https://img.shields.io/badge/Release-v1.3.0-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
-  <img src="https://img.shields.io/badge/LLM-35%20Providers-purple" alt="LLM"/>
+  <img src="https://img.shields.io/badge/LLM-35개_프로바이더-purple" alt="LLM"/>
+  <img src="https://img.shields.io/badge/벡터검색-ChromaDB-orange" alt="ChromaDB"/>
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> |
-  <a href="README_KO.md">한국어</a> |
+  <a href="README.md">한국어</a> |
+  <a href="README_EN.md">English</a> |
   <a href="README_JA.md">日本語</a> |
   <a href="README_ZH.md">中文</a>
 </p>
 
 ---
 
-## What is AI News Radar?
+## AI News Radar가 뭔가요?
 
-AI News Radar is a **local desktop application** that:
+**코딩을 한 번도 안 해봐도** 사용할 수 있는 AI 뉴스 도구입니다.
 
-- Collects AI news from **74 RSS sources** (English + Korean) in one click
-- Uses AI to **summarize, categorize, and analyze** every article
-- Generates **daily TOP 5 briefings** and **weekly intelligence reports**
-- Lets you **chat with AI** about the news ("What happened in AI today?")
-- Creates **social media posts** automatically for Discord, Telegram, X, and more
-- Tracks **AI tool releases**, **trends**, and **competitor movements**
+- 📰 **74개 AI 뉴스 소스**에서 자동으로 최신 뉴스를 수집합니다
+- 🤖 **AI가 자동으로 요약·분류·중요도 평가**를 해줍니다
+- 📋 **매일 TOP 5 브리핑**을 자동으로 만들어 줍니다
+- 💬 **"이번 주 Claude 관련 뉴스 알려줘"** — AI에게 자연어로 질문하세요
+- 🔍 **시맨틱 검색** — 의미 기반 AI 검색 (단어가 정확히 안 맞아도 관련 기사 찾기)
+- ⭐ **북마크 + 메모** — 중요한 기사를 저장하고 메모합니다
+- 📱 **텔레그램 봇** — 앱을 안 켜도 중요 뉴스가 텔레그램으로 옵니다
+- 📊 **트렌드·경쟁사 분석** — AI 업계 흐름을 차트로 한눈에 파악합니다
 
-Think of it as your **personal AI news assistant** that runs entirely on your computer.
-
----
-
-## Quick Start Guide
-
-> **No coding experience needed.** Just follow these steps.
-
-### Step 1: Install Python
-
-If Python is already installed on your computer, skip to Step 2.
-
-1. Open your web browser and go to **[python.org/downloads](https://www.python.org/downloads/)**
-2. Click the big yellow **"Download Python 3.xx"** button
-3. Open the downloaded file to start the installer
-4. **VERY IMPORTANT**: At the bottom of the installer, there is a checkbox that says **"Add Python to PATH"**. **You MUST check this box!** Without it, the app cannot find Python.
-5. Click **"Install Now"** and wait for it to finish
-6. Click **"Close"** when done
-
-### Step 2: Download AI News Radar
-
-**Option A — From GitHub Releases (recommended):**
-1. Go to the [Releases page](https://github.com/sodam-ai/ai-news-radar/releases)
-2. Download **`Source code (zip)`**
-3. Right-click the ZIP file → **"Extract All"** → Choose a folder (e.g., Desktop) → **"Extract"**
-
-**Option B — From this page:**
-1. Click the green **"Code"** button at the top of this page
-2. Click **"Download ZIP"**
-3. Extract the ZIP to any folder
-
-### Step 3: Get Your Free API Key
-
-AI News Radar uses AI to analyze news. You need a free API key (takes 30 seconds):
-
-1. Go to **[aistudio.google.com/apikey](https://aistudio.google.com/apikey)**
-2. Sign in with any Google account
-3. Click **"Create API Key"**
-4. **Copy the key** (it looks like `AIzaSy...`)
-5. Keep this page open — you'll need to paste the key in the next step
-
-> **Is it really free?** Yes! Google provides 1,000 free API calls per day, which is more than enough for personal news tracking. No credit card required.
-
-### Step 4: Run the App
-
-Open the extracted folder and **double-click `AI_News_Radar.exe`**.
-
-**On first run:**
-- The app will **automatically create a virtual environment** and **install all dependencies**
-- **This takes 3-5 minutes** depending on your internet speed (about 200MB of downloads)
-- A text editor will open — **paste your API key** from Step 3, save the file, and close it
-- Your browser will open with AI News Radar!
-
-**On subsequent runs:**
-- Just double-click the exe again — it starts in seconds
-
-> **Windows SmartScreen warning?** Since this is a new application, Windows may show a blue warning screen. Click **"More info"** → **"Run anyway"**. This is normal for any new software.
+> 내 컴퓨터에서만 실행되는 **완전 로컬** 앱입니다. 데이터가 외부로 나가지 않습니다.
 
 ---
 
-## Features Overview (45+)
+## 빠른 시작 (코딩 경험 없어도 OK)
 
-### News Collection & Management
-| Feature | Description |
-|---------|-------------|
-| One-Click Pipeline | Collect → Analyze → Briefing in a single button press |
-| 74 RSS Sources | Covers TechCrunch, Ars Technica, MIT Tech Review, AI-focused blogs, Korean tech sites |
-| Smart Deduplication | Same story from multiple sources? Merged automatically |
-| Keyword Watchlist | Highlight articles matching your interests (e.g., "GPT", "diffusion") |
-| Bookmark System | Save articles for later with instant access |
-| Auto Translation | English articles translated to Korean automatically |
-| Category Filters | AI Tools, Research, Trends, Tutorials, Business, Image/Video, Coding, Ontology |
+### 1단계: Python 설치
 
-### AI Analysis & Intelligence
-| Feature | Description |
-|---------|-------------|
-| Daily TOP 5 Briefing | AI picks and summarizes the 5 most important stories |
-| Weekly Report | Comprehensive analysis with trends, predictions, key takeaways |
-| AI Chat | Ask questions about the news: "What are the latest LLM developments?" |
-| Trend Analysis | Charts showing topic evolution over time |
-| Release Tracker | Monitors new versions of 50+ AI tools |
-| Competitor Analysis | Side-by-side comparison of AI companies and tools |
-| AI Debate | Pro vs con analysis of controversial AI topics |
-| Glossary | Technical terms explained in plain language |
-| Fact Check | Cross-references claims across multiple sources |
-| Smart Alerts | Notifications when news matches your interests |
+이미 Python이 설치되어 있다면 2단계로 건너뛰세요.
 
-### Content Creation & Sharing
-| Feature | Description |
-|---------|-------------|
-| Voice Briefing | Listen to your daily briefing (text-to-speech, 20+ voices) |
-| Export to Markdown | Clean export for blogs, Notion, Obsidian |
-| Export to PDF | Formatted PDF with cover page and table of contents |
-| Discord Posting | Send news and briefings to Discord channels |
-| Telegram Channel | Automated posting to Telegram |
-| X (Twitter) Posting | Share news on X with auto-generated captions |
-| Threads / Instagram | Post to Meta platforms |
-| AI Content Generator | Auto-writes social media captions optimized for each platform |
-| Email Newsletter | Send weekly digests via email |
+1. 브라우저에서 **[python.org/downloads](https://www.python.org/downloads/)** 접속
+2. 노란 **"Download Python 3.xx"** 버튼 클릭
+3. 다운로드된 파일 실행
+4. **반드시 체크 필수**: 설치 화면 맨 아래 **"Add Python to PATH"** 체크박스를 반드시 체크하세요!
+5. **"Install Now"** 클릭 → 완료되면 "Close"
 
-### Supported AI Providers (35)
-<details>
-<summary>Click to see all 35 providers</summary>
+### 2단계: 프로그램 다운로드
 
-| Provider | Free Tier | Notes |
-|----------|-----------|-------|
-| **Google Gemini** | 1,000 calls/day | Recommended default |
-| **Groq** | 14,400 calls/day | Fastest response |
-| **OpenAI (GPT)** | Paid only | Most popular |
-| Anthropic (Claude) | Paid only | Best reasoning |
-| Mistral AI | Free tier | European provider |
-| Cohere | Free tier | Good for summaries |
-| Together AI | Free credits | Many open models |
-| Fireworks AI | Free tier | Fast inference |
-| OpenRouter | Pay per use | Aggregator |
-| DeepSeek | Free tier | Chinese provider |
-| Cerebras | Free trial | Ultra-fast |
-| SambaNova | Free trial | Enterprise focus |
-| NVIDIA NIM | Free trial | GPU-optimized |
-| AI21 Labs | Free tier | Jamba model |
-| HuggingFace | Free tier | Open source hub |
-| ... and 20 more | Varies | See .env.example |
-</details>
+**방법 A — GitHub Releases (권장):**
+1. [Releases 페이지](https://github.com/sodam-ai/ai-news-radar/releases) 접속
+2. **`Source code (zip)`** 다운로드
+3. ZIP 파일 우클릭 → "모두 압축 풀기" → 폴더 선택 → "압축 풀기"
+
+**방법 B — 이 페이지에서:**
+1. 상단 초록색 **"Code"** 버튼 클릭
+2. **"Download ZIP"** 클릭
+3. ZIP을 원하는 폴더에 압축 해제
+
+### 3단계: 무료 API 키 발급 (30초)
+
+AI News Radar는 AI로 뉴스를 분석합니다. 무료 API 키가 필요합니다.
+
+1. **[aistudio.google.com/apikey](https://aistudio.google.com/apikey)** 접속
+2. Google 계정으로 로그인
+3. **"Create API Key"** 클릭
+4. 키를 복사 (`AIzaSy...` 형태)
+
+> **정말 무료인가요?** 네! Google이 하루 1,000회 무료 제공합니다. 개인 뉴스 추적에는 충분합니다. 신용카드 불필요.
+
+### 4단계: 설정 파일 만들기
+
+다운로드한 폴더 안에서:
+
+1. `.env.example` 파일을 찾아 복사
+2. 복사한 파일 이름을 `.env` 로 변경
+3. 메모장으로 `.env` 열기
+4. `GEMINI_API_KEY=` 뒤에 복사한 API 키 붙여넣기
+
+```
+GEMINI_API_KEY=AIzaSy여기에붙여넣기
+```
+
+저장하고 닫기.
+
+### 5단계: 실행
+
+**더블클릭으로 실행:**
+- `AI_News_Radar.exe` 파일을 더블클릭하면 자동으로 설치 후 실행됩니다
+- 처음 실행 시 패키지 설치로 2~3분 걸릴 수 있습니다
+- 실행되면 자동으로 브라우저에서 `http://localhost:6601` 이 열립니다
+
+**또는 bat 파일로 실행:**
+- `AI_News_Radar.bat` 더블클릭
 
 ---
 
-## Project Structure
+## 주요 기능 전체 목록
+
+| 기능 | 설명 |
+|------|------|
+| 📡 자동 수집 | 74개 RSS 소스 병렬 수집 (15개 스레드) |
+| 🤖 AI 배치 처리 | 요약·분류·중요도·감성·키워드 한 번에 |
+| 🔍 시맨틱 검색 | ChromaDB + ONNX 로컬 임베딩 (v1.3.0 신규) |
+| 💬 AI 채팅 | 수집된 뉴스로 자연어 대화 |
+| 📋 일일 브리핑 | TOP 5 자동 생성 |
+| 📊 주간 리포트 | 트렌드·예측 PDF 자동 생성 |
+| ⭐ 북마크+메모 | 기사 저장 및 메모 |
+| 🔔 스마트 알림 | 워치리스트 키워드 감지 시 알림 |
+| 📱 텔레그램 봇 | `/today`, `/ask`, `/alert`, `/bookmark` |
+| 🌐 번역 | AI 영→한 자동 번역 |
+| 🎙️ 음성 브리핑 | edge-tts AI 음성으로 읽어주기 |
+| 📈 트렌드 차트 | 키워드별 시계열 언급량 분석 |
+| 🏢 경쟁사 모니터링 | AI 기업·제품 추적 |
+| ✅ 팩트체크 배지 | 보도 매체 수 기반 신뢰도 |
+| 🗣️ 디베이트 모드 | AI가 찬성/반대 시각 자동 생성 |
+| 📚 AI 용어 사전 | 뉴스 속 전문용어 자동 추출·설명 |
+| 🚀 릴리즈 트래커 | AI 도구 새 버전 자동 감지 |
+| 📤 내보내기 | Markdown·PDF |
+| 📲 SNS 카드 | 뉴스 카드 자동 생성 |
+| 🤖 35개 LLM | Gemini, Claude, GPT, Groq 등 자동 전환 |
+
+---
+
+## 환경 변수 설정 (.env)
+
+`.env` 파일에서 설정합니다. 필수 항목 하나만 설정해도 동작합니다.
+
+```env
+# ── 필수 (하나만 있으면 됩니다) ──────────────────────
+GEMINI_API_KEY=AIzaSy...          # Google AI Studio (무료 1000회/일)
+
+# ── 선택: 다른 LLM 프로바이더 ────────────────────────
+GROQ_API_KEY=gsk_...              # Groq (무료 14400회/일, 초고속)
+OPENAI_API_KEY=sk-...             # OpenAI GPT
+ANTHROPIC_API_KEY=sk-ant-...      # Anthropic Claude
+
+# ── 선택: 텔레그램 봇 ────────────────────────────────
+TELEGRAM_BOT_TOKEN=123456:ABC...  # @BotFather에서 발급
+TELEGRAM_CHAT_ID=123456789        # @userinfobot에서 확인
+
+# ── 선택: 수집 주기 ──────────────────────────────────
+CRAWL_INTERVAL_MINUTES=60         # 기본값: 60분마다 자동 수집
+```
+
+> **보안 주의**: `.env` 파일은 절대 GitHub에 올리면 안 됩니다. `.gitignore`에 이미 등록되어 있어 자동으로 제외됩니다.
+
+---
+
+## 텔레그램 봇 설정 방법
+
+1. 텔레그램에서 **@BotFather** 검색
+2. `/newbot` 입력 → 봇 이름 설정 → 토큰 복사
+3. `.env`에 `TELEGRAM_BOT_TOKEN=발급받은토큰` 입력
+4. 텔레그램에서 **@userinfobot** 검색 → `/start` → 숫자 ID 복사
+5. `.env`에 `TELEGRAM_CHAT_ID=숫자ID` 입력
+6. 터미널에서: `python -m bot.telegram_bot`
+
+**봇 명령어:**
+| 명령어 | 설명 |
+|--------|------|
+| `/today` | 오늘의 AI 브리핑 |
+| `/top` | 중요도 TOP 5 뉴스 |
+| `/search 키워드` | 뉴스 검색 |
+| `/ask 질문` | AI에게 뉴스 질문 |
+| `/alert` | 워치리스트 조회 |
+| `/alert 키워드` | 워치리스트 추가 |
+| `/bookmark` | 북마크 기사 목록 |
+| `/stats` | 수집 통계 |
+
+---
+
+## 시맨틱 검색 초기 설정 (v1.3.0 신규)
+
+처음 실행 후 사이드바에서 **"🧠 벡터 동기화"** 버튼을 한 번 클릭하세요.  
+기존에 수집된 기사들이 AI 검색 DB에 등록됩니다. (이후에는 자동)
+
+---
+
+## 폴더 구조
 
 ```
 ai-news-radar/
+├── app.py                  # 메인 Streamlit 대시보드 (1400줄)
+├── config.py               # 설정 (포트, 카테고리, API 키 로드)
+├── requirements.txt        # 필요 패키지 목록
+├── .env                    # API 키 설정 (직접 생성, GitHub에 올리지 마세요)
+├── .env.example            # 환경 변수 예시 파일
 │
-├── AI_News_Radar.exe      ← Main executable (double-click to run)
+├── ai/                     # AI 처리 모듈
+│   ├── model_router.py     # 35개 LLM 멀티 프로바이더 라우팅
+│   ├── batch_processor.py  # 기사 일괄 AI 분석
+│   ├── vector_store.py     # ChromaDB 시맨틱 검색 (v1.3.0)
+│   ├── chat.py             # AI 뉴스 채팅
+│   ├── briefing.py         # 일일 브리핑 생성
+│   ├── weekly_report.py    # 주간 리포트
+│   ├── trend.py            # 트렌드 분석
+│   ├── competitor.py       # 경쟁사 모니터링
+│   ├── smart_alert.py      # 스마트 알림 (텔레그램 연동)
+│   ├── factcheck.py        # 팩트체크 배지
+│   ├── debate.py           # 디베이트 모드
+│   ├── glossary.py         # AI 용어 사전
+│   ├── release_tracker.py  # 릴리즈 감지
+│   ├── translator.py       # 영→한 자동 번역
+│   ├── voice_briefing.py   # 음성 브리핑
+│   └── deduplicator.py     # 중복 뉴스 병합
 │
-├── app.py                  ← Streamlit web application (main UI)
-├── config.py               ← Configuration and constants
-├── setup_launcher.py       ← Launcher source code
-├── requirements.txt        ← Python dependency list
+├── crawler/                # 뉴스 수집
+│   ├── rss_crawler.py      # RSS 멀티스레드 수집 (74개 소스)
+│   └── scheduler.py        # 자동 수집 스케줄러
 │
-├── .env                    ← Your API keys (auto-created on first run)
-├── .env.example            ← Template showing all available settings
+├── bot/                    # 텔레그램 봇
+│   └── telegram_bot.py     # 봇 명령어 처리
 │
-├── ai/                     ← AI analysis modules (17 modules)
-│   ├── batch_processor.py  ← Batch article analysis
-│   ├── briefing.py         ← Daily TOP 5 briefing generator
-│   ├── chat.py             ← AI chat about news
-│   ├── competitor.py       ← Competitor comparison
-│   ├── debate.py           ← AI debate generator
-│   ├── deduplicator.py     ← Duplicate detection
-│   ├── factcheck.py        ← Cross-source fact checking
-│   ├── glossary.py         ← Technical term dictionary
-│   ├── model_router.py     ← Multi-provider LLM routing
-│   ├── release_tracker.py  ← AI tool release monitoring
-│   ├── smart_alert.py      ← Interest-based alerts
-│   ├── translator.py       ← Article translation
-│   ├── trend.py            ← Trend analysis
-│   ├── voice_briefing.py   ← Text-to-speech briefing
-│   └── weekly_report.py    ← Weekly intelligence report
+├── sns/                    # 소셜 미디어
+│   ├── card_generator.py   # 뉴스 카드 생성
+│   ├── content_generator.py
+│   ├── newsletter.py       # 이메일 뉴스레터
+│   └── poster.py           # 소셜 포스팅
 │
-├── crawler/                ← News collection
-│   ├── rss_crawler.py      ← 74-source RSS aggregator
-│   └── scheduler.py        ← Automatic collection scheduler
+├── reader/                 # 아티클 리더
+│   └── article_reader.py   # 원문 클린 뷰
 │
-├── reader/                 ← Full article reader
-│   └── article_reader.py   ← Clean text extraction
+├── export/                 # 내보내기
+│   └── exporter.py         # Markdown/PDF 내보내기
 │
-├── export/                 ← Export modules
-│   └── exporter.py         ← Markdown & PDF generation
+├── utils/                  # 공통 유틸
+│   ├── helpers.py          # JSON 읽기/쓰기, 로그 등
+│   └── bookmarks.py        # 북마크 관리 (v1.3.0)
 │
-├── sns/                    ← Social media integration
-│   ├── card_generator.py   ← Visual card generation
-│   ├── content_generator.py← AI caption writer
-│   ├── newsletter.py       ← Email newsletter
-│   └── poster.py           ← Multi-platform publisher
-│
-├── bot/                    ← Telegram bot
-│   └── telegram_bot.py     ← Telegram webhook handler
-│
-├── utils/                  ← Utilities
-│   └── helpers.py          ← JSON I/O, logging, date helpers
-│
-├── data/                   ← Collected data (auto-created)
-│   ├── articles.json       ← All collected articles
-│   ├── briefings.json      ← Generated briefings
-│   ├── bookmarks.json      ← Saved bookmarks
-│   └── ...                 ← Other data files
-│
-├── assets/                 ← App icons
-│   ├── icon.ico            ← Windows icon
-│   └── icon.png            ← PNG icon
-│
-└── .streamlit/             ← Streamlit theme configuration
-    └── config.toml
+└── data/                   # 런타임 데이터 (자동 생성, Git 제외)
+    ├── articles.json        # 수집된 기사
+    ├── sources.json         # 등록된 소스
+    ├── briefings.json       # 생성된 브리핑
+    ├── chroma/              # 벡터 검색 DB
+    └── audio/               # 음성 브리핑 파일
 ```
 
 ---
 
-## Environment Variables Reference
+## 운영 시 주의사항
 
-All settings are in the `.env` file. At minimum, you need **one** API key.
-
-### Required (pick one)
-
-| Variable | Provider | Free Tier | How to Get |
-|----------|----------|-----------|-----------|
-| `GEMINI_API_KEY` | Google Gemini | 1,000 calls/day | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
-| `GROQ_API_KEY` | Groq | 14,400 calls/day | [console.groq.com](https://console.groq.com) |
-| `OPENAI_API_KEY` | OpenAI | Paid ($0.002/call) | [platform.openai.com](https://platform.openai.com) |
-
-### Optional — Social Media Posting
-
-| Variable(s) | Platform | Setup Difficulty |
-|-------------|----------|-----------------|
-| `DISCORD_WEBHOOK_URL` | Discord | Easy (30 seconds) |
-| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHANNEL_ID` | Telegram | Medium (5 minutes) |
-| `X_API_KEY` + `X_API_SECRET` + `X_ACCESS_TOKEN` + `X_ACCESS_SECRET` | X (Twitter) | Hard (requires developer account) |
-| `THREADS_ACCESS_TOKEN` | Threads | Medium |
-| `INSTAGRAM_ACCESS_TOKEN` + `INSTAGRAM_BUSINESS_ACCOUNT_ID` | Instagram | Hard |
-
-### Optional — Email Newsletter
-
-| Variable | Description |
-|----------|-------------|
-| `SMTP_SERVER` | Email server (e.g., `smtp.gmail.com`) |
-| `SMTP_PORT` | Port (e.g., `587`) |
-| `SMTP_USER` | Your email address |
-| `SMTP_PASSWORD` | App password (not your regular password) |
-| `NEWSLETTER_RECIPIENTS` | Comma-separated email list |
-
-See `.env.example` for the complete list of all 35+ provider keys.
+| 항목 | 내용 |
+|------|------|
+| **API 키** | `.env` 파일에만 보관. 절대 GitHub, 카카오톡, 이메일로 공유 금지 |
+| **API 한도** | Gemini Flash 무료: 250회/일. 초과 시 Groq 등 다른 프로바이더 자동 전환 |
+| **data/ 폴더** | 기사가 쌓이면 용량이 커질 수 있습니다. 주기적으로 정리 권장 |
+| **포트 충돌** | `6601` 포트를 다른 프로그램이 사용 중이면 `.env`에서 변경 가능 |
+| **벡터 동기화** | `data/chroma/` 삭제 후 재동기화하면 초기화됩니다 |
+| **텔레그램 알림** | `.env`에 `TELEGRAM_CHAT_ID` 없으면 데스크톱 알림만 작동 |
 
 ---
 
-## Advanced Usage
+## 버전 히스토리
 
-### Run from Command Line
-
-For users comfortable with terminals:
-
-```bash
-# Clone
-git clone https://github.com/sodam-ai/ai-news-radar.git
-cd ai-news-radar
-
-# Setup
-python -m venv .venv
-
-# Windows:
-.venv\Scripts\activate
-# Mac/Linux:
-source .venv/bin/activate
-
-# Install (takes 3-5 minutes)
-pip install -r requirements.txt
-
-# Configure
-cp .env.example .env
-# Edit .env and add your API key
-
-# Run
-streamlit run app.py --server.port 6601
-```
-
-### Run as Desktop App (with window frame)
-
-```bash
-# Install extra dependencies
-pip install pywebview pystray plyer
-
-# Run
-python launcher.py
-```
-
-### Build the Launcher EXE Yourself
-
-```bash
-pip install pyinstaller
-pyinstaller --onefile --name "AI_News_Radar" --icon "assets/icon.ico" --console setup_launcher.py
-```
+| 버전 | 주요 변경 |
+|------|----------|
+| v1.3.0 | ChromaDB 시맨틱 검색, 텔레그램 봇 고도화(`/alert`, `/bookmark`), 스마트 알림 텔레그램 연동 |
+| v1.2.1 | 멀티 LLM 35개 프로바이더 지원 확장 |
+| v1.2.0 | 경량 exe 런처 (7.8MB), 다중 해상도 아이콘 |
+| v1.0.0 | MVP 출시 — 수집·요약·분류·브리핑·채팅 |
 
 ---
 
-## Troubleshooting
+## 라이선스
 
-### "API key not configured"
-Open the `.env` file in any text editor (Notepad, VS Code, etc.) and make sure your API key is entered correctly. The format should be:
-```
-GEMINI_API_KEY=AIzaSyBxxxxxxxxxxxxxxxxxxxxxxx
-```
-No quotes, no spaces around the `=` sign.
+MIT License © 2026 [SoDam AI Studio](https://github.com/sodam-ai)
 
-### Nothing happens when I double-click the exe
-1. Make sure Python is installed: open Command Prompt and type `python --version`
-2. If you see "not recognized", reinstall Python with **"Add to PATH"** checked
-3. Try right-click → **"Run as administrator"**
-
-### "Port 6601 already in use"
-Another instance might be running. Either:
-- Close the other instance (check your taskbar for the console window)
-- Or the app will automatically find a different available port
-
-### The app is slow on first run
-That's normal! On the first run, it downloads and installs ~200MB of Python packages. After that, it starts in seconds.
-
-### Windows Defender / SmartScreen blocks the exe
-This happens because the exe is new and not digitally signed. Click **"More info"** → **"Run anyway"**. The exe is safe — you can verify by reading the source code in `setup_launcher.py`.
-
-### Can I use this on Mac or Linux?
-Yes! The `.exe` file is Windows-only, but the core app works on any OS. Use the command line instructions in the "Advanced Usage" section.
-
----
-
-## Tech Stack
-
-| Category | Technology | Purpose |
-|----------|-----------|---------|
-| Language | Python 3.11+ | Core runtime |
-| Web UI | Streamlit 1.44+ | Interactive dashboard |
-| AI | 35 LLM providers | News analysis, summaries |
-| News Feed | feedparser | RSS parsing |
-| Web Scraping | BeautifulSoup4, requests | Full article extraction |
-| Charts | Plotly | Interactive visualizations |
-| Voice | edge-tts | Text-to-speech (20+ voices) |
-| PDF | fpdf2 | PDF export |
-| Social Media | tweepy, requests, webhooks | Multi-platform posting |
-| Scheduling | APScheduler | Automatic collection |
-| Desktop | pywebview (optional) | Native window mode |
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make your changes
-4. Test: `streamlit run app.py`
-5. Commit and push
-6. Open a Pull Request
-
----
-
-## License
-
-Copyright (c) 2026 **SoDam AI Studio**. All rights reserved.
-
-This software is provided for personal and educational use.
-For commercial use, please contact the publisher.
-
-See the [LICENSE](LICENSE) file for details.
+자유롭게 사용, 수정, 배포 가능합니다.  
+상업적 이용 시 원 저작자 표기를 유지해 주세요.

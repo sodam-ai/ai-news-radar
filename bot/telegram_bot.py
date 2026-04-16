@@ -34,9 +34,10 @@ from telegram.ext import (
 )
 
 from config import DATA_DIR
-from utils.helpers import safe_read_json, today_str, log
+from utils.helpers import safe_read_json, safe_write_json, today_str, now_iso, log
 from ai.chat import chat as ai_chat
 from ai.model_router import get_active_provider
+from utils.bookmarks import get_bookmarks
 
 logging.basicConfig(
     format="%(asctime)s [TG-BOT] %(levelname)s: %(message)s",
@@ -67,6 +68,9 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/top — 중요도 TOP 5 뉴스\n"
         "/search 키워드 — 뉴스 검색\n"
         "/ask 질문 — AI에게 뉴스 질문\n"
+        "/alert — 워치리스트 조회\n"
+        "/alert 키워드 — 워치리스트 추가\n"
+        "/bookmark — 북마크 기사 보기\n"
         "/stats — 수집 통계\n"
         "/help — 도움말",
         parse_mode="Markdown",
@@ -233,6 +237,62 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
 
 
+async def cmd_alert(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/alert [키워드] — 워치리스트 조회 또는 키워드 추가"""
+    keyword = " ".join(context.args).strip() if context.args else ""
+    watchlist_path = DATA_DIR / "watchlist.json"
+
+    if not keyword:
+        watchlist = safe_read_json(watchlist_path, [])
+        active = [w.get("keyword", "") for w in watchlist if w.get("is_active")]
+        if active:
+            items = "\n".join([f"  • `{k}`" for k in active])
+            await update.message.reply_text(
+                f"📋 *워치리스트* ({len(active)}개)\n{items}\n\n추가: /alert 키워드",
+                parse_mode="Markdown",
+            )
+        else:
+            await update.message.reply_text("워치리스트가 비어있습니다.\n추가: /alert 키워드\n예: /alert Claude 5")
+        return
+
+    watchlist = safe_read_json(watchlist_path, [])
+    if any(w.get("keyword", "").lower() == keyword.lower() for w in watchlist):
+        await update.message.reply_text(f"이미 등록된 키워드입니다: `{keyword}`", parse_mode="Markdown")
+        return
+
+    watchlist.append({"keyword": keyword, "is_active": True, "created_at": now_iso()})
+    safe_write_json(watchlist_path, watchlist)
+    await update.message.reply_text(f"✅ `{keyword}` 워치리스트 등록 완료!\n해당 키워드가 포함된 기사 수집 시 자동 알림됩니다.", parse_mode="Markdown")
+
+
+async def cmd_bookmark(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """/bookmark — 북마크한 기사 목록"""
+    bookmarks = get_bookmarks()
+    if not bookmarks:
+        await update.message.reply_text(
+            "북마크한 기사가 없습니다.\n웹 대시보드 뉴스피드에서 ☆ 버튼으로 북마크하세요."
+        )
+        return
+
+    arts_map = {a["id"]: a for a in safe_read_json(ARTICLES_PATH, [])}
+    lines = [f"⭐ *북마크 기사* ({len(bookmarks)}개)\n"]
+    for bm in reversed(bookmarks[:10]):
+        a = arts_map.get(bm.get("article_id", ""))
+        if not a:
+            continue
+        memo = bm.get("memo", "")
+        lines.append(f"[{a['title']}]({a['url']})")
+        if memo:
+            lines.append(f"  📝 _{memo}_")
+        lines.append("")
+
+    await update.message.reply_text(
+        _truncate("\n".join(lines)),
+        parse_mode="Markdown",
+        disable_web_page_preview=True,
+    )
+
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """일반 메시지 → AI 채팅으로 처리"""
     text = update.message.text
@@ -269,6 +329,8 @@ def run_bot():
     app.add_handler(CommandHandler("top", cmd_top))
     app.add_handler(CommandHandler("search", cmd_search))
     app.add_handler(CommandHandler("ask", cmd_ask))
+    app.add_handler(CommandHandler("alert", cmd_alert))
+    app.add_handler(CommandHandler("bookmark", cmd_bookmark))
     app.add_handler(CommandHandler("stats", cmd_stats))
 
     # 일반 메시지 → AI 채팅
