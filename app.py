@@ -20,6 +20,7 @@ from ai.batch_processor import process_unprocessed
 from ai.deduplicator import deduplicate
 from ai.briefing import generate_daily_briefing, FOCUS_AREAS
 from ai.model_router import get_active_provider, get_available_providers, PROVIDERS
+from utils.env_writer import EnvWriterError, apply_runtime, update_env
 from export.exporter import (
     export_briefing_markdown, export_articles_markdown,
     export_briefing_pdf, export_articles_pdf,
@@ -340,6 +341,26 @@ if "scheduler_started" not in st.session_state:
 
 CAT_NAMES = {"ai_tool": "도구", "ai_research": "연구", "ai_trend": "트렌드", "ai_tutorial": "튜토리얼", "ai_business": "비즈니스", "ai_image_video": "이미지/영상", "ai_coding": "바이브코딩", "ai_ontology": "온톨로지", "ai_other": "기타"}
 
+# ── API 키 발급 공식 URL (상위 6개) ──
+PROVIDER_SIGNUP_URLS = {
+    "gemini":    "https://aistudio.google.com/apikey",
+    "groq":      "https://console.groq.com/keys",
+    "cerebras":  "https://cloud.cerebras.ai/platform/",
+    "openai":    "https://platform.openai.com/api-keys",
+    "anthropic": "https://console.anthropic.com/settings/keys",
+    "xai":       "https://console.x.ai/",
+}
+
+# 사이드바 드롭다운용 (id, 라벨) — 무료 우선, PROVIDERS의 env_key와 매핑
+PROVIDER_CHOICES = [
+    ("gemini",    "🟢 Google Gemini (무료 1000회/일)"),
+    ("groq",      "🟢 Groq (무료 14,400회/일)"),
+    ("cerebras",  "🟢 Cerebras (무료, 초고속)"),
+    ("openai",    "🟡 OpenAI (유료 $5 크레딧)"),
+    ("anthropic", "🟡 Anthropic Claude (유료)"),
+    ("xai",       "🟡 xAI Grok ($25/월 무료)"),
+]
+
 
 @st.cache_data(ttl=60)
 def load_articles():
@@ -383,10 +404,121 @@ with st.sidebar:
         <div class="brand-sub"><span class="live-dot"></span>AI-Powered News Intelligence</div>
     </div>""", unsafe_allow_html=True)
 
+    # ── LLM 프로바이더 상태 + 설정 UI ──
     if _active_provider:
-        st.caption(f"**{PROVIDERS[_active_provider]['name']}** connected")
+        st.success(f"🟢 **{PROVIDERS[_active_provider]['name']}** 연결됨")
     else:
-        st.error("API key not configured")
+        st.error("🔴 API 키 설정 필요 — 아래에서 설정하세요")
+
+    with st.expander("🔑 API 키 설정", expanded=not _active_provider):
+        # 1) 프로바이더 선택
+        # 현재 활성 프로바이더를 기본 선택
+        default_idx = 0
+        if _active_provider:
+            for i, (pid, _label) in enumerate(PROVIDER_CHOICES):
+                if pid == _active_provider:
+                    default_idx = i
+                    break
+
+        selected_id = st.selectbox(
+            "프로바이더",
+            options=[pid for pid, _ in PROVIDER_CHOICES],
+            format_func=lambda pid: dict(PROVIDER_CHOICES).get(pid, pid),
+            index=default_idx,
+            key="apikey_provider_select",
+        )
+
+        # 2) 무료 키 발급 링크
+        signup_url = PROVIDER_SIGNUP_URLS.get(selected_id)
+        if signup_url:
+            st.link_button(
+                f"🌐 {PROVIDERS[selected_id]['name']} 키 발급하기",
+                signup_url,
+                use_container_width=True,
+                help="공식 사이트에서 무료/유료 API 키 발급",
+            )
+
+        # 3) 현재 저장 상태 힌트
+        env_key_name = PROVIDERS[selected_id]["env_key"]
+        current_val = os.getenv(env_key_name, "")
+        if current_val:
+            st.caption(f"✅ `{env_key_name}` 저장됨 (교체하려면 아래 입력)")
+        else:
+            st.caption(f"⚠️ `{env_key_name}` 미설정")
+
+        # 4) 키 입력 (password)
+        new_key = st.text_input(
+            "API 키",
+            type="password",
+            placeholder="AIza... 또는 sk-... 등",
+            help="발급받은 키를 붙여넣고 저장을 누르세요",
+            key="apikey_input",
+        )
+
+        # 5) 저장 버튼
+        if st.button("💾 저장 + 연결 테스트", type="primary", use_container_width=True, key="apikey_save"):
+            key_trimmed = (new_key or "").strip()
+            if not key_trimmed:
+                st.warning("키를 먼저 입력하세요.")
+            elif len(key_trimmed) < 16:
+                st.warning("키가 너무 짧습니다. 올바른 키를 입력하세요.")
+            else:
+                try:
+                    updates = {
+                        "LLM_PROVIDER": selected_id,
+                        env_key_name: key_trimmed,
+                    }
+                    update_env(updates)
+                    apply_runtime(updates)
+
+                    # 연결 테스트 — get_active_provider 재조회 + 가벼운 호출
+                    try:
+                        new_active = get_active_provider()
+                        if new_active == selected_id:
+                            # 실제 API 호출로 키 유효성 확인 (1번 시도, 실패 시 fallback 메시지)
+                            from ai.model_router import call_gemini
+                            try:
+                                _ = call_gemini("Return empty JSON array [].")
+                                st.success(f"✅ 저장 완료 · {PROVIDERS[selected_id]['name']} 연결 성공")
+                            except Exception as api_err:
+                                st.warning(
+                                    f"💾 저장됨 · ⚠️ 연결 테스트 실패(키 만료·쿼터 가능): "
+                                    f"{str(api_err)[:100]}"
+                                )
+                        else:
+                            st.warning(
+                                f"💾 저장됨 · ⚠️ 활성 프로바이더 감지 실패 "
+                                f"(예상:{selected_id}, 현재:{new_active or '없음'})"
+                            )
+                    except Exception as e:
+                        st.warning(f"💾 저장됨 · 테스트 오류: {str(e)[:80]}")
+
+                    # 입력 필드 비우고 rerun
+                    if "apikey_input" in st.session_state:
+                        st.session_state.apikey_input = ""
+                    st.rerun()
+                except EnvWriterError as e:
+                    st.error(f"저장 실패: {e}")
+                except Exception as e:
+                    st.error(f"예기치 못한 오류: {str(e)[:100]}")
+
+        # 6) 추가 안내
+        with st.expander("ℹ️ 사용법 / 권장 프로바이더"):
+            st.markdown("""
+**빠른 시작(무료):**
+1. 위에서 **Google Gemini** 선택
+2. **키 발급하기** 버튼 → Google 로그인 → `Create API key`
+3. 발급된 키를 위 입력란에 붙여넣기 → **저장**
+
+**Tip:**
+- Gemini 무료: Flash-Lite 1000회/일, Flash 250회/일
+- Groq 무료: 14,400회/일 (초고속)
+- 둘 다 신용카드 불필요
+
+**보안:**
+- 키는 로컬 `.env` 파일에만 저장됨 (외부 전송 없음)
+- Git 커밋되지 않음 (`.gitignore` 등록)
+""")
 
     st.divider()
 
