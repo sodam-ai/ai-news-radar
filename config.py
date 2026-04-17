@@ -19,6 +19,7 @@ load_dotenv()
 # 경로
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
+DB_PATH = DATA_DIR / "radar.db"
 
 # LLM 프로바이더 (자동 감지 또는 명시적 설정)
 # .env에 LLM_PROVIDER=groq 처럼 설정하거나, API 키만 넣으면 자동 감지

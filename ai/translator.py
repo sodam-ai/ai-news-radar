@@ -1,102 +1,102 @@
-"""자동 한국어 번역 — 영어 기사 제목+요약을 한국어로 번역
-
-LLM을 활용하여 영어 기사의 제목과 요약을 자연스러운 한국어로 번역합니다.
-배치 처리로 API 호출을 최소화합니다.
-"""
+"""기사 제목/요약 번역."""
 import json
 
-from config import DATA_DIR
 from ai.model_router import call_gemini, get_active_provider
-from utils.helpers import safe_read_json, safe_write_json, log
+from config import DATA_DIR
+from utils.helpers import log, safe_read_json, safe_update_json
 
 ARTICLES_PATH = DATA_DIR / "articles.json"
 
-TRANSLATE_SYSTEM = """너는 AI 뉴스 번역 전문가야.
-영어 기사의 제목과 요약을 자연스러운 한국어로 번역해.
+TRANSLATE_SYSTEM = """Translate AI news titles and summaries into natural Korean.
+Keep product names and technical terms in their original form where needed.
+Return JSON only in the form:
+[{"id": "...", "title_ko": "...", "summary_ko": "..."}, ...]
+"""
 
-규칙:
-- AI/기술 용어는 원문 유지 (예: Claude Code, Stable Diffusion, GPT)
-- 브랜드명, 제품명은 번역하지 않음
-- 자연스럽고 읽기 쉬운 한국어
-- 의역 가능 (직역보다 의미 전달 우선)
-- 반드시 JSON으로만 응답
 
-입력 형식: [{"id": "...", "title": "...", "summary": "..."}, ...]
-출력 형식: [{"id": "...", "title_ko": "...", "summary_ko": "..."}, ...]"""
+def _merge_translations(current_articles: list[dict], translations: dict[str, dict]) -> list[dict]:
+    merged = []
+    for article in current_articles:
+        translated = translations.get(article.get("id"))
+        if not translated:
+            merged.append(article)
+            continue
+
+        merged_article = dict(article)
+        merged_article["title_ko"] = translated.get("title_ko", merged_article.get("title_ko", ""))
+        merged_article["summary_ko"] = translated.get("summary_ko", merged_article.get("summary_ko", ""))
+        merged.append(merged_article)
+    return merged
 
 
 def translate_articles(max_batch: int = 10) -> int:
-    """미번역 영어 기사를 한국어로 번역. 번역된 기사 수 반환."""
     if not get_active_provider():
         return 0
 
     articles = safe_read_json(ARTICLES_PATH, [])
-
-    # 미번역 영어 기사 필터 (ai_processed + 한국어 제목 없음)
     untranslated = [
-        a for a in articles
-        if a.get("ai_processed")
-        and a.get("is_primary", True)
-        and not a.get("title_ko")
-        and _is_english(a.get("title", ""))
+        article
+        for article in articles
+        if article.get("ai_processed")
+        and article.get("is_primary", True)
+        and not article.get("title_ko")
+        and _is_english(article.get("title", ""))
     ]
 
     if not untranslated:
         return 0
 
-    # 배치 처리 (max_batch개씩)
     batch = untranslated[:max_batch]
-
     prompt_items = [
-        {"id": a["id"], "title": a.get("title", ""), "summary": a.get("summary_text", "")[:200]}
-        for a in batch
+        {
+            "id": article["id"],
+            "title": article.get("title", ""),
+            "summary": article.get("summary_text", "")[:200],
+        }
+        for article in batch
     ]
-
-    prompt = f"다음 영어 AI 뉴스를 한국어로 번역해줘:\n\n{json.dumps(prompt_items, ensure_ascii=False)}"
+    prompt = f"Translate these AI news items into Korean:\n\n{json.dumps(prompt_items, ensure_ascii=False)}"
 
     try:
         response_text = call_gemini(prompt, use_flash=True)
         cleaned = response_text.strip().removeprefix("```json").removesuffix("```").strip()
-        translations = json.loads(cleaned)
+        parsed = json.loads(cleaned)
     except Exception as e:
-        log(f"[번역 오류] {e}")
+        log(f"[translate:error] {e}")
         return 0
 
-    if not isinstance(translations, list):
+    if not isinstance(parsed, list):
         return 0
 
-    # 번역 결과 적용
-    trans_map = {t["id"]: t for t in translations if isinstance(t, dict) and "id" in t}
-    translated_count = 0
+    translations = {
+        item["id"]: item
+        for item in parsed
+        if isinstance(item, dict) and item.get("id")
+    }
+    if not translations:
+        return 0
 
-    for a in articles:
-        t = trans_map.get(a.get("id"))
-        if t:
-            a["title_ko"] = t.get("title_ko", "")
-            a["summary_ko"] = t.get("summary_ko", "")
-            translated_count += 1
-
-    if translated_count > 0:
-        safe_write_json(ARTICLES_PATH, articles)
-        log(f"[번역] {translated_count}개 기사 한국어 번역 완료")
-
-    return translated_count
+    safe_update_json(
+        ARTICLES_PATH,
+        lambda current: _merge_translations(current, translations),
+        default=articles,
+    )
+    log(f"[translate:done] translated={len(translations)}")
+    return len(translations)
 
 
 def _is_english(text: str) -> bool:
-    """텍스트가 주로 영어인지 판단 (간단한 휴리스틱)"""
     if not text:
         return False
-    ascii_count = sum(1 for c in text if c.isascii())
+    ascii_count = sum(1 for char in text if char.isascii())
     return ascii_count / max(len(text), 1) > 0.7
 
 
 def get_translation_stats() -> dict:
-    """번역 통계"""
     articles = safe_read_json(ARTICLES_PATH, [])
-    processed = [a for a in articles if a.get("ai_processed") and a.get("is_primary", True)]
-    english = [a for a in processed if _is_english(a.get("title", ""))]
-    translated = [a for a in english if a.get("title_ko")]
+    processed = [article for article in articles if article.get("ai_processed") and article.get("is_primary", True)]
+    english = [article for article in processed if _is_english(article.get("title", ""))]
+    translated = [article for article in english if article.get("title_ko")]
 
     return {
         "total": len(processed),

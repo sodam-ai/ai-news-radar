@@ -24,6 +24,9 @@ data/cards/
 data/alert_log.json
 data/newsletter_log.json
 data/release_log.json
+data/radar.db
+data/radar.db-wal
+data/radar.db-shm
 
 # Streamlit 캐시 (config.toml은 커밋해야 함)
 .streamlit/secrets.toml
@@ -47,3 +50,4 @@ installer_output/
 Thumbs.db
 .vscode/
 .idea/
+.omc/
