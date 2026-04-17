@@ -76,7 +76,7 @@ jobs:
 
       - name: pip-audit (CVE scan)
         run: |
-          pip-audit --strict --disable-pip -r requirements.txt
+          pip-audit --strict -r requirements.txt
 
       - name: detect-secrets scan
         run: |
