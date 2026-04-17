@@ -11,15 +11,13 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-SoDam%20AI%20Studio-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.2.1-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/Release-v1.5.0-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/LLM-35%20Providers-purple" alt="LLM"/>
 </p>
 
 <p align="center">
   <a href="README.md">English</a> |
-  <a href="README_KO.md">한국어</a> |
-  <a href="README_JA.md">日本語</a> |
-  <a href="README_ZH.md">中文</a>
+  <a href="README_KO.md">한국어</a>
 </p>
 
 ---
