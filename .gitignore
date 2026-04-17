@@ -51,3 +51,12 @@ Thumbs.db
 .vscode/
 .idea/
 .omc/
+
+# 보안 스캔 / 테스트 / 로그
+pip-audit-report.json
+.secrets.baseline
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+.pre-commit-cache/

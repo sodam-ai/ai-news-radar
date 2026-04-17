@@ -14,6 +14,7 @@ from db.database import (
     get_connection,
 )
 from utils.helpers import generate_id, log, now_iso, safe_read_json
+from utils.security import safe_url
 
 MAX_WORKERS = 15
 REQUEST_HEADERS = {"User-Agent": "AI-News-Radar/1.0"}
@@ -47,8 +48,14 @@ def _crawl_single(source: dict, existing_urls: set[str]) -> tuple[dict, list[dic
     if not source.get("is_active", True):
         return source, []
 
+    # V5.5.2 — SSRF 차단: 프라이빗 IP / 메타데이터 / 비표준 스킴 거부
+    src_url = safe_url(source.get("url", ""))
+    if not src_url:
+        log(f"[crawl:blocked] {source.get('name', '?')} — unsafe URL rejected")
+        return source, []
+
     try:
-        feed = feedparser.parse(source["url"], request_headers=REQUEST_HEADERS)
+        feed = feedparser.parse(src_url, request_headers=REQUEST_HEADERS)
     except Exception as e:
         log(f"[crawl:error] {source['name']}: {e}")
         return source, []
@@ -57,7 +64,8 @@ def _crawl_single(source: dict, existing_urls: set[str]) -> tuple[dict, list[dic
     new_articles: list[dict] = []
     for entry in feed.entries[:MAX_ARTICLES_PER_SOURCE]:
         url = getattr(entry, "link", "")
-        if not url or url in existing_urls:
+        # V5.5.2 — 기사 원문 URL도 검증 (피드가 악성 URL 포함 가능)
+        if not url or url in existing_urls or safe_url(url) is None:
             continue
 
         title = getattr(entry, "title", "Untitled")

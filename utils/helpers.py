@@ -7,13 +7,20 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
+from utils.security import mask_secret
+
 
 def log(msg: str):
     """Windows CP949 ì½˜ì†”ì—ì„œë„ ì¶œë ¥ê°€ ëŠê¸°ì§€ ì•Šë„ë¡ ë³´ìˆ˜ì ìœ¼ë¡œ ë¡œê¹…. """
+    # V7.1.1 — 비밀정보(API 키·토큰) 자동 마스킹
     try:
-        print(msg)
+        safe_msg = mask_secret(msg) if isinstance(msg, str) else msg
+    except Exception:
+        safe_msg = msg
+    try:
+        print(safe_msg)
     except (UnicodeEncodeError, UnicodeDecodeError):
-        safe = msg.encode("ascii", errors="replace").decode("ascii")
+        safe = str(safe_msg).encode("ascii", errors="replace").decode("ascii")
         print(safe)
 
 

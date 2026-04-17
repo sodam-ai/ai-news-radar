@@ -17,7 +17,10 @@ python-telegram-bot>=21.0
 pywebview>=5.0
 pystray>=0.19.0
 plyer>=2.1.0
-Pillow>=10.0.0
+# 보안 패치 하한 (CVE-2026-40192 FITS 압축폭탄 방지)
+Pillow>=12.2.0
+# 보안 패치 하한 (CVE-2026-39892 Hash.update 버퍼 오버플로우)
+cryptography>=46.0.7
 tweepy>=4.14.0
 discord.py>=2.3.0
 networkx>=3.0

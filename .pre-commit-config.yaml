@@ -1,0 +1,33 @@
+# OWASP ASVS V14.4.1 — 커밋 전 자동 시크릿/취약점 스캔
+# 설치: pip install pre-commit && pre-commit install
+# 수동 실행: pre-commit run --all-files
+
+repos:
+  # 시크릿 스캔 (API 키, 토큰, 비밀번호 커밋 차단)
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+        exclude: '(^\.venv/|^data/|^Lib/|^build.*/|\.lock$|poetry\.lock|package-lock\.json)'
+
+  # 의존성 CVE 스캔 (requirements.txt 변경 시만)
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.10.0
+    hooks:
+      - id: pip-audit
+        files: ^requirements.*\.txt$
+        args: ["--strict", "--disable-pip"]
+
+  # 기본 코드 위생
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-merge-conflict
+      - id: detect-private-key
