@@ -10,6 +10,12 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/sodam-ai/ai-news-radar/actions/workflows/ci.yml">
+    <img src="https://github.com/sodam-ai/ai-news-radar/actions/workflows/ci.yml/badge.svg" alt="CI"/>
+  </a>
+  <img src="https://img.shields.io/badge/tests-141_passed-brightgreen" alt="Tests"/>
+  <img src="https://img.shields.io/badge/pip--audit-0_vulnerabilities-brightgreen" alt="pip-audit"/>
+  <img src="https://img.shields.io/badge/OWASP_ASVS-L1-blue" alt="OWASP ASVS"/>
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
   <img src="https://img.shields.io/badge/Release-v1.5.0-blue" alt="Release"/>
