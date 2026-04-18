@@ -1539,8 +1539,8 @@ PROVIDER_CHOICES = [
 def show_settings_dialog():
     st.caption("모든 설정을 한 곳에서 관리합니다. `.env` 파일을 직접 편집할 필요 없습니다.")
 
-    sec_llm, sec_crawl, sec_source, sec_info = st.tabs([
-        "🔑 LLM API 키", "⏱️ 크롤링", "📰 뉴스 소스", "ℹ️ 시스템 정보"
+    sec_llm, sec_crawl, sec_source, sec_cloud, sec_info = st.tabs([
+        "🔑 LLM API 키", "⏱️ 크롤링", "📰 뉴스 소스", "☁️ 클라우드 동기화", "ℹ️ 시스템 정보"
     ])
 
     # ── 섹션 1: LLM 프로바이더 (클라우드 API 키 + 로컬 LLM) ──
@@ -1816,7 +1816,138 @@ def show_settings_dialog():
             st.success(f"✅ {len(st_sources)}개 소스 저장됨")
             st.rerun()
 
-    # ── 섹션 4: 시스템 정보 ──
+    # ── 섹션 4: ☁️ 클라우드 동기화 (GitHub Secrets) ──
+    with sec_cloud:
+        st.markdown("### ☁️ GitHub Secrets 동기화")
+        st.caption("로컬 `.env` 키를 GitHub 저장소 Secrets에 전송하여 **Actions 자동 수집**을 복구합니다.")
+
+        import subprocess
+        from utils.env_writer import read_env
+
+        try:
+            gh_check = subprocess.run(
+                ["gh", "auth", "status"],
+                capture_output=True, text=True, timeout=10
+            )
+            gh_ok = gh_check.returncode == 0
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            gh_ok = False
+
+        if not gh_ok:
+            st.error("⚠️ GitHub CLI (`gh`)가 설치되어 있지 않거나 로그인되지 않음")
+            st.code("# 설치\nwinget install GitHub.cli\n# 로그인\ngh auth login", language="bash")
+        else:
+            try:
+                repo_proc = subprocess.run(
+                    ["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
+                    capture_output=True, text=True, timeout=10
+                )
+                repo_name = repo_proc.stdout.strip() if repo_proc.returncode == 0 else ""
+            except Exception:
+                repo_name = ""
+
+            if not repo_name:
+                st.error("⚠️ 현재 디렉토리에서 GitHub 저장소를 감지할 수 없습니다.")
+                st.caption("`gh repo view`를 실행할 수 있는 환경에서 앱을 시작하세요.")
+            else:
+                st.info(f"📦 저장소: **{repo_name}**")
+
+                local_env = read_env()
+                SYNC_KEYS = {
+                    "LLM_PROVIDER", "GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY",
+                    "GROQ_API_KEY", "CEREBRAS_API_KEY", "DEEPSEEK_API_KEY",
+                    "XAI_API_KEY", "COHERE_API_KEY", "MISTRAL_API_KEY",
+                    "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID",
+                    "DISCORD_BOT_TOKEN", "DISCORD_CHANNEL_ID",
+                    "SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "NEWSLETTER_RECIPIENTS",
+                }
+                sync_candidates = {k: v for k, v in local_env.items() if k in SYNC_KEYS and v.strip()}
+
+                try:
+                    sec_list = subprocess.run(
+                        ["gh", "secret", "list", "--json", "name", "-q", ".[].name"],
+                        capture_output=True, text=True, timeout=10
+                    )
+                    current_secrets = set(sec_list.stdout.strip().splitlines()) if sec_list.returncode == 0 else set()
+                except Exception:
+                    current_secrets = set()
+
+                st.markdown("**동기화 대상 키 상태**")
+                if not sync_candidates:
+                    st.warning("⚠️ `.env`에 동기화할 키가 없습니다. 🔑 LLM API 키 탭에서 먼저 저장하세요.")
+                else:
+                    for k in sorted(sync_candidates.keys()):
+                        in_remote = k in current_secrets
+                        status = "✅ 동기화됨" if in_remote else "🔴 미전송"
+                        st.caption(f"{status} · `{k}` (****...{sync_candidates[k][-4:]})")
+
+                st.divider()
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button(
+                        "📤 `.env` → GitHub Secrets 동기화",
+                        type="primary",
+                        use_container_width=True,
+                        key="settings_sync_secrets",
+                        disabled=not sync_candidates,
+                        help="화이트리스트 키만 전송 (상단 목록 참조)",
+                    ):
+                        errs = []
+                        with st.spinner(f"🔄 {len(sync_candidates)}개 Secret 설정 중..."):
+                            for k, v in sync_candidates.items():
+                                try:
+                                    r = subprocess.run(
+                                        ["gh", "secret", "set", k, "--body", v],
+                                        capture_output=True, text=True, timeout=15
+                                    )
+                                    if r.returncode != 0:
+                                        errs.append(f"{k}: {r.stderr.strip()[:80]}")
+                                except Exception as e:
+                                    errs.append(f"{k}: {str(e)[:80]}")
+
+                        if errs:
+                            st.error(f"⚠️ {len(errs)}개 실패:\n" + "\n".join(f"- {e}" for e in errs))
+                        else:
+                            st.success(f"✅ {len(sync_candidates)}개 Secret 동기화 완료 · Actions 이제 정상 실행 가능")
+                        st.rerun()
+
+                with col2:
+                    if st.button(
+                        "▶️ `collect.yml` 수동 실행",
+                        use_container_width=True,
+                        key="settings_trigger_workflow",
+                        help="다음 스케줄을 기다리지 않고 지금 크롤러 실행",
+                    ):
+                        try:
+                            r = subprocess.run(
+                                ["gh", "workflow", "run", "collect.yml"],
+                                capture_output=True, text=True, timeout=15
+                            )
+                            if r.returncode == 0:
+                                st.success("✅ 워크플로우 트리거됨 — GitHub Actions 탭에서 진행 확인")
+                            else:
+                                st.error(f"실패: {r.stderr.strip()[:120]}")
+                        except Exception as e:
+                            st.error(f"오류: {str(e)[:120]}")
+
+                with st.expander("ℹ️ 왜 필요한가?"):
+                    st.markdown("""
+**자동 크롤링의 구조:**
+- GitHub Actions가 매일 3회(06:00/12:00/18:00 KST) `collect.yml` 실행
+- 워크플로우는 `secrets.GEMINI_API_KEY` 등을 참조
+- 로컬 `.env`와 GitHub Secrets는 **별개** → 수동 동기화 필요
+
+**현재 상태:** Actions가 2026-04-14부터 실패 중 (Secrets 비어있음)
+**이 버튼으로 해결:** 로컬 `.env`의 LLM·봇·SMTP 키를 한 번에 전송
+
+**보안:**
+- 화이트리스트 키만 전송 (민감 정보만)
+- 비밀번호는 화면에 `****...last4`로만 표시
+- GitHub Secrets는 저장 후 **읽기 불가** (Actions 런타임만 접근)
+""")
+
+    # ── 섹션 5: 시스템 정보 ──
     with sec_info:
         st.markdown("### ℹ️ 시스템 정보")
         ic1, ic2, ic3 = st.columns(3)
