@@ -341,6 +341,61 @@ if "scheduler_started" not in st.session_state:
 
 CAT_NAMES = {"ai_tool": "도구", "ai_research": "연구", "ai_trend": "트렌드", "ai_tutorial": "튜토리얼", "ai_business": "비즈니스", "ai_image_video": "이미지/영상", "ai_coding": "바이브코딩", "ai_ontology": "온톨로지", "ai_other": "기타"}
 
+# ══════════════════════════════════════════════
+# LLM 프로바이더 선택 상수 (온보딩·설정 모달에서 공용 참조)
+# ══════════════════════════════════════════════
+PROVIDER_SIGNUP_URLS = {
+    # 🏠 로컬 LLM — 설치 가이드 URL
+    "ollama":      "https://ollama.com/download",
+    "lmstudio":    "https://lmstudio.ai/",
+    "llamacpp":    "https://github.com/ggml-org/llama.cpp#http-server",
+    "jan":         "https://jan.ai/download",
+    # 🟢 무료 쿼터 클라우드
+    "gemini":      "https://aistudio.google.com/apikey",
+    "groq":        "https://console.groq.com/keys",
+    "cerebras":    "https://cloud.cerebras.ai/platform/",
+    "sambanova":   "https://cloud.sambanova.ai/apis",
+    "mistral":     "https://console.mistral.ai/api-keys/",
+    "cohere":      "https://dashboard.cohere.com/api-keys",
+    "huggingface": "https://huggingface.co/settings/tokens",
+    "xai":         "https://console.x.ai/",
+    # 🟡 유료 / 크레딧
+    "openai":      "https://platform.openai.com/api-keys",
+    "anthropic":   "https://console.anthropic.com/settings/keys",
+    "deepseek":    "https://platform.deepseek.com/api_keys",
+    "perplexity":  "https://www.perplexity.ai/settings/api",
+    "together":    "https://api.together.xyz/settings/api-keys",
+    "fireworks":   "https://fireworks.ai/account/api-keys",
+    "openrouter":  "https://openrouter.ai/keys",
+    "nvidia":      "https://build.nvidia.com/explore/discover",
+}
+
+PROVIDER_CHOICES = [
+    # 🏠 로컬 LLM (API 키 불필요)
+    ("ollama",      "🏠 Ollama (로컬 · 완전 무료)"),
+    ("lmstudio",    "🏠 LM Studio (로컬 · GUI)"),
+    ("llamacpp",    "🏠 llama.cpp (로컬 · 초경량)"),
+    ("jan",         "🏠 Jan (로컬 · 크로스플랫폼)"),
+    # 🟢 무료 쿼터 클라우드
+    ("gemini",      "🟢 Google Gemini (무료 1000회/일)"),
+    ("groq",        "🟢 Groq (무료 14,400회/일)"),
+    ("cerebras",    "🟢 Cerebras (무료, 초고속)"),
+    ("sambanova",   "🟢 SambaNova (무료 분당 10회)"),
+    ("mistral",     "🟢 Mistral AI (실험용 무료)"),
+    ("cohere",      "🟢 Cohere (월 1,000회 무료)"),
+    ("huggingface", "🟢 Hugging Face (무료 Inference)"),
+    ("xai",         "🟢 xAI Grok ($25/월 무료 크레딧)"),
+    # 🟡 유료 / 크레딧
+    ("openai",      "🟡 OpenAI ($5 크레딧)"),
+    ("anthropic",   "🟡 Anthropic Claude (유료)"),
+    ("deepseek",    "🟡 DeepSeek (초저가)"),
+    ("perplexity",  "🟡 Perplexity AI ($5 크레딧)"),
+    ("together",    "🟡 Together AI ($5 크레딧)"),
+    ("fireworks",   "🟡 Fireworks AI ($1 크레딧)"),
+    ("openrouter",  "🟡 OpenRouter (일부 무료)"),
+    ("nvidia",      "🟡 NVIDIA NIM (1,000 크레딧)"),
+]
+
 
 @st.cache_data(ttl=60)
 def load_articles():
@@ -619,7 +674,61 @@ with m4:
     st.metric("SOURCES", f"{active_src}", delta="active")
 
 # ══════════════════════════════════════════════
-# 5탭 구성
+# 온보딩 웰컴 카드 — 프로바이더 미연결 시 최상단 노출
+# (하드코딩 피해 PROVIDER_CHOICES·PROVIDERS에서 카운트 동적 계산)
+# ══════════════════════════════════════════════
+if not _active_provider:
+    _local_cnt  = sum(1 for pid, _ in PROVIDER_CHOICES if PROVIDERS.get(pid, {}).get("is_local"))
+    _free_cnt   = sum(1 for pid, _ in PROVIDER_CHOICES
+                      if not PROVIDERS.get(pid, {}).get("is_local")
+                      and "무료" in dict(PROVIDER_CHOICES).get(pid, ""))
+    _paid_cnt   = len(PROVIDER_CHOICES) - _local_cnt - _free_cnt
+    _total_articles = get_article_count()
+    _processed_articles = get_processed_count()
+
+    with st.container(border=True):
+        hc1, hc2, hc3 = st.columns([1, 4, 1])
+        with hc2:
+            st.markdown(f"""
+<div style="text-align:center; padding: 18px 0 8px 0;">
+  <h1 style="margin:0; font-size:28px;">👋 AI News Radar에 오신 걸 환영합니다</h1>
+  <p style="margin:8px 0 18px 0; color: rgba(236,236,239,0.72); font-size:15px;">
+    이미 <b>{_total_articles:,}개 기사</b>가 수집되어 있어요 · AI 처리된 건 <b>{_processed_articles:,}개</b><br/>
+    API 키 1개만 연결하면 바로 사용할 수 있습니다.
+  </p>
+</div>
+""", unsafe_allow_html=True)
+            pc1, pc2, pc3 = st.columns(3)
+            with pc1:
+                st.markdown(f"""<div style="text-align:center; padding:16px; background:rgba(99,102,241,0.08); border-radius:8px;">
+                <div style="font-size:32px;">🏠</div>
+                <div style="font-weight:600; margin-top:4px;">로컬 LLM</div>
+                <div style="font-size:13px; color:rgba(236,236,239,0.6);">{_local_cnt}종 · 완전 무료 · 오프라인</div>
+                </div>""", unsafe_allow_html=True)
+            with pc2:
+                st.markdown(f"""<div style="text-align:center; padding:16px; background:rgba(52,211,153,0.08); border-radius:8px;">
+                <div style="font-size:32px;">🟢</div>
+                <div style="font-weight:600; margin-top:4px;">무료 클라우드</div>
+                <div style="font-size:13px; color:rgba(236,236,239,0.6);">{_free_cnt}종 · 하루 1천 회 무료</div>
+                </div>""", unsafe_allow_html=True)
+            with pc3:
+                st.markdown(f"""<div style="text-align:center; padding:16px; background:rgba(251,191,36,0.08); border-radius:8px;">
+                <div style="font-size:32px;">🟡</div>
+                <div style="font-weight:600; margin-top:4px;">유료 크레딧</div>
+                <div style="font-size:13px; color:rgba(236,236,239,0.6);">{_paid_cnt}종 · 고품질</div>
+                </div>""", unsafe_allow_html=True)
+
+            st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
+            if st.button("🚀 지금 시작하기 — API 키 설정 열기", type="primary", use_container_width=True, key="onboarding_start"):
+                st.session_state["_open_settings_dialog"] = True
+                st.rerun()
+            st.caption("  ⚠️ 이 안내는 프로바이더 연결 후 자동으로 사라집니다.")
+
+    st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════
+# 6탭 구성
 # ══════════════════════════════════════════════
 tab_dash, tab_news, tab_ai, tab_insight, tab_share, tab_graph = st.tabs(
     ["🏠 대시보드", "📰 뉴스피드", "💬 AI", "📊 인사이트", "📢 공유", "🕸️ 그래프"]
@@ -1197,8 +1306,7 @@ with tab_insight:
                     r = send_newsletter("weekly")
                     st.success(f"✅ {r['sent_to']}명") if r["success"] else st.error(r["error"])
         else:
-            with st.expander("⚙️ 이메일 설정"):
-                st.markdown("`.env`에 `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`, `NEWSLETTER_RECIPIENTS` 추가")
+            st.info("📭 SMTP 미설정 — 사이드바 **⚙️ 설정** → **📧 이메일** 탭에서 설정하세요.")
 
 # ══════════════════════════════════════════════
 # 탭 5: 공유 (SNS + 콘텐츠 + 내보내기)
@@ -1216,126 +1324,10 @@ with tab_share:
             with pcols[idx]:
                 st.caption(f"{p['icon']} {'🟢' if p['configured'] else '⚪'}")
 
-        # 미연결 플랫폼 가이드 (연결된 것이 있어도 보여줌)
+        # 미연결 플랫폼: 설정 모달 안내
         unconfigured = [p for p in platforms if not p["configured"]]
         if unconfigured:
-            with st.expander(f"⚙️ SNS 연결 가이드 ({len(unconfigured)}개 미연결)", expanded=not configured):
-                st.markdown("`.env` 파일을 메모장으로 열어 아래 내용을 추가하세요.")
-
-                st.markdown("---")
-                st.markdown("""
-### 💬 Discord — 가장 쉬움 (30초)
-
-> 별도 가입이나 개발자 등록 없이 URL 하나만 복사하면 됩니다.
-
-**설정 방법:**
-1. Discord 앱 또는 웹에서 내 서버 열기
-2. 왼쪽 채널 목록에서 게시할 채널의 **⚙️ 톱니바퀴** (채널 편집) 클릭
-3. **연동** 탭 클릭
-4. **웹훅 만들기** 클릭
-5. 이름을 "AI News Radar"로 변경 (선택사항)
-6. **웹훅 URL 복사** 클릭
-7. `.env` 파일에 붙여넣기:
-
-```
-DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/여기에복사한URL
-```
-
----
-
-### 📨 Telegram — 쉬움 (2분)
-
-> 텔레그램 앱에서 봇을 만들고 채널에 연결합니다.
-
-**설정 방법:**
-1. 텔레그램 앱에서 **@BotFather** 검색 → 대화 시작
-2. `/newbot` 입력 → 봇 이름 입력 (예: `AI News Radar`)
-3. 유저네임 입력 (예: `my_ai_news_bot`) — 반드시 `_bot`으로 끝나야 함
-4. **토큰이 표시됨** → 복사 (예: `7123456789:AAH...`)
-5. 텔레그램에서 **채널 만들기** (또는 기존 채널 사용)
-6. 채널 설정 → **관리자** → 방금 만든 봇을 관리자로 추가
-7. 채널의 **@아이디** 확인 (예: `@my_ai_news_channel`)
-8. `.env` 파일에 추가:
-
-```
-TELEGRAM_BOT_TOKEN=7123456789:AAHxxxxxx
-TELEGRAM_CHANNEL_ID=@my_ai_news_channel
-```
-
----
-
-### 🐦 X (Twitter) — 보통 (10분)
-
-> 개발자 포털에서 앱을 만들고 키 4개를 발급받습니다.
-
-**설정 방법:**
-1. [developer.x.com](https://developer.x.com/) 접속 → 로그인
-2. **Developer Portal** → **Projects & Apps** → **+ Create App**
-3. 앱 이름 입력 (예: `AI-News-Radar`)
-4. **App Settings** → **Keys and Tokens** 탭
-5. **API Key and Secret** → Generate → **2개 키 복사**
-6. **Access Token and Secret** → Generate → **2개 키 복사**
-7. **User authentication settings** → Edit → Read and Write 권한 설정
-8. `.env` 파일에 추가:
-
-```
-X_API_KEY=발급받은_API_Key
-X_API_SECRET=발급받은_API_Key_Secret
-X_ACCESS_TOKEN=발급받은_Access_Token
-X_ACCESS_SECRET=발급받은_Access_Token_Secret
-```
-
----
-
-### 🧵 Threads — 보통 (10분)
-
-> Meta 개발자 포털에서 Threads API를 활성화합니다.
-
-**설정 방법:**
-1. [developers.facebook.com](https://developers.facebook.com/) 접속 → 로그인
-2. **내 앱** → **앱 만들기** → 사용 사례: **"기타"** 선택
-3. 앱 이름 입력 → 만들기
-4. 왼쪽 메뉴 → **제품 추가** → **Threads API** 선택
-5. **API 설정** → `threads_manage_posts` 권한 추가
-6. **토큰 생성** → 액세스 토큰 복사
-7. 사용자 ID 확인:
-   - 그래프 API 탐색기 → GET `/me` 실행 → `id` 값 복사
-8. `.env` 파일에 추가:
-
-```
-THREADS_ACCESS_TOKEN=발급받은_액세스_토큰
-THREADS_USER_ID=발급받은_사용자_ID
-```
-
----
-
-### 📸 Instagram — 복잡 (15분)
-
-> Facebook 페이지와 Instagram 비즈니스 계정 연결이 필요합니다.
-
-**사전 준비:**
-- Instagram 계정을 **비즈니스** 또는 **크리에이터** 계정으로 전환
-- Facebook 페이지를 만들고 Instagram 계정과 연결
-
-**설정 방법:**
-1. Instagram 앱 → 설정 → 계정 → **프로페셔널 계정으로 전환** → 비즈니스 선택
-2. Facebook 페이지 만들기 (없는 경우) → Instagram 계정 연결
-3. [developers.facebook.com](https://developers.facebook.com/) → 앱 만들기
-4. **제품 추가** → **Instagram Graph API** 선택
-5. 권한 추가: `instagram_basic`, `instagram_content_publish`
-6. **액세스 토큰 생성** → 복사
-7. **계정 ID 확인**:
-   - 그래프 API 탐색기 → GET `/me/accounts` → `instagram_business_account` → `id` 복사
-8. 이미지 호스팅용 Imgur 등록:
-   - [api.imgur.com/oauth2/addclient](https://api.imgur.com/oauth2/addclient) → 앱 등록 → Client ID 복사
-9. `.env` 파일에 추가:
-
-```
-INSTAGRAM_ACCESS_TOKEN=발급받은_액세스_토큰
-INSTAGRAM_ACCOUNT_ID=발급받은_계정_ID
-IMGUR_CLIENT_ID=발급받은_Imgur_Client_ID
-```
-""")
+            st.info(f"📡 {len(unconfigured)}개 플랫폼 미연결 — 사이드바 **⚙️ 설정** → **📢 SNS** 탭에서 설정하세요.")
 
         if not configured:
             pass  # 가이드만 표시
@@ -1477,70 +1469,16 @@ with tab_graph:
 
 
 # ══════════════════════════════════════════════
-# 탭 7: ⚙️ 설정 (통합 설정 페이지)
+# ⚙️ 설정 모달 (PROVIDER_* 상수는 파일 상단에서 이미 정의됨)
 # ══════════════════════════════════════════════
-
-# 프로바이더별 공식 발급/설치 URL (로컬 4 + 클라우드 16)
-PROVIDER_SIGNUP_URLS = {
-    # 🏠 로컬 LLM — 설치 가이드 URL
-    "ollama":      "https://ollama.com/download",
-    "lmstudio":    "https://lmstudio.ai/",
-    "llamacpp":    "https://github.com/ggml-org/llama.cpp#http-server",
-    "jan":         "https://jan.ai/download",
-    # 🟢 무료 쿼터 클라우드
-    "gemini":      "https://aistudio.google.com/apikey",
-    "groq":        "https://console.groq.com/keys",
-    "cerebras":    "https://cloud.cerebras.ai/platform/",
-    "sambanova":   "https://cloud.sambanova.ai/apis",
-    "mistral":     "https://console.mistral.ai/api-keys/",
-    "cohere":      "https://dashboard.cohere.com/api-keys",
-    "huggingface": "https://huggingface.co/settings/tokens",
-    "xai":         "https://console.x.ai/",
-    # 🟡 유료 / 크레딧
-    "openai":      "https://platform.openai.com/api-keys",
-    "anthropic":   "https://console.anthropic.com/settings/keys",
-    "deepseek":    "https://platform.deepseek.com/api_keys",
-    "perplexity":  "https://www.perplexity.ai/settings/api",
-    "together":    "https://api.together.xyz/settings/api-keys",
-    "fireworks":   "https://fireworks.ai/account/api-keys",
-    "openrouter":  "https://openrouter.ai/keys",
-    "nvidia":      "https://build.nvidia.com/explore/discover",
-}
-
-# 드롭다운 선택지 (그룹 이모지로 구분 — 로컬 4 → 무료 8 → 유료 8)
-PROVIDER_CHOICES = [
-    # 🏠 로컬 LLM (API 키 불필요)
-    ("ollama",      "🏠 Ollama (로컬 · 완전 무료)"),
-    ("lmstudio",    "🏠 LM Studio (로컬 · GUI)"),
-    ("llamacpp",    "🏠 llama.cpp (로컬 · 초경량)"),
-    ("jan",         "🏠 Jan (로컬 · 크로스플랫폼)"),
-    # 🟢 무료 쿼터 클라우드
-    ("gemini",      "🟢 Google Gemini (무료 1000회/일)"),
-    ("groq",        "🟢 Groq (무료 14,400회/일)"),
-    ("cerebras",    "🟢 Cerebras (무료, 초고속)"),
-    ("sambanova",   "🟢 SambaNova (무료 분당 10회)"),
-    ("mistral",     "🟢 Mistral AI (실험용 무료)"),
-    ("cohere",      "🟢 Cohere (월 1,000회 무료)"),
-    ("huggingface", "🟢 Hugging Face (무료 Inference)"),
-    ("xai",         "🟢 xAI Grok ($25/월 무료 크레딧)"),
-    # 🟡 유료 / 크레딧
-    ("openai",      "🟡 OpenAI ($5 크레딧)"),
-    ("anthropic",   "🟡 Anthropic Claude (유료)"),
-    ("deepseek",    "🟡 DeepSeek (초저가)"),
-    ("perplexity",  "🟡 Perplexity AI ($5 크레딧)"),
-    ("together",    "🟡 Together AI ($5 크레딧)"),
-    ("fireworks",   "🟡 Fireworks AI ($1 크레딧)"),
-    ("openrouter",  "🟡 OpenRouter (일부 무료)"),
-    ("nvidia",      "🟡 NVIDIA NIM (1,000 크레딧)"),
-]
 
 
 @st.dialog("⚙️ 설정", width="large")
 def show_settings_dialog():
     st.caption("모든 설정을 한 곳에서 관리합니다. `.env` 파일을 직접 편집할 필요 없습니다.")
 
-    sec_llm, sec_crawl, sec_source, sec_cloud, sec_info = st.tabs([
-        "🔑 LLM API 키", "⏱️ 크롤링", "📰 뉴스 소스", "☁️ 클라우드 동기화", "ℹ️ 시스템 정보"
+    sec_llm, sec_crawl, sec_source, sec_email, sec_sns, sec_cloud, sec_info = st.tabs([
+        "🔑 LLM API 키", "⏱️ 크롤링", "📰 뉴스 소스", "📧 이메일", "📢 SNS", "☁️ 클라우드 동기화", "ℹ️ 시스템 정보"
     ])
 
     # ── 섹션 1: LLM 프로바이더 (클라우드 API 키 + 로컬 LLM) ──
@@ -1816,7 +1754,186 @@ def show_settings_dialog():
             st.success(f"✅ {len(st_sources)}개 소스 저장됨")
             st.rerun()
 
-    # ── 섹션 4: ☁️ 클라우드 동기화 (GitHub Secrets) ──
+    # ── 섹션 4: 📧 이메일 (SMTP / 뉴스레터) ──
+    with sec_email:
+        st.markdown("### 📧 이메일 뉴스레터")
+        st.caption("SMTP 서버에 연결하면 일간·주간 AI 뉴스 요약을 이메일로 받을 수 있습니다.")
+
+        from sns.newsletter import is_smtp_configured as _is_smtp
+        smtp_ok = _is_smtp()
+        if smtp_ok:
+            st.success("✅ SMTP 연결됨 — 인사이트 탭에서 📧 발송 가능")
+        else:
+            st.warning("⚠️ SMTP 미설정. 아래 필드 입력 후 저장하세요.")
+
+        # 현재값 (있으면) 표시 — 비밀번호는 마스킹
+        _smtp_fields = {
+            "SMTP_HOST":            ("서버 주소", "smtp.gmail.com 등", False),
+            "SMTP_USER":            ("보낸사람 이메일", "yourname@gmail.com", False),
+            "SMTP_PASSWORD":        ("앱 비밀번호", "Google 계정 앱 비밀번호", True),
+            "NEWSLETTER_RECIPIENTS":("수신자 (쉼표 구분)", "user1@x.com, user2@y.com", False),
+        }
+        smtp_inputs = {}
+        for key, (label, placeholder, is_pw) in _smtp_fields.items():
+            current = os.getenv(key, "")
+            if current:
+                hint = f"저장됨: ****...{current[-4:]}" if is_pw else f"저장됨: {current[:40]}"
+            else:
+                hint = "미설정"
+            smtp_inputs[key] = st.text_input(
+                label,
+                type="password" if is_pw else "default",
+                placeholder=placeholder,
+                help=hint,
+                key=f"settings_email_{key}",
+            )
+
+        ec1, ec2 = st.columns(2)
+        with ec1:
+            if st.button("💾 이메일 설정 저장", type="primary", use_container_width=True, key="settings_email_save"):
+                updates = {k: v.strip() for k, v in smtp_inputs.items() if v and v.strip()}
+                if not updates:
+                    st.warning("최소 1개 필드를 입력하세요.")
+                else:
+                    try:
+                        update_env(updates)
+                        apply_runtime(updates)
+                        st.success(f"✅ {len(updates)}개 필드 저장됨")
+                        st.rerun()
+                    except EnvWriterError as e:
+                        st.error(f"저장 실패: {e}")
+        with ec2:
+            if st.button("📤 테스트 발송", use_container_width=True, disabled=not smtp_ok, key="settings_email_test"):
+                try:
+                    from sns.newsletter import send_newsletter as _send
+                    r = _send("daily")
+                    if r.get("success"):
+                        st.success(f"✅ {r.get('sent_to', 0)}명에게 발송됨")
+                    else:
+                        st.error(f"실패: {r.get('error', '알 수 없음')[:120]}")
+                except Exception as e:
+                    st.error(f"오류: {str(e)[:120]}")
+
+        with st.expander("ℹ️ Gmail 앱 비밀번호 발급법"):
+            st.markdown("""
+1. Google 계정 → [보안](https://myaccount.google.com/security) → **2단계 인증** 활성화
+2. [앱 비밀번호](https://myaccount.google.com/apppasswords) 페이지 접속
+3. "메일" + "기타(AI News Radar)" 선택 → **생성**
+4. 표시된 16자 비밀번호를 위 `SMTP_PASSWORD` 필드에 붙여넣기
+5. `SMTP_HOST`는 `smtp.gmail.com` (포트는 내부적으로 587 사용)
+
+**보안:** 앱 비밀번호는 Google 계정 비밀번호와 **다릅니다** (제한된 권한).
+""")
+
+    # ── 섹션 5: 📢 SNS (Discord/Telegram/X/Threads/Instagram) ──
+    with sec_sns:
+        st.markdown("### 📢 SNS 자동 게시")
+        st.caption("연결된 SNS에 중요 AI 뉴스를 자동 또는 수동으로 게시할 수 있습니다.")
+
+        # 현재 연결 상태 표시
+        try:
+            _platforms = get_available_platforms()
+        except Exception:
+            _platforms = []
+        if _platforms:
+            pcols = st.columns(len(_platforms))
+            for idx, p in enumerate(_platforms):
+                with pcols[idx]:
+                    st.caption(f"{p['icon']} {'🟢 연결' if p['configured'] else '⚪ 미연결'}")
+
+        # 플랫폼 선택 (radio)
+        sns_platform = st.radio(
+            "플랫폼",
+            ["💬 Discord", "📨 Telegram", "🐦 X (Twitter)", "🧵 Threads", "📸 Instagram"],
+            horizontal=True,
+            key="settings_sns_platform",
+            label_visibility="collapsed",
+        )
+
+        # 플랫폼별 필드 (하드코딩 없이 딕셔너리 기반)
+        _sns_fields = {
+            "💬 Discord": [
+                ("DISCORD_WEBHOOK_URL", "웹훅 URL", "https://discord.com/api/webhooks/...", False),
+            ],
+            "📨 Telegram": [
+                ("TELEGRAM_BOT_TOKEN", "봇 토큰", "123456789:AAH...", True),
+                ("TELEGRAM_CHANNEL_ID", "채널 ID", "@my_channel", False),
+            ],
+            "🐦 X (Twitter)": [
+                ("X_API_KEY",        "API Key",       "", True),
+                ("X_API_SECRET",     "API Secret",    "", True),
+                ("X_ACCESS_TOKEN",   "Access Token",  "", True),
+                ("X_ACCESS_SECRET",  "Access Secret", "", True),
+            ],
+            "🧵 Threads": [
+                ("THREADS_ACCESS_TOKEN", "Access Token", "", True),
+                ("THREADS_USER_ID",      "User ID",      "", False),
+            ],
+            "📸 Instagram": [
+                ("INSTAGRAM_ACCESS_TOKEN", "Access Token", "", True),
+                ("INSTAGRAM_ACCOUNT_ID",   "Account ID",   "", False),
+                ("IMGUR_CLIENT_ID",        "Imgur Client ID (이미지 호스팅)", "", False),
+            ],
+        }
+        _sns_guides = {
+            "💬 Discord":   "1. Discord 채널 설정 → 연동 → **웹훅 만들기** → URL 복사",
+            "📨 Telegram":  "1. @BotFather에서 `/newbot` → 토큰 확보\n2. 채널 만들고 봇을 관리자로 추가",
+            "🐦 X (Twitter)":"developer.x.com → Project/App 생성 → Keys and Tokens 탭에서 4개 키 발급",
+            "🧵 Threads":   "developers.facebook.com → Threads API 제품 추가 → 토큰 생성",
+            "📸 Instagram": "Instagram 비즈니스 계정 + Facebook 페이지 연결 필수 (15분)",
+        }
+
+        st.info(f"📘 {_sns_guides[sns_platform]}")
+
+        sns_inputs = {}
+        for key, label, placeholder, is_pw in _sns_fields[sns_platform]:
+            current = os.getenv(key, "")
+            if current:
+                hint = f"저장됨: ****...{current[-4:]}" if is_pw else f"저장됨: {current[:30]}..."
+            else:
+                hint = "미설정"
+            sns_inputs[key] = st.text_input(
+                label,
+                type="password" if is_pw else "default",
+                placeholder=placeholder,
+                help=hint,
+                key=f"settings_sns_{key}",
+            )
+
+        if st.button(
+            f"💾 {sns_platform} 저장",
+            type="primary",
+            use_container_width=True,
+            key="settings_sns_save",
+        ):
+            updates = {k: v.strip() for k, v in sns_inputs.items() if v and v.strip()}
+            if not updates:
+                st.warning("최소 1개 필드를 입력하세요.")
+            else:
+                try:
+                    update_env(updates)
+                    apply_runtime(updates)
+                    st.success(f"✅ {sns_platform} · {len(updates)}개 필드 저장됨")
+                    st.rerun()
+                except EnvWriterError as e:
+                    st.error(f"저장 실패: {e}")
+
+        with st.expander("ℹ️ 전체 SNS 가이드 (상세 단계)"):
+            st.markdown("""
+**가장 쉬운 순서:**
+1. 💬 **Discord** — 30초 (웹훅만)
+2. 📨 **Telegram** — 2분 (봇 + 채널)
+3. 🐦 **X** — 10분 (개발자 계정 + 4개 키)
+4. 🧵 **Threads** — 10분 (Meta 개발자)
+5. 📸 **Instagram** — 15분 (비즈니스 전환 + Facebook 페이지)
+
+**보안:**
+- 모든 토큰은 로컬 `.env`에만 저장됨 (Git 커밋 안 됨)
+- 저장 후 화면에는 `****...last4`로만 표시
+- `⚙️ 설정 → ☁️ 클라우드 동기화`로 GitHub Actions에도 반영 가능
+""")
+
+    # ── 섹션 6: ☁️ 클라우드 동기화 (GitHub Secrets) ──
     with sec_cloud:
         st.markdown("### ☁️ GitHub Secrets 동기화")
         st.caption("로컬 `.env` 키를 GitHub 저장소 Secrets에 전송하여 **Actions 자동 수집**을 복구합니다.")
