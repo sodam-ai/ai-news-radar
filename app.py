@@ -20,6 +20,7 @@ from ai.batch_processor import process_unprocessed
 from ai.deduplicator import deduplicate
 from ai.briefing import generate_daily_briefing, FOCUS_AREAS
 from ai.model_router import get_active_provider, get_available_providers, PROVIDERS
+from utils.env_writer import EnvWriterError, apply_runtime, update_env
 from export.exporter import (
     export_briefing_markdown, export_articles_markdown,
     export_briefing_pdf, export_articles_pdf,
@@ -384,9 +385,20 @@ with st.sidebar:
     </div>""", unsafe_allow_html=True)
 
     if _active_provider:
-        st.caption(f"**{PROVIDERS[_active_provider]['name']}** connected")
+        st.success(f"🟢 **{PROVIDERS[_active_provider]['name']}** 연결됨")
     else:
-        st.error("API key not configured")
+        st.error("🔴 **API 키 미설정**")
+
+    # ⚙️ 설정 버튼 — 항상 보임, 미연결 시 빨간 primary
+    # (dialog 함수는 파일 하단에 정의되어 있어 session_state 플래그로 호출 지연)
+    if st.button(
+        "⚙️  설정",
+        use_container_width=True,
+        type="primary" if not _active_provider else "secondary",
+        key="sidebar_open_settings",
+        help="API 키 · 크롤링 주기 · 뉴스 소스 · 시스템 정보",
+    ):
+        st.session_state["_open_settings_dialog"] = True
 
     st.divider()
 
@@ -547,14 +559,7 @@ with st.sidebar:
         if watchlist_keywords:
             st.markdown(" ".join([f"`{k}`" for k in watchlist_keywords]))
 
-    with st.expander("📰 소스 관리"):
-        sources = load_sources()
-        for s in sources:
-            s["is_active"] = st.checkbox(s["name"], value=s.get("is_active", True), key=f"src_{s['id']}")
-        if st.button("💾 저장", use_container_width=True, key="save_src"):
-            for s in sources:
-                upsert_source(s)
-            st.success("저장됨!")
+    # 📰 소스 관리는 ⚙️ 설정 탭으로 이동됨
 
     @st.fragment(run_every=300)
     def sidebar_stats():
@@ -1469,3 +1474,383 @@ with tab_graph:
                             st.markdown(f"{importance_marks} [{a['title'][:70]}]({a['url']})")
                             if a.get("summary_text"):
                                 st.caption(a["summary_text"][:120])
+
+
+# ══════════════════════════════════════════════
+# 탭 7: ⚙️ 설정 (통합 설정 페이지)
+# ══════════════════════════════════════════════
+
+# 프로바이더별 공식 발급/설치 URL (로컬 4 + 클라우드 16)
+PROVIDER_SIGNUP_URLS = {
+    # 🏠 로컬 LLM — 설치 가이드 URL
+    "ollama":      "https://ollama.com/download",
+    "lmstudio":    "https://lmstudio.ai/",
+    "llamacpp":    "https://github.com/ggml-org/llama.cpp#http-server",
+    "jan":         "https://jan.ai/download",
+    # 🟢 무료 쿼터 클라우드
+    "gemini":      "https://aistudio.google.com/apikey",
+    "groq":        "https://console.groq.com/keys",
+    "cerebras":    "https://cloud.cerebras.ai/platform/",
+    "sambanova":   "https://cloud.sambanova.ai/apis",
+    "mistral":     "https://console.mistral.ai/api-keys/",
+    "cohere":      "https://dashboard.cohere.com/api-keys",
+    "huggingface": "https://huggingface.co/settings/tokens",
+    "xai":         "https://console.x.ai/",
+    # 🟡 유료 / 크레딧
+    "openai":      "https://platform.openai.com/api-keys",
+    "anthropic":   "https://console.anthropic.com/settings/keys",
+    "deepseek":    "https://platform.deepseek.com/api_keys",
+    "perplexity":  "https://www.perplexity.ai/settings/api",
+    "together":    "https://api.together.xyz/settings/api-keys",
+    "fireworks":   "https://fireworks.ai/account/api-keys",
+    "openrouter":  "https://openrouter.ai/keys",
+    "nvidia":      "https://build.nvidia.com/explore/discover",
+}
+
+# 드롭다운 선택지 (그룹 이모지로 구분 — 로컬 4 → 무료 8 → 유료 8)
+PROVIDER_CHOICES = [
+    # 🏠 로컬 LLM (API 키 불필요)
+    ("ollama",      "🏠 Ollama (로컬 · 완전 무료)"),
+    ("lmstudio",    "🏠 LM Studio (로컬 · GUI)"),
+    ("llamacpp",    "🏠 llama.cpp (로컬 · 초경량)"),
+    ("jan",         "🏠 Jan (로컬 · 크로스플랫폼)"),
+    # 🟢 무료 쿼터 클라우드
+    ("gemini",      "🟢 Google Gemini (무료 1000회/일)"),
+    ("groq",        "🟢 Groq (무료 14,400회/일)"),
+    ("cerebras",    "🟢 Cerebras (무료, 초고속)"),
+    ("sambanova",   "🟢 SambaNova (무료 분당 10회)"),
+    ("mistral",     "🟢 Mistral AI (실험용 무료)"),
+    ("cohere",      "🟢 Cohere (월 1,000회 무료)"),
+    ("huggingface", "🟢 Hugging Face (무료 Inference)"),
+    ("xai",         "🟢 xAI Grok ($25/월 무료 크레딧)"),
+    # 🟡 유료 / 크레딧
+    ("openai",      "🟡 OpenAI ($5 크레딧)"),
+    ("anthropic",   "🟡 Anthropic Claude (유료)"),
+    ("deepseek",    "🟡 DeepSeek (초저가)"),
+    ("perplexity",  "🟡 Perplexity AI ($5 크레딧)"),
+    ("together",    "🟡 Together AI ($5 크레딧)"),
+    ("fireworks",   "🟡 Fireworks AI ($1 크레딧)"),
+    ("openrouter",  "🟡 OpenRouter (일부 무료)"),
+    ("nvidia",      "🟡 NVIDIA NIM (1,000 크레딧)"),
+]
+
+
+@st.dialog("⚙️ 설정", width="large")
+def show_settings_dialog():
+    st.caption("모든 설정을 한 곳에서 관리합니다. `.env` 파일을 직접 편집할 필요 없습니다.")
+
+    sec_llm, sec_crawl, sec_source, sec_info = st.tabs([
+        "🔑 LLM API 키", "⏱️ 크롤링", "📰 뉴스 소스", "ℹ️ 시스템 정보"
+    ])
+
+    # ── 섹션 1: LLM 프로바이더 (클라우드 API 키 + 로컬 LLM) ──
+    with sec_llm:
+        st.markdown("### 🔑 LLM 프로바이더")
+
+        if _active_provider:
+            st.success(f"✅ 현재 **{PROVIDERS[_active_provider]['name']}** 연결됨")
+        else:
+            st.error("⚠️ 프로바이더가 설정되지 않았습니다. 아래에서 선택·설정하세요.")
+
+        # 기본 선택: 활성 프로바이더 또는 리스트 첫 번째
+        default_idx = 0
+        if _active_provider:
+            for i, (pid, _lbl) in enumerate(PROVIDER_CHOICES):
+                if pid == _active_provider:
+                    default_idx = i
+                    break
+
+        selected_id = st.selectbox(
+            "프로바이더 선택",
+            options=[pid for pid, _ in PROVIDER_CHOICES],
+            format_func=lambda pid: dict(PROVIDER_CHOICES).get(pid, pid),
+            index=default_idx,
+            key="settings_provider_select",
+            help="🏠 로컬 · 🟢 무료 쿼터 · 🟡 유료/크레딧",
+        )
+
+        provider_info = PROVIDERS[selected_id]
+        is_local = provider_info.get("is_local", False)
+        signup_url = PROVIDER_SIGNUP_URLS.get(selected_id)
+
+        # 발급 / 설치 링크
+        if signup_url:
+            btn_label = (
+                f"📥 {provider_info['name']} 설치하기 (공식)"
+                if is_local
+                else f"🌐 {provider_info['name']} API 키 발급받기 (공식)"
+            )
+            st.link_button(btn_label, signup_url, use_container_width=True)
+
+        st.caption(f"💡 {provider_info.get('free_tier', '')}")
+
+        if is_local:
+            # ── 🏠 로컬 LLM 분기 — Base URL + 모델 이름 ──
+            st.info("🏠 로컬 LLM은 **API 키 불필요**. 먼저 프로그램을 설치하고 서버를 실행하세요.")
+
+            base_url_env = provider_info.get("base_url_env", "")
+            base_url_default = provider_info["base_url"]
+            model_current = provider_info["models"]["main"]
+
+            current_base = os.getenv(base_url_env, base_url_default) if base_url_env else base_url_default
+
+            new_base_url = st.text_input(
+                "📍 서버 주소 (Base URL)",
+                value=current_base,
+                help=f"기본값: {base_url_default}",
+                key=f"settings_local_url_{selected_id}",
+            )
+
+            new_model = st.text_input(
+                "📦 모델 이름",
+                value=model_current,
+                help="설치한 모델명 (예: llama3.3:70b, qwen2.5-7b-instruct)",
+                key=f"settings_local_model_{selected_id}",
+            )
+
+            if st.button(
+                "🔌 연결 테스트 + 저장",
+                type="primary",
+                use_container_width=True,
+                key="settings_local_save",
+            ):
+                url_trimmed = (new_base_url or "").strip().rstrip("/")
+                model_trimmed = (new_model or "").strip()
+                if not url_trimmed:
+                    st.warning("서버 주소를 입력하세요.")
+                elif not model_trimmed:
+                    st.warning("모델 이름을 입력하세요.")
+                else:
+                    # 1) 연결 테스트: GET {base_url}/models (auth 불필요)
+                    try:
+                        import requests as _req
+                        probe = _req.get(f"{url_trimmed}/models", timeout=5)
+                        if probe.status_code == 200:
+                            try:
+                                models_list = probe.json().get("data", [])
+                                st.success(f"✅ 서버 연결 성공 · 감지 모델 {len(models_list)}개")
+                            except Exception:
+                                st.success("✅ 서버 연결 성공")
+                        else:
+                            st.warning(f"⚠️ 서버 응답 HTTP {probe.status_code} — 저장은 계속 진행")
+                    except Exception as e:
+                        st.error(f"❌ 서버 연결 실패: {str(e)[:120]}")
+                        st.caption("💡 프로그램 실행 중인지, 주소·포트가 맞는지 확인하세요.")
+                        st.stop()
+
+                    # 2) .env 저장
+                    try:
+                        updates = {
+                            "LLM_PROVIDER": selected_id,
+                            provider_info["env_key"]: "local_enabled",
+                        }
+                        if base_url_env:
+                            updates[base_url_env] = url_trimmed
+                        # 모델 이름 env (프로바이더별 키명 조정)
+                        model_env = {
+                            "ollama":   "OLLAMA_MODEL_MAIN",
+                            "lmstudio": "LMSTUDIO_MODEL",
+                            "llamacpp": "LLAMACPP_MODEL",
+                            "jan":      "JAN_MODEL",
+                        }.get(selected_id)
+                        if model_env:
+                            updates[model_env] = model_trimmed
+
+                        update_env(updates)
+                        apply_runtime(updates)
+                        st.success(f"✅ 저장 완료 · **{provider_info['name']}** 활성화")
+                        st.rerun()
+                    except EnvWriterError as e:
+                        st.error(f"저장 실패: {e}")
+                    except Exception as e:
+                        st.error(f"예기치 못한 오류: {str(e)[:120]}")
+        else:
+            # ── 🟢/🟡 클라우드 분기 — API 키 입력 ──
+            env_key_name = provider_info["env_key"]
+            current_val = os.getenv(env_key_name, "")
+            if current_val:
+                st.caption(f"현재 저장됨: `{env_key_name}` (****...{current_val[-4:]})")
+            else:
+                st.caption(f"`{env_key_name}` 미설정")
+
+            new_key = st.text_input(
+                "API 키 입력",
+                type="password",
+                placeholder="AIza... 또는 sk-... 등",
+                help="발급받은 키를 붙여넣으세요. 로컬 .env 파일에만 저장됩니다.",
+                key="settings_apikey_input",
+            )
+
+            if st.button(
+                "💾 저장 + 자동 연결 테스트",
+                type="primary",
+                use_container_width=True,
+                key="settings_apikey_save",
+            ):
+                key_trimmed = (new_key or "").strip()
+                if not key_trimmed:
+                    st.warning("키를 먼저 입력하세요.")
+                elif len(key_trimmed) < 16:
+                    st.warning(f"키가 너무 짧습니다 ({len(key_trimmed)}자). 올바른 키를 입력하세요.")
+                else:
+                    try:
+                        updates = {"LLM_PROVIDER": selected_id, env_key_name: key_trimmed}
+                        update_env(updates)
+                        apply_runtime(updates)
+
+                        new_active = get_active_provider()
+                        if new_active == selected_id:
+                            try:
+                                from ai.model_router import call_gemini
+                                _ = call_gemini("Return []")
+                                st.success(f"✅ 저장 완료 · **{provider_info['name']}** 연결 성공")
+                            except Exception as api_err:
+                                st.warning(
+                                    f"💾 저장됨 · ⚠️ 연결 테스트 실패 (키 만료·쿼터·네트워크 확인): "
+                                    f"{str(api_err)[:120]}"
+                                )
+                        else:
+                            st.warning(
+                                f"💾 저장됨 · ⚠️ 활성 프로바이더 감지 실패 "
+                                f"(예상:{selected_id}, 현재:{new_active or '없음'})"
+                            )
+
+                        if "settings_apikey_input" in st.session_state:
+                            st.session_state.settings_apikey_input = ""
+                        st.rerun()
+                    except EnvWriterError as e:
+                        st.error(f"저장 실패: {e}")
+                    except Exception as e:
+                        st.error(f"예기치 못한 오류: {str(e)[:120]}")
+
+        with st.expander("ℹ️ 사용법 / 권장 프로바이더"):
+            st.markdown("""
+**가장 빠른 무료 시작:**
+1. 🟢 **Google Gemini** — 브라우저에서 1분 발급 · Flash-Lite 1000회/일
+2. 🟢 **Groq** — 무료 14,400회/일 · 초고속 Llama 3.3
+3. 🟢 **Cerebras** — 무료 · 초저지연
+
+**완전 오프라인·무제한:**
+1. 🏠 **Ollama** — 가장 쉬움, `ollama pull llama3.3` 한 줄로 모델 받기
+2. 🏠 **LM Studio** — GUI로 모델 검색·다운로드, 서버 자동 시작
+3. 🏠 **llama.cpp** — 초경량, CPU 전용 가능
+4. 🏠 **Jan** — 크로스플랫폼 GUI, ChatGPT 스타일 UI
+
+**유료 고품질:**
+- 🟡 **Anthropic Claude** — 긴 문서, 추론
+- 🟡 **OpenAI** — GPT-4o-mini 저렴
+- 🟡 **DeepSeek** — 100만 토큰당 $0.27
+
+**보안:**
+- 모든 키·설정은 로컬 `.env`에만 저장 (외부 전송 없음)
+- `.env`는 Git 커밋되지 않음 (`.gitignore` 등록)
+- 로컬 LLM은 네트워크 없이 동작 (완전 프라이버시)
+""")
+
+    # ── 섹션 2: 크롤링 ──
+    with sec_crawl:
+        st.markdown("### ⏱️ 크롤링 설정")
+
+        from config import CRAWL_INTERVAL_MINUTES
+        st.caption(f"현재 자동 수집 주기: **{CRAWL_INTERVAL_MINUTES}분**")
+
+        new_interval = st.slider(
+            "자동 수집 주기 (분)",
+            min_value=5,
+            max_value=1440,
+            value=int(CRAWL_INTERVAL_MINUTES),
+            step=5,
+            help="너무 짧으면 RSS 서버에 부담. 60~120분 권장.",
+            key="settings_crawl_interval",
+        )
+
+        if st.button("💾 크롤링 주기 저장", use_container_width=True, key="settings_save_crawl"):
+            try:
+                update_env({"CRAWL_INTERVAL_MINUTES": str(new_interval)})
+                apply_runtime({"CRAWL_INTERVAL_MINUTES": str(new_interval)})
+                st.success(f"✅ {new_interval}분으로 저장됨 (다음 앱 재시작부터 적용)")
+            except EnvWriterError as e:
+                st.error(f"저장 실패: {e}")
+
+        st.divider()
+        st.markdown("**수동 실행**")
+        mc1, mc2 = st.columns(2)
+        with mc1:
+            if st.button("🔄 지금 수집 실행", use_container_width=True, key="settings_manual_crawl"):
+                try:
+                    with st.spinner("📡 수집 중..."):
+                        cnt = crawl_all()
+                    st.success(f"✅ {cnt}개 수집!")
+                except Exception as e:
+                    st.error(f"오류: {str(e)[:80]}")
+        with mc2:
+            if st.button("🤖 지금 AI 처리", use_container_width=True, key="settings_manual_ai"):
+                if not _active_provider:
+                    st.error("API 키 먼저 설정")
+                else:
+                    try:
+                        with st.spinner("🧠 AI 처리 중..."):
+                            n = process_unprocessed()
+                        st.success(f"✅ {n}개 처리!")
+                    except Exception as e:
+                        st.error(f"오류: {str(e)[:80]}")
+
+    # ── 섹션 3: 뉴스 소스 ──
+    with sec_source:
+        st.markdown("### 📰 뉴스 소스 관리")
+
+        st_sources = load_sources()
+        active_cnt = sum(1 for s in st_sources if s.get("is_active"))
+        st.caption(f"등록된 소스 **{len(st_sources)}개** · 활성 **{active_cnt}개**")
+
+        st.markdown("**소스별 활성/비활성**")
+        for s in st_sources:
+            s["is_active"] = st.checkbox(
+                f"{s['name']} — `{s.get('url', '')[:60]}`",
+                value=s.get("is_active", True),
+                key=f"settings_src_{s['id']}",
+            )
+        if st.button("💾 소스 설정 저장", use_container_width=True, type="primary", key="settings_save_sources"):
+            for s in st_sources:
+                upsert_source(s)
+            st.success(f"✅ {len(st_sources)}개 소스 저장됨")
+            st.rerun()
+
+    # ── 섹션 4: 시스템 정보 ──
+    with sec_info:
+        st.markdown("### ℹ️ 시스템 정보")
+        ic1, ic2, ic3 = st.columns(3)
+        with ic1:
+            st.metric("앱 버전", "v1.5.0")
+        with ic2:
+            st.metric("총 기사", f"{get_article_count():,}")
+        with ic3:
+            st.metric("AI 처리됨", f"{get_processed_count():,}")
+
+        st.divider()
+        st.markdown("**활성 프로바이더**")
+        if _active_provider:
+            info = PROVIDERS[_active_provider]
+            st.write(f"- 이름: **{info['name']}**")
+            st.write(f"- 환경변수: `{info['env_key']}`")
+            st.write(f"- 무료 쿼터: {info.get('free_tier', '미지정')}")
+            st.write(f"- 멀티모달: {'✅ 지원' if info.get('supports_multimodal') else '❌ 미지원'}")
+        else:
+            st.warning("활성 프로바이더 없음 → 🔑 LLM API 키 탭에서 설정")
+
+        st.divider()
+        st.markdown("**연결 가능한 프로바이더 (`.env`에 키 있음)**")
+        available = get_available_providers()
+        if available:
+            for p in available:
+                tier = "🟢" if p.get("free_tier") else "🟡"
+                mm = " · 🖼️" if p.get("multimodal") else ""
+                st.caption(f"{tier} **{p['name']}**{mm}")
+        else:
+            st.caption("없음")
+
+
+# ── 사이드바 설정 버튼에서 설정한 플래그 확인 후 다이얼로그 열기 ──
+if st.session_state.get("_open_settings_dialog"):
+    st.session_state["_open_settings_dialog"] = False
+    show_settings_dialog()

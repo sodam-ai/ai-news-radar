@@ -14,7 +14,7 @@ if sys.platform == "win32":
         except Exception:
             pass
 
-load_dotenv()
+load_dotenv(override=True)  # .env 우선 — 셸 환경변수의 만료/잘못된 키 차단
 
 # 경로
 BASE_DIR = Path(__file__).parent

@@ -494,6 +494,67 @@ PROVIDERS = {
         "free_tier": "가입 시 무료 크레딧",
         "supports_multimodal": True,
     },
+
+    # ──────────────────────────────────────────────────────────
+    # 🏠 로컬 LLM (OpenAI-호환 API · 오프라인 · 완전 무료)
+    # base_url/model은 .env로 환경별 오버라이드 가능
+    # ──────────────────────────────────────────────────────────
+    "ollama": {
+        "name": "Ollama (로컬)",
+        "env_key": "OLLAMA_API_KEY",
+        "type": "openai_compat",
+        "base_url": os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1"),
+        "base_url_env": "OLLAMA_BASE_URL",
+        "models": {
+            "lite": os.getenv("OLLAMA_MODEL_LITE", "llama3.2:3b"),
+            "main": os.getenv("OLLAMA_MODEL_MAIN", "llama3.3:70b"),
+        },
+        "free_tier": "완전 무료 · 오프라인 실행",
+        "supports_multimodal": False,
+        "is_local": True,
+    },
+    "lmstudio": {
+        "name": "LM Studio (로컬)",
+        "env_key": "LMSTUDIO_API_KEY",
+        "type": "openai_compat",
+        "base_url": os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234/v1"),
+        "base_url_env": "LMSTUDIO_BASE_URL",
+        "models": {
+            "lite": os.getenv("LMSTUDIO_MODEL", "local-model"),
+            "main": os.getenv("LMSTUDIO_MODEL", "local-model"),
+        },
+        "free_tier": "완전 무료 · GUI 모델 관리",
+        "supports_multimodal": False,
+        "is_local": True,
+    },
+    "llamacpp": {
+        "name": "llama.cpp server (로컬)",
+        "env_key": "LLAMACPP_API_KEY",
+        "type": "openai_compat",
+        "base_url": os.getenv("LLAMACPP_BASE_URL", "http://localhost:8080/v1"),
+        "base_url_env": "LLAMACPP_BASE_URL",
+        "models": {
+            "lite": os.getenv("LLAMACPP_MODEL", "local-model"),
+            "main": os.getenv("LLAMACPP_MODEL", "local-model"),
+        },
+        "free_tier": "완전 무료 · 초경량",
+        "supports_multimodal": False,
+        "is_local": True,
+    },
+    "jan": {
+        "name": "Jan (로컬)",
+        "env_key": "JAN_API_KEY",
+        "type": "openai_compat",
+        "base_url": os.getenv("JAN_BASE_URL", "http://localhost:1337/v1"),
+        "base_url_env": "JAN_BASE_URL",
+        "models": {
+            "lite": os.getenv("JAN_MODEL", "local-model"),
+            "main": os.getenv("JAN_MODEL", "local-model"),
+        },
+        "free_tier": "완전 무료 · 크로스플랫폼 GUI",
+        "supports_multimodal": False,
+        "is_local": True,
+    },
 }
 
 
