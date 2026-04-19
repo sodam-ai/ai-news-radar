@@ -12,7 +12,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.5.0-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/Release-v1.6.0-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
   <img src="https://img.shields.io/badge/LLM-35_Providers-purple" alt="LLM"/>
   <img src="https://img.shields.io/badge/Vector_Search-ChromaDB-orange" alt="ChromaDB"/>

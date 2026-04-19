@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/OWASP_ASVS-L1-blue" alt="OWASP ASVS"/>
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.5.0-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/Release-v1.6.0-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
   <img src="https://img.shields.io/badge/LLM-35개_프로바이더-purple" alt="LLM"/>
   <img src="https://img.shields.io/badge/벡터검색-ChromaDB-orange" alt="ChromaDB"/>
