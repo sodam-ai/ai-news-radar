@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
   <img src="https://img.shields.io/badge/Release-v1.6.0-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
-  <img src="https://img.shields.io/badge/LLM-35_Providers-purple" alt="LLM"/>
+  <img src="https://img.shields.io/badge/LLM-39_Providers_(Local_4_+_Cloud_35)-purple" alt="LLM"/>
   <img src="https://img.shields.io/badge/Vector_Search-ChromaDB-orange" alt="ChromaDB"/>
 </p>
 

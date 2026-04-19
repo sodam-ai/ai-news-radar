@@ -1477,8 +1477,8 @@ with tab_graph:
 def show_settings_dialog():
     st.caption("모든 설정을 한 곳에서 관리합니다. `.env` 파일을 직접 편집할 필요 없습니다.")
 
-    sec_llm, sec_crawl, sec_source, sec_email, sec_sns, sec_cloud, sec_info = st.tabs([
-        "🔑 LLM API 키", "⏱️ 크롤링", "📰 뉴스 소스", "📧 이메일", "📢 SNS", "☁️ 클라우드 동기화", "ℹ️ 시스템 정보"
+    sec_llm, sec_crawl, sec_source, sec_email, sec_sns, sec_cloud, sec_info, sec_guide = st.tabs([
+        "🔑 LLM API 키", "⏱️ 크롤링", "📰 뉴스 소스", "📧 이메일", "📢 SNS", "☁️ 클라우드 동기화", "ℹ️ 시스템 정보", "📖 사용 가이드"
     ])
 
     # ── 섹션 1: LLM 프로바이더 (클라우드 API 키 + 로컬 LLM) ──
@@ -2069,11 +2069,55 @@ def show_settings_dialog():
         st.markdown("### ℹ️ 시스템 정보")
         ic1, ic2, ic3 = st.columns(3)
         with ic1:
-            st.metric("앱 버전", "v1.5.0")
+            st.metric("앱 버전", "v1.6.0")
         with ic2:
             st.metric("총 기사", f"{get_article_count():,}")
         with ic3:
             st.metric("AI 처리됨", f"{get_processed_count():,}")
+
+        # ── 🔄 GitHub Actions 최근 실행 상태 ──
+        st.divider()
+        st.markdown("**🔄 GitHub Actions 상태 (최근 10회)**")
+        try:
+            import subprocess as _sp
+            import json as _json
+            for _wf in ["collect.yml", "crawl.yml"]:
+                try:
+                    _r = _sp.run(
+                        ["gh", "run", "list", "--workflow", _wf,
+                         "--limit", "10", "--json", "status,conclusion,createdAt"],
+                        capture_output=True, text=True, timeout=10,
+                    )
+                    if _r.returncode != 0 or not _r.stdout.strip():
+                        st.caption(f"`{_wf}` — 조회 실패 또는 실행 기록 없음")
+                        continue
+                    _runs = _json.loads(_r.stdout)
+                    if not _runs:
+                        st.caption(f"`{_wf}` — 실행 기록 없음")
+                        continue
+                    _icons = []
+                    _success = _fail = _skip = 0
+                    for _run in _runs:
+                        _concl = _run.get("conclusion") or _run.get("status")
+                        if _concl == "success":
+                            _icons.append("✅")
+                            _success += 1
+                        elif _concl == "failure":
+                            _icons.append("❌")
+                            _fail += 1
+                        elif _concl in ("cancelled", "skipped"):
+                            _icons.append("⏭️")
+                            _skip += 1
+                        else:
+                            _icons.append("⏳")
+                    st.caption(f"`{_wf}`: {' '.join(_icons)}")
+                    st.caption(f"　　성공 {_success} / 실패 {_fail} / 스킵 {_skip}")
+                    if _fail >= 3:
+                        st.warning(f"⚠️ `{_wf}` 최근 {_fail}회 실패 — Secrets 또는 네트워크 확인 필요")
+                except Exception as _ex:
+                    st.caption(f"`{_wf}` — {str(_ex)[:80]}")
+        except Exception as _e:
+            st.caption(f"Actions 상태 조회 전체 실패: {str(_e)[:80]}")
 
         st.divider()
         st.markdown("**활성 프로바이더**")
@@ -2096,6 +2140,188 @@ def show_settings_dialog():
                 st.caption(f"{tier} **{p['name']}**{mm}")
         else:
             st.caption("없음")
+
+    # ── 섹션 8: 📖 사용 가이드 (완전 초보자용) ──
+    with sec_guide:
+        st.markdown("### 📖 사용 가이드 — 완전 초보자용")
+        st.caption("GitHub Actions 자동화와 이 앱 사용법을 쉽게 설명합니다. 필요할 때 언제든 펼쳐서 읽으세요.")
+
+        with st.expander("🤔 GitHub Actions가 뭔가요? (1분 요약)"):
+            st.markdown("""
+**한 줄로:** GitHub이 **내 앱이 꺼져 있어도** 정해진 시간에 **자동으로** 작업을 실행해주는 기능입니다.
+
+**비유로:**
+- 택배 자동 배송 예약 = 내가 매일 체크 안 해도 정해진 시간에 배송됨
+- Actions = 내가 앱을 안 켜도 GitHub이 뉴스를 수집·처리해줌
+
+**이 프로젝트의 Actions가 하는 일:**
+- 새 AI 뉴스 수집 (RSS 크롤링)
+- AI로 요약·분류·중요도 평가
+- 텔레그램·디스코드·X 등에 자동 게시
+- DB 업데이트
+
+**공짜인가요?** 네. GitHub 무료 플랜은 매월 2,000분 제공 (이 프로젝트는 월 30분 이하 사용).
+""")
+
+        with st.expander("🔧 내 프로젝트의 2개 자동화 설명"):
+            st.markdown("""
+**1. `crawl.yml` (매시간 — 1시간마다 1번)**
+- 역할: **RSS 뉴스 수집만**
+- API 키: **필요 없음** (공개 RSS만 읽음)
+- 현재 상태: 🟢 정상 작동 중
+- 중단 조건: 거의 없음
+
+**2. `collect.yml` (매일 3번 — 06:00 / 12:00 / 18:00 KST)**
+- 역할: **RSS 수집 + AI 처리 + SNS 게시**
+- API 키: **필요 (Gemini/OpenAI 중 1개 이상)**
+- 현재 상태: 키 없으면 "⏭️ 스킵"으로 정상 종료 (이메일 안 옴)
+- 중단 조건: Secrets에 LLM 키가 없으면 자동 스킵
+
+**차이점:**
+| | crawl.yml | collect.yml |
+|---|---|---|
+| 주기 | 매시간 | 매일 3회 |
+| 키 필요 | ❌ | ✅ |
+| 대시보드 표시 | ✅ 즉시 | AI 처리 후 |
+""")
+
+        with st.expander("🔍 지금 잘 돌아가는지 확인하는 3가지 방법"):
+            st.markdown("""
+**방법 1 — 앱에서 (가장 쉬움)**
+- ⚙️ 설정 → **ℹ️ 시스템 정보** 탭
+- 최근 10회 실행 결과가 이모지로 표시: ✅ 성공 / ❌ 실패 / ⏭️ 스킵
+
+**방법 2 — GitHub 웹에서**
+- https://github.com/sodam-ai/ai-news-radar/actions
+- 각 워크플로우 클릭 → 최근 실행 목록
+- 개별 실행 클릭 → 단계별 로그 확인
+
+**방법 3 — 이메일로** (⚠️ 실패 시에만 옴)
+- `collect.yml`이 실패하면 GitHub이 이메일 발송
+- 현재 설정(graceful skip)으로는 **"키 미설정"은 이메일 안 옴**
+- **"진짜 문제"**만 이메일 옴 (쿼터 초과·네트워크 장애 등)
+""")
+
+        with st.expander("📧 이메일 알림이 많이 오면?"):
+            st.markdown("""
+**해결 우선순위:**
+
+**1순위 — 근본 해결 (⚙️ 이 앱에서)**
+- ⚙️ 설정 → **🔑 LLM API 키**에서 Gemini 키 저장
+- ⚙️ 설정 → **☁️ 클라우드 동기화**에서 📤 Secrets 동기화
+- 이후 자동 수집이 정상 작동 → 실패 없음 → 이메일 없음
+
+**2순위 — 이메일만 끄기 (GitHub 웹)**
+1. https://github.com/sodam-ai/ai-news-radar 접속
+2. 우상단 🔔 **Watch** 버튼 → **Custom**
+3. **Actions** 체크 해제 → **Apply**
+4. 복구: 같은 경로에서 Actions 다시 체크
+
+**3순위 — 계정 전체 Actions 알림 끄기**
+- https://github.com/settings/notifications → "Actions" → 이메일 해제
+""")
+
+        with st.expander("⏸️ 자동 실행 일시 중지 / 재개"):
+            st.markdown("""
+**중지하기 (GitHub 웹):**
+1. https://github.com/sodam-ai/ai-news-radar/actions
+2. 왼쪽 메뉴에서 중지할 워크플로우 선택 (예: "AI News Radar — 자동 수집 + SNS 게시")
+3. 우측 **... (점 3개)** 클릭 → **Disable workflow**
+
+**재개하기:**
+- 같은 경로에서 **Enable workflow**
+
+**터미널을 쓸 줄 안다면 (선택):**
+```bash
+gh workflow disable collect.yml   # 중지
+gh workflow enable collect.yml    # 재개
+```
+""")
+
+        with st.expander("▶️ 지금 바로 한 번 실행하고 싶을 때"):
+            st.markdown("""
+**앱에서 (로컬):**
+- 사이드바 **🔄 수집** 버튼 — RSS 수집만
+- 사이드바 **🤖 AI 처리** 버튼 — AI 요약·분류
+- 사이드바 **⚡ 원클릭 전체 실행** — 수집 + AI + 브리핑
+
+**GitHub Actions에서 (클라우드):**
+1. https://github.com/sodam-ai/ai-news-radar/actions
+2. 실행할 워크플로우 선택
+3. 우측 **Run workflow** 버튼 → **Run workflow** 확인
+
+**앱에서 Actions 트리거 (편의):**
+- ⚙️ 설정 → ☁️ 클라우드 동기화 → **▶️ `collect.yml` 수동 실행**
+""")
+
+        with st.expander("📊 실행 로그 읽는 법"):
+            st.markdown("""
+**로그 페이지 접근:**
+1. https://github.com/sodam-ai/ai-news-radar/actions
+2. 워크플로우 실행 클릭 (최신 순)
+3. 왼쪽에 Job 목록 → 클릭 → 단계별 로그 펼쳐짐
+
+**주요 기호:**
+- 🟢 초록색 체크 = 성공
+- 🔴 빨간 X = 실패
+- ⏭️ 회색 화살표 = 스킵 (키 없음 등)
+- 🟡 노랑 시계 = 실행 중
+
+**에러 찾기 팁:**
+- 빨간 X 표시된 스텝 클릭 → 오른쪽에 상세 로그
+- `error:`, `Error:`, `Traceback` 키워드 검색
+- `::notice::` 메시지는 **정상 안내** (에러 아님)
+""")
+
+        with st.expander("⚠️ 자주 겪는 문제 + 해결법"):
+            st.markdown("""
+**Q1: "LLM API 키가 설정되지 않음" 메시지**
+- 원인: GitHub Secrets에 키 없음
+- 해결: ⚙️ 설정 → ☁️ 클라우드 동기화 → 📤 동기화 클릭
+
+**Q2: "쿼터 초과 (quota exceeded)" 에러**
+- 원인: 무료 할당량 소진
+- 해결: 다음 날까지 기다리기 OR 다른 프로바이더로 교체
+
+**Q3: "Unauthorized" 또는 "401 / 403" 에러**
+- 원인: API 키 만료 또는 무효
+- 해결: 공식 사이트에서 새 키 발급 → ⚙️ 설정에 저장
+
+**Q4: 앱에서 "API key not configured"**
+- 원인: 로컬 `.env`에 키 없음
+- 해결: ⚙️ 설정 → 🔑 LLM API 키 → 저장
+
+**Q5: 새 기사가 안 보임**
+- 확인: ⚙️ 설정 → ℹ️ 시스템 정보 → Actions 상태
+- crawl.yml이 ✅이면 수집은 잘 됨 → AI 처리만 필요
+- 사이드바 **🤖 AI 처리** 버튼 클릭
+
+**Q6: Watch 설정을 다시 찾으려면?**
+- https://github.com/sodam-ai/ai-news-radar 우상단 🔔 버튼
+- 또는 **이 가이드** 다시 보기 (⚙️ 설정 → 📖 사용 가이드)
+""")
+
+        with st.expander("💡 팁: 완전 자동화 설정 (5분)"):
+            st.markdown("""
+**한 번만 하면 알아서 다 돌아가게 하기:**
+
+1. **무료 Gemini 키 발급**
+   - https://aistudio.google.com/apikey → "Create API key"
+
+2. **앱에서 저장**
+   - ⚙️ 설정 → 🔑 LLM API 키 → Gemini 선택 → 키 붙여넣기 → 💾 저장
+
+3. **GitHub Secrets에 동기화**
+   - ⚙️ 설정 → ☁️ 클라우드 동기화 → 📤 동기화 클릭
+
+4. **수동 한 번 실행으로 확인**
+   - ⚙️ 설정 → ☁️ 클라우드 동기화 → ▶️ collect.yml 수동 실행
+   - GitHub Actions 탭에서 ✅ 성공 확인
+
+5. **끝!**
+   - 이후 매일 3회 자동 수집·AI 처리·SNS 게시
+   - 이메일 실패 알림 발생 안 함
+""")
 
 
 # ── 사이드바 설정 버튼에서 설정한 플래그 확인 후 다이얼로그 열기 ──
