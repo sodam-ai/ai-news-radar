@@ -13,22 +13,20 @@
   <a href="https://github.com/sodam-ai/ai-news-radar/actions/workflows/ci.yml">
     <img src="https://github.com/sodam-ai/ai-news-radar/actions/workflows/ci.yml/badge.svg" alt="CI"/>
   </a>
-  <img src="https://img.shields.io/badge/tests-141_passed-brightgreen" alt="Tests"/>
+  <img src="https://img.shields.io/badge/tests-159_passed-brightgreen" alt="Tests"/>
   <img src="https://img.shields.io/badge/pip--audit-0_vulnerabilities-brightgreen" alt="pip-audit"/>
   <img src="https://img.shields.io/badge/OWASP_ASVS-L1-blue" alt="OWASP ASVS"/>
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
   <img src="https://img.shields.io/badge/Release-v1.6.0-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
-  <img src="https://img.shields.io/badge/LLM-35개_프로바이더-purple" alt="LLM"/>
+  <img src="https://img.shields.io/badge/LLM-39_프로바이더_(로컬_4_+_클라우드_35)-purple" alt="LLM"/>
   <img src="https://img.shields.io/badge/벡터검색-ChromaDB-orange" alt="ChromaDB"/>
 </p>
 
 <p align="center">
   <a href="README.md">한국어</a> |
-  <a href="README_EN.md">English</a> |
-  <a href="README_JA.md">日本語</a> |
-  <a href="README_ZH.md">中文</a>
+  <a href="README_EN.md">English</a>
 </p>
 
 ---
@@ -85,20 +83,9 @@ AI News Radar는 AI로 뉴스를 분석합니다. 무료 API 키가 필요합니
 
 > **정말 무료인가요?** 네! Google이 하루 1,000회 무료 제공합니다. 개인 뉴스 추적에는 충분합니다. 신용카드 불필요.
 
-### 4단계: 설정 파일 만들기
+### 4단계: 실행 먼저 → 앱에서 설정
 
-다운로드한 폴더 안에서:
-
-1. `.env.example` 파일을 찾아 복사
-2. 복사한 파일 이름을 `.env` 로 변경
-3. 메모장으로 `.env` 열기
-4. `GEMINI_API_KEY=` 뒤에 복사한 API 키 붙여넣기
-
-```
-GEMINI_API_KEY=AIzaSy여기에붙여넣기
-```
-
-저장하고 닫기.
+**v1.6.0부터는 `.env` 파일을 직접 편집할 필요가 없습니다.** 앱에서 클릭만 하면 돼요.
 
 ### 5단계: 실행
 
@@ -109,6 +96,18 @@ GEMINI_API_KEY=AIzaSy여기에붙여넣기
 
 **또는 bat 파일로 실행:**
 - `AI_News_Radar.bat` 더블클릭
+
+### 6단계: 앱에서 API 키 설정 (v1.6.0 신규)
+
+앱이 열리면 **👋 환영 카드**가 자동으로 표시됩니다 (미설정 시):
+
+1. **🚀 지금 시작하기** 버튼 클릭 → 설정 모달 자동 오픈
+2. **🔑 LLM API 키** 탭에서 프로바이더 선택 (20종 지원)
+3. 발급받은 키 붙여넣기 → **💾 저장 + 자동 연결 테스트**
+
+언제든 사이드바 **⚙️ 설정** 버튼으로 다시 열 수 있습니다.
+
+**🏠 완전 오프라인을 원한다면?** Ollama/LM Studio/llama.cpp/Jan 중 하나 설치 → ⚙️ 설정에서 선택 → 서버 주소 확인 → 저장. **API 키 불필요, 완전 무료.**
 
 ---
 
@@ -135,7 +134,12 @@ GEMINI_API_KEY=AIzaSy여기에붙여넣기
 | 🚀 릴리즈 트래커 | AI 도구 새 버전 자동 감지 |
 | 📤 내보내기 | Markdown·PDF |
 | 📲 SNS 카드 | 뉴스 카드 자동 생성 |
-| 🤖 35개 LLM | Gemini, Claude, GPT, Groq 등 자동 전환 |
+| 🤖 39개 LLM | Gemini, Claude, GPT, Groq 등 + **로컬 4종** (Ollama/LM Studio/llama.cpp/Jan) |
+| ⚙️ 통합 설정 모달 | API 키·크롤링·소스·이메일·SNS·Actions 한 곳에서 (v1.6.0 신규) |
+| 🏠 완전 오프라인 | Ollama 등 로컬 LLM으로 **API 키·네트워크 없이** 동작 (v1.6.0 신규) |
+| 🚀 온보딩 웰컴 | 첫 실행 시 자동 안내 카드 → 클릭 1회로 설정 완료 (v1.6.0 신규) |
+| ☁️ GitHub Secrets 동기화 | 로컬 `.env` 키를 Actions에 원클릭 전송 (v1.6.0 신규) |
+| 📖 인앱 사용 가이드 | Actions 이메일 관리·수동 실행 등 초보자 가이드 (v1.6.0 신규) |
 
 ---
 

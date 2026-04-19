@@ -37,10 +37,28 @@ jobs:
           python-version: '3.13'
           cache: 'pip'
 
+      - name: Check required secrets (graceful skip if missing)
+        id: check-keys
+        run: |
+          # LLM 키가 하나도 없으면 "실패"가 아닌 "스킵"으로 종료 (이메일 알림 방지)
+          if [ -z "${{ secrets.GEMINI_API_KEY }}" ] \
+             && [ -z "${{ secrets.OPENAI_API_KEY }}" ] \
+             && [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ] \
+             && [ -z "${{ secrets.GROQ_API_KEY }}" ] \
+             && [ -z "${{ secrets.DEEPSEEK_API_KEY }}" ]; then
+            echo "::notice::LLM API 키가 Secrets에 설정되지 않음 — 수집/AI 처리 스킵 (정상 종료)"
+            echo "::notice::설정 방법: 앱 ⚙️ 설정 > ☁️ 클라우드 동기화 > 📤 Secrets 동기화"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install dependencies
+        if: steps.check-keys.outputs.skip != 'true'
         run: pip install -r requirements.txt
 
       - name: Run pipeline
+        if: steps.check-keys.outputs.skip != 'true'
         env:
           # LLM API 키 (GitHub Secrets)
           LLM_PROVIDER: ${{ secrets.LLM_PROVIDER }}
@@ -69,6 +87,7 @@ jobs:
           esac
 
       - name: Commit updated data
+        if: steps.check-keys.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

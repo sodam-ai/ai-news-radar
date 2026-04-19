@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-SoDam%20AI%20Studio-green" alt="License"/>
   <img src="https://img.shields.io/badge/Release-v1.6.0-blue" alt="Release"/>
-  <img src="https://img.shields.io/badge/LLM-35%20Providers-purple" alt="LLM"/>
+  <img src="https://img.shields.io/badge/LLM-39%20Providers%20(Local%204%20+%20Cloud%2035)-purple" alt="LLM"/>
 </p>
 
 <p align="center">
