@@ -52,6 +52,10 @@ Thumbs.db
 .idea/
 .omc/
 
+# 로컬 작업자 개인 메모 (GitHub 공유 대상 아님)
+기존 작업 이어서 진행 명령어.md
+*.memo.md
+
 # 보안 스캔 / 테스트 / 로그
 pip-audit-report.json
 .secrets.baseline
