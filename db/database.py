@@ -146,10 +146,26 @@ _ARTICLE_FIELDS = (
 )
 
 
+def repair_fts() -> bool:
+    """FTS5 인덱스 강제 재구축. 손상 복구 또는 UI 수동 호출용."""
+    try:
+        conn = get_connection()
+        conn.execute("INSERT INTO articles_fts(articles_fts) VALUES('rebuild')")
+        conn.commit()
+        return True
+    except Exception:
+        return False
+
+
 def init_db() -> None:
     conn = get_connection()
     conn.executescript(DDL)
     conn.commit()
+    # FTS5 무결성 검사 — 손상 감지 시 자동 재구축
+    try:
+        conn.execute("INSERT INTO articles_fts(articles_fts) VALUES('integrity-check')")
+    except Exception:
+        repair_fts()
 
 
 # ── JSON 직렬화 헬퍼 ─────────────────────────────────────────────────────────

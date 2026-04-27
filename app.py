@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from config import DATA_DIR, CATEGORIES, SENTIMENTS
 from utils.helpers import today_str, log
 from db.database import (
-    init_db, get_articles, get_primary_articles, search_articles,
+    init_db, repair_fts, get_articles, get_primary_articles, search_articles,
     get_article_by_id, update_article_fields,
     get_briefings, get_sources, upsert_source,
     get_watchlist, add_watchlist_keyword, get_active_keywords,
@@ -512,6 +512,13 @@ with st.sidebar:
                         st.caption("번역할 기사 없음")
                 except Exception as e:
                     st.error(f"번역 오류: {e}")
+
+    # ── DB 복구 ──
+    if st.button("🔧 DB 복구", use_container_width=True, help="AI 처리 오류 발생 시 DB 인덱스를 재구축합니다"):
+        if repair_fts():
+            st.success("✅ DB 복구 완료! 다시 AI 처리를 시도하세요.")
+        else:
+            st.error("복구 실패. DB 파일이 손상되었을 수 있습니다.")
 
     # ── 원클릭 풀 파이프라인 ──
     if st.button("⚡ 원클릭 전체 실행", use_container_width=True, type="primary"):

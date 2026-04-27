@@ -1,5 +1,5 @@
 from db.database import (
-    init_db,
+    init_db, repair_fts,
     get_articles,
     get_primary_articles,
     upsert_article,
@@ -30,7 +30,7 @@ from db.database import (
 )
 
 __all__ = [
-    "init_db", "get_articles", "get_primary_articles",
+    "init_db", "repair_fts", "get_articles", "get_primary_articles",
     "upsert_article", "upsert_articles", "update_article_fields",
     "get_article_by_id", "search_articles", "get_unprocessed_articles",
     "get_sources", "upsert_source", "update_source_crawled",
