@@ -271,6 +271,16 @@ ai-news-radar/
 
 ---
 
+## Contributors
+
+Thanks to everyone who has helped improve this project.
+
+| Contributor | Contribution |
+|-------------|-------------|
+| [@dimlose](https://github.com/dimlose) | 🐛 FTS5 DB corruption bug report ([#11](https://github.com/sodam-ai/ai-news-radar/issues/11)) |
+
+---
+
 ## License
 
 MIT License © 2026 [SoDam AI Studio](https://github.com/sodam-ai)

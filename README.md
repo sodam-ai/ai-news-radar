@@ -283,6 +283,16 @@ ai-news-radar/
 
 ---
 
+## 기여자
+
+이 프로젝트에 도움을 주신 분들께 감사드립니다.
+
+| 기여자 | 기여 내용 |
+|--------|----------|
+| [@dimlose](https://github.com/dimlose) | 🐛 FTS5 DB 손상 버그 리포트 ([#11](https://github.com/sodam-ai/ai-news-radar/issues/11)) |
+
+---
+
 ## 라이선스
 
 MIT License © 2026 [SoDam AI Studio](https://github.com/sodam-ai)
