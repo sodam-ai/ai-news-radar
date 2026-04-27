@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/OWASP_ASVS-L1-blue" alt="OWASP ASVS"/>
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.6.1-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/Release-v1.6.2-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
   <img src="https://img.shields.io/badge/LLM-39_Providers_(Local_4_+_Cloud_35)-purple" alt="LLM"/>
   <img src="https://img.shields.io/badge/Vector_Search-ChromaDB-orange" alt="ChromaDB"/>
@@ -136,7 +136,7 @@ You can always reopen Settings via the **⚙️ Settings** button in the sidebar
 | 🚀 Onboarding | Auto welcome card on first launch → one click to configure (v1.6.0+) |
 | ☁️ GitHub Secrets Sync | Push local API keys to Actions with one click (v1.6.0+) |
 | 📖 In-App Guide | Beginner-friendly guides for Actions and email management (v1.6.0+) |
-| 🔧 DB Auto-Repair | Auto-detect and repair SQLite FTS5 corruption on startup (v1.6.1+) |
+| 🔧 DB Auto-Repair | Auto-detect and repair SQLite FTS5 corruption on startup (v1.6.2+) |
 
 ---
 
@@ -317,7 +317,7 @@ ai-news-radar/
 
 | Version | Changes |
 |---------|---------|
-| v1.6.1 | SQLite FTS5 auto-repair (`🔧 DB Repair` button), deduplicator fully migrated to SQLite, auto-detect DB corruption on startup |
+| v1.6.2 | SQLite FTS5 auto-repair (`🔧 DB Repair` button), deduplicator fully migrated to SQLite, auto-detect DB corruption on startup |
 | v1.6.0 | Unified settings modal, 4 local LLM providers, onboarding welcome card, GitHub Secrets sync, in-app guide |
 | v1.5.0 | Knowledge Graph, security hardening (OWASP ASVS L1), 159 automated tests |
 | v1.4.0 | SQLite migration, Discord integration, GitHub Actions newsletter |

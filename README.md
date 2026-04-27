@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/OWASP_ASVS-L1-blue" alt="OWASP ASVS"/>
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.6.1-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/Release-v1.6.2-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
   <img src="https://img.shields.io/badge/LLM-39_프로바이더_(로컬_4_+_클라우드_35)-purple" alt="LLM"/>
   <img src="https://img.shields.io/badge/벡터검색-ChromaDB-orange" alt="ChromaDB"/>
@@ -136,7 +136,7 @@ AI News Radar는 AI로 뉴스를 분석합니다. 무료 API 키가 필요합니
 | 🚀 온보딩 웰컴 | 첫 실행 시 자동 안내 카드 → 클릭 1회로 설정 완료 (v1.6.0+) |
 | ☁️ GitHub Secrets 동기화 | 로컬 API 키를 Actions에 원클릭 전송 (v1.6.0+) |
 | 📖 인앱 사용 가이드 | 초보자용 Actions·이메일 가이드 (v1.6.0+) |
-| 🔧 DB 자동 복구 | SQLite FTS5 손상 시 자동 감지·복구 (v1.6.1+) |
+| 🔧 DB 자동 복구 | SQLite FTS5 손상 시 자동 감지·복구 (v1.6.2+) |
 
 ---
 
@@ -318,7 +318,7 @@ ai-news-radar/
 
 | 버전 | 주요 변경 |
 |------|----------|
-| v1.6.1 | SQLite FTS5 자동 복구 (`🔧 DB 복구` 버튼), deduplicator SQLite 완전 이전, DB 손상 자동 감지 |
+| v1.6.2 | SQLite FTS5 자동 복구 (`🔧 DB 복구` 버튼), deduplicator SQLite 완전 이전, DB 손상 자동 감지 |
 | v1.6.0 | 통합 설정 모달, 로컬 LLM 4종 지원, 온보딩 웰컴 카드, GitHub Secrets 동기화, 인앱 가이드 |
 | v1.5.0 | Knowledge Graph, 보안 강화 (OWASP ASVS L1), 159개 자동화 테스트 |
 | v1.4.0 | SQLite 전환, Discord 연동, GitHub Actions 뉴스레터 |
