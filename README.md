@@ -18,7 +18,7 @@
   <img src="https://img.shields.io/badge/OWASP_ASVS-L1-blue" alt="OWASP ASVS"/>
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.6.0-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/Release-v1.6.1-blue" alt="Release"/>
   <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
   <img src="https://img.shields.io/badge/LLM-39_프로바이더_(로컬_4_+_클라우드_35)-purple" alt="LLM"/>
   <img src="https://img.shields.io/badge/벡터검색-ChromaDB-orange" alt="ChromaDB"/>
@@ -57,14 +57,14 @@
 1. 브라우저에서 **[python.org/downloads](https://www.python.org/downloads/)** 접속
 2. 노란 **"Download Python 3.xx"** 버튼 클릭
 3. 다운로드된 파일 실행
-4. **반드시 체크 필수**: 설치 화면 맨 아래 **"Add Python to PATH"** 체크박스를 반드시 체크하세요!
+4. ⚠️ **반드시 체크 필수**: 설치 화면 맨 아래 **"Add Python to PATH"** 체크박스를 반드시 체크하세요! (이것 안 하면 앱이 Python을 못 찾습니다)
 5. **"Install Now"** 클릭 → 완료되면 "Close"
 
 ### 2단계: 프로그램 다운로드
 
 **방법 A — GitHub Releases (권장):**
 1. [Releases 페이지](https://github.com/sodam-ai/ai-news-radar/releases) 접속
-2. **`Source code (zip)`** 다운로드
+2. 최신 버전의 **`Source code (zip)`** 다운로드
 3. ZIP 파일 우클릭 → "모두 압축 풀기" → 폴더 선택 → "압축 풀기"
 
 **방법 B — 이 페이지에서:**
@@ -79,35 +79,31 @@ AI News Radar는 AI로 뉴스를 분석합니다. 무료 API 키가 필요합니
 1. **[aistudio.google.com/apikey](https://aistudio.google.com/apikey)** 접속
 2. Google 계정으로 로그인
 3. **"Create API Key"** 클릭
-4. 키를 복사 (`AIzaSy...` 형태)
+4. 키를 복사 (`AIzaSy...` 형태로 시작하는 긴 문자열)
 
 > **정말 무료인가요?** 네! Google이 하루 1,000회 무료 제공합니다. 개인 뉴스 추적에는 충분합니다. 신용카드 불필요.
 
-### 4단계: 실행 먼저 → 앱에서 설정
+### 4단계: 앱 실행
 
-**v1.6.0부터는 `.env` 파일을 직접 편집할 필요가 없습니다.** 앱에서 클릭만 하면 돼요.
+압축 해제한 폴더에서 **`AI_News_Radar.exe`** 를 **더블클릭**하세요.
 
-### 5단계: 실행
+- **처음 실행**: 패키지 설치로 2~3분 걸립니다 (한 번만)
+- **실행 후**: 브라우저에서 `http://localhost:6601` 이 자동으로 열립니다
+- **bat 파일 방식**: `AI_News_Radar.bat` 더블클릭도 동일하게 작동합니다
 
-**더블클릭으로 실행:**
-- `AI_News_Radar.exe` 파일을 더블클릭하면 자동으로 설치 후 실행됩니다
-- 처음 실행 시 패키지 설치로 2~3분 걸릴 수 있습니다
-- 실행되면 자동으로 브라우저에서 `http://localhost:6601` 이 열립니다
+> **Windows SmartScreen 경고가 뜨면?** "추가 정보" → "실행"을 클릭하세요. 새 소프트웨어에 정상적으로 나타나는 안내 화면입니다.
 
-**또는 bat 파일로 실행:**
-- `AI_News_Radar.bat` 더블클릭
+### 5단계: 앱에서 API 키 설정
 
-### 6단계: 앱에서 API 키 설정 (v1.6.0 신규)
+앱이 열리면 **👋 환영 카드**가 자동으로 표시됩니다:
 
-앱이 열리면 **👋 환영 카드**가 자동으로 표시됩니다 (미설정 시):
-
-1. **🚀 지금 시작하기** 버튼 클릭 → 설정 모달 자동 오픈
-2. **🔑 LLM API 키** 탭에서 프로바이더 선택 (20종 지원)
-3. 발급받은 키 붙여넣기 → **💾 저장 + 자동 연결 테스트**
+1. **🚀 지금 시작하기** 버튼 클릭 → 설정 모달이 자동으로 열립니다
+2. **🔑 LLM API 키** 탭에서 "Google Gemini" 선택
+3. 3단계에서 복사한 키를 붙여넣기 → **💾 저장**
 
 언제든 사이드바 **⚙️ 설정** 버튼으로 다시 열 수 있습니다.
 
-**🏠 완전 오프라인을 원한다면?** Ollama/LM Studio/llama.cpp/Jan 중 하나 설치 → ⚙️ 설정에서 선택 → 서버 주소 확인 → 저장. **API 키 불필요, 완전 무료.**
+> **완전 오프라인으로 쓰고 싶다면?** Ollama, LM Studio, llama.cpp, Jan 중 하나를 설치한 후 ⚙️ 설정에서 선택하면 됩니다. **API 키 불필요, 완전 무료.**
 
 ---
 
@@ -117,7 +113,7 @@ AI News Radar는 AI로 뉴스를 분석합니다. 무료 API 키가 필요합니
 |------|------|
 | 📡 자동 수집 | 74개 RSS 소스 병렬 수집 (15개 스레드) |
 | 🤖 AI 배치 처리 | 요약·분류·중요도·감성·키워드 한 번에 |
-| 🔍 시맨틱 검색 | ChromaDB + ONNX 로컬 임베딩 (v1.3.0 신규) |
+| 🔍 시맨틱 검색 | ChromaDB + ONNX 로컬 임베딩 (v1.3.0+) |
 | 💬 AI 채팅 | 수집된 뉴스로 자연어 대화 |
 | 📋 일일 브리핑 | TOP 5 자동 생성 |
 | 📊 주간 리포트 | 트렌드·예측 PDF 자동 생성 |
@@ -135,24 +131,26 @@ AI News Radar는 AI로 뉴스를 분석합니다. 무료 API 키가 필요합니
 | 📤 내보내기 | Markdown·PDF |
 | 📲 SNS 카드 | 뉴스 카드 자동 생성 |
 | 🤖 39개 LLM | Gemini, Claude, GPT, Groq 등 + **로컬 4종** (Ollama/LM Studio/llama.cpp/Jan) |
-| ⚙️ 통합 설정 모달 | API 키·크롤링·소스·이메일·SNS·Actions 한 곳에서 (v1.6.0 신규) |
-| 🏠 완전 오프라인 | Ollama 등 로컬 LLM으로 **API 키·네트워크 없이** 동작 (v1.6.0 신규) |
-| 🚀 온보딩 웰컴 | 첫 실행 시 자동 안내 카드 → 클릭 1회로 설정 완료 (v1.6.0 신규) |
-| ☁️ GitHub Secrets 동기화 | 로컬 `.env` 키를 Actions에 원클릭 전송 (v1.6.0 신규) |
-| 📖 인앱 사용 가이드 | Actions 이메일 관리·수동 실행 등 초보자 가이드 (v1.6.0 신규) |
+| ⚙️ 통합 설정 모달 | API 키·크롤링·소스·이메일·SNS·Actions 한 곳에서 (v1.6.0+) |
+| 🏠 완전 오프라인 | 로컬 LLM으로 **API 키 없이** 동작 (v1.6.0+) |
+| 🚀 온보딩 웰컴 | 첫 실행 시 자동 안내 카드 → 클릭 1회로 설정 완료 (v1.6.0+) |
+| ☁️ GitHub Secrets 동기화 | 로컬 API 키를 Actions에 원클릭 전송 (v1.6.0+) |
+| 📖 인앱 사용 가이드 | 초보자용 Actions·이메일 가이드 (v1.6.0+) |
+| 🔧 DB 자동 복구 | SQLite FTS5 손상 시 자동 감지·복구 (v1.6.1+) |
 
 ---
 
 ## 환경 변수 설정 (.env)
 
-`.env` 파일에서 설정합니다. 필수 항목 하나만 설정해도 동작합니다.
+**v1.6.0부터는 앱 안에서 설정**할 수 있어 `.env` 파일을 직접 편집할 필요가 없습니다.  
+직접 편집하고 싶다면 `.env.example` 파일을 복사해 `.env`로 이름을 바꾸고 아래와 같이 입력하세요.
 
 ```env
 # ── 필수 (하나만 있으면 됩니다) ──────────────────────
-GEMINI_API_KEY=AIzaSy...          # Google AI Studio (무료 1000회/일)
+GEMINI_API_KEY=AIzaSy...          # Google AI Studio (무료 1,000회/일)
 
 # ── 선택: 다른 LLM 프로바이더 ────────────────────────
-GROQ_API_KEY=gsk_...              # Groq (무료 14400회/일, 초고속)
+GROQ_API_KEY=gsk_...              # Groq (무료 14,400회/일, 초고속)
 OPENAI_API_KEY=sk-...             # OpenAI GPT
 ANTHROPIC_API_KEY=sk-ant-...      # Anthropic Claude
 
@@ -164,7 +162,7 @@ TELEGRAM_CHAT_ID=123456789        # @userinfobot에서 확인
 CRAWL_INTERVAL_MINUTES=60         # 기본값: 60분마다 자동 수집
 ```
 
-> **보안 주의**: `.env` 파일은 절대 GitHub에 올리면 안 됩니다. `.gitignore`에 이미 등록되어 있어 자동으로 제외됩니다.
+> **보안 주의**: `.env` 파일은 절대 GitHub, 카카오톡, 이메일로 공유하지 마세요. `.gitignore`에 이미 등록되어 있어 자동으로 제외됩니다.
 
 ---
 
@@ -191,10 +189,52 @@ CRAWL_INTERVAL_MINUTES=60         # 기본값: 60분마다 자동 수집
 
 ---
 
-## 시맨틱 검색 초기 설정 (v1.3.0 신규)
+## 시맨틱 검색 초기 설정 (v1.3.0+)
 
 처음 실행 후 사이드바에서 **"🧠 벡터 동기화"** 버튼을 한 번 클릭하세요.  
 기존에 수집된 기사들이 AI 검색 DB에 등록됩니다. (이후에는 자동)
+
+---
+
+## 자주 묻는 질문
+
+### "AI 처리 오류: database disk image is malformed" 가 뜹니다
+
+앱이 실행 중에 강제 종료되면 SQLite 내부 인덱스가 손상될 수 있습니다. 해결 방법:
+
+1. **사이드바 → 🔧 DB 복구** 버튼 클릭 (v1.6.1+ 자동 복구)
+2. 그래도 안 되면: `data/radar.db` 파일을 삭제 후 앱 재시작
+
+v1.6.1부터는 앱 시작 시 자동으로 손상을 감지하고 복구합니다.
+
+### "API key not configured" 가 나옵니다
+
+⚙️ 설정 → 🔑 LLM API 키 탭에서 키가 저장되어 있는지 확인하세요.  
+직접 `.env` 파일을 사용한다면 메모장으로 열어 아래 형식이 맞는지 확인하세요:
+```
+GEMINI_API_KEY=AIzaSyBxxxxxxxxxxxxxxxxxxxxxxx
+```
+따옴표 없이, `=` 주위에 공백 없이 입력합니다.
+
+### exe를 더블클릭해도 아무 반응이 없습니다
+
+1. Python이 설치되었는지 확인: 명령 프롬프트에서 `python --version` 입력
+2. "인식되지 않는 명령"이 나오면 Python을 **"Add to PATH"** 체크 후 재설치
+3. exe 우클릭 → **"관리자 권한으로 실행"** 시도
+
+### 처음 실행이 오래 걸립니다
+
+정상입니다! 첫 실행 시 약 200MB의 Python 패키지를 자동으로 다운로드합니다.  
+**2~3분** 정도 걸리며, 이후에는 몇 초 안에 시작됩니다.
+
+### Mac이나 Linux에서도 쓸 수 있나요?
+
+네! `.exe` 파일은 Windows 전용이지만 핵심 앱은 모든 OS에서 작동합니다:
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run app.py --server.port 6601
+```
 
 ---
 
@@ -202,16 +242,16 @@ CRAWL_INTERVAL_MINUTES=60         # 기본값: 60분마다 자동 수집
 
 ```
 ai-news-radar/
-├── app.py                  # 메인 Streamlit 대시보드 (1400줄)
+├── app.py                  # 메인 Streamlit 대시보드
 ├── config.py               # 설정 (포트, 카테고리, API 키 로드)
 ├── requirements.txt        # 필요 패키지 목록
 ├── .env                    # API 키 설정 (직접 생성, GitHub에 올리지 마세요)
 ├── .env.example            # 환경 변수 예시 파일
 │
 ├── ai/                     # AI 처리 모듈
-│   ├── model_router.py     # 35개 LLM 멀티 프로바이더 라우팅
+│   ├── model_router.py     # 39개 LLM 멀티 프로바이더 라우팅
 │   ├── batch_processor.py  # 기사 일괄 AI 분석
-│   ├── vector_store.py     # ChromaDB 시맨틱 검색 (v1.3.0)
+│   ├── vector_store.py     # ChromaDB 시맨틱 검색
 │   ├── chat.py             # AI 뉴스 채팅
 │   ├── briefing.py         # 일일 브리핑 생성
 │   ├── weekly_report.py    # 주간 리포트
@@ -230,6 +270,9 @@ ai-news-radar/
 │   ├── rss_crawler.py      # RSS 멀티스레드 수집 (74개 소스)
 │   └── scheduler.py        # 자동 수집 스케줄러
 │
+├── db/                     # 데이터베이스
+│   └── database.py         # SQLite + FTS5 전문 검색
+│
 ├── bot/                    # 텔레그램 봇
 │   └── telegram_bot.py     # 봇 명령어 처리
 │
@@ -246,13 +289,11 @@ ai-news-radar/
 │   └── exporter.py         # Markdown/PDF 내보내기
 │
 ├── utils/                  # 공통 유틸
-│   ├── helpers.py          # JSON 읽기/쓰기, 로그 등
-│   └── bookmarks.py        # 북마크 관리 (v1.3.0)
+│   ├── helpers.py          # 로그, ID 생성 등
+│   └── bookmarks.py        # 북마크 관리
 │
 └── data/                   # 런타임 데이터 (자동 생성, Git 제외)
-    ├── articles.json        # 수집된 기사
-    ├── sources.json         # 등록된 소스
-    ├── briefings.json       # 생성된 브리핑
+    ├── radar.db             # 메인 데이터베이스 (기사·브리핑·소스 통합)
     ├── chroma/              # 벡터 검색 DB
     └── audio/               # 음성 브리핑 파일
 ```
@@ -263,12 +304,13 @@ ai-news-radar/
 
 | 항목 | 내용 |
 |------|------|
-| **API 키** | `.env` 파일에만 보관. 절대 GitHub, 카카오톡, 이메일로 공유 금지 |
-| **API 한도** | Gemini Flash 무료: 250회/일. 초과 시 Groq 등 다른 프로바이더 자동 전환 |
-| **data/ 폴더** | 기사가 쌓이면 용량이 커질 수 있습니다. 주기적으로 정리 권장 |
+| **API 키** | `.env` 파일 또는 ⚙️ 설정에만 보관. GitHub, 카카오톡, 이메일로 공유 금지 |
+| **API 한도** | Gemini Flash 무료: 1,000회/일. 초과 시 Groq 등 다른 프로바이더 자동 전환 |
+| **data/ 폴더** | 기사가 쌓이면 `radar.db` 용량이 커질 수 있습니다. 주기적 정리 권장 |
 | **포트 충돌** | `6601` 포트를 다른 프로그램이 사용 중이면 `.env`에서 변경 가능 |
 | **벡터 동기화** | `data/chroma/` 삭제 후 재동기화하면 초기화됩니다 |
 | **텔레그램 알림** | `.env`에 `TELEGRAM_CHAT_ID` 없으면 데스크톱 알림만 작동 |
+| **DB 손상** | 앱 강제 종료 시 발생 가능. v1.6.1+ 자동 복구, 또는 사이드바 🔧 DB 복구 클릭 |
 
 ---
 
@@ -276,7 +318,11 @@ ai-news-radar/
 
 | 버전 | 주요 변경 |
 |------|----------|
-| v1.3.0 | ChromaDB 시맨틱 검색, 텔레그램 봇 고도화(`/alert`, `/bookmark`), 스마트 알림 텔레그램 연동 |
+| v1.6.1 | SQLite FTS5 자동 복구 (`🔧 DB 복구` 버튼), deduplicator SQLite 완전 이전, DB 손상 자동 감지 |
+| v1.6.0 | 통합 설정 모달, 로컬 LLM 4종 지원, 온보딩 웰컴 카드, GitHub Secrets 동기화, 인앱 가이드 |
+| v1.5.0 | Knowledge Graph, 보안 강화 (OWASP ASVS L1), 159개 자동화 테스트 |
+| v1.4.0 | SQLite 전환, Discord 연동, GitHub Actions 뉴스레터 |
+| v1.3.0 | ChromaDB 시맨틱 검색, 텔레그램 봇 고도화 (`/alert`, `/bookmark`) |
 | v1.2.1 | 멀티 LLM 35개 프로바이더 지원 확장 |
 | v1.2.0 | 경량 exe 런처 (7.8MB), 다중 해상도 아이콘 |
 | v1.0.0 | MVP 출시 — 수집·요약·분류·브리핑·채팅 |
