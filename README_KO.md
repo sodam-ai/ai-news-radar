@@ -1,175 +1,335 @@
-# AI News Radar
+# 📡 AI News Radar
 
 <p align="center">
-  <img src="assets/icon.png" width="80" alt="AI News Radar Icon" />
-</p>
-<p align="center">
-  <strong>개인용 AI 뉴스 인텔리전스 플랫폼</strong><br/>
-  74개 소스에서 AI 뉴스를 자동 수집·요약·분석합니다
+  <img src="assets/icon.png" width="80" alt="AI News Radar 아이콘" />
 </p>
 
 <p align="center">
+  <strong>나만의 AI 뉴스 인텔리전스 플랫폼</strong><br/>
+  74개 소스에서 AI 뉴스를 자동 수집·요약·분석하는 개인용 대시보드
+</p>
+
+<p align="center">
+  <a href="https://github.com/sodam-ai/ai-news-radar/actions/workflows/ci.yml">
+    <img src="https://github.com/sodam-ai/ai-news-radar/actions/workflows/ci.yml/badge.svg" alt="CI"/>
+  </a>
+  <img src="https://img.shields.io/badge/tests-159_passed-brightgreen" alt="Tests"/>
+  <img src="https://img.shields.io/badge/pip--audit-0_vulnerabilities-brightgreen" alt="pip-audit"/>
+  <img src="https://img.shields.io/badge/OWASP_ASVS-L1-blue" alt="OWASP ASVS"/>
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python"/>
-  <img src="https://img.shields.io/badge/License-SoDam%20AI%20Studio-green" alt="License"/>
-  <img src="https://img.shields.io/badge/Release-v1.6.0-blue" alt="Release"/>
-  <img src="https://img.shields.io/badge/LLM-39%20Providers%20(Local%204%20+%20Cloud%2035)-purple" alt="LLM"/>
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License"/>
+  <img src="https://img.shields.io/badge/Release-v1.6.1-blue" alt="Release"/>
+  <img src="https://img.shields.io/badge/Streamlit-1.44%2B-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"/>
+  <img src="https://img.shields.io/badge/LLM-39_프로바이더_(로컬_4_+_클라우드_35)-purple" alt="LLM"/>
+  <img src="https://img.shields.io/badge/벡터검색-ChromaDB-orange" alt="ChromaDB"/>
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> |
-  <a href="README_KO.md">한국어</a>
+  <a href="README.md">한국어</a> |
+  <a href="README_EN.md">English</a>
 </p>
 
 ---
 
-## AI News Radar란?
-
-AI News Radar는 **내 컴퓨터에서 실행되는 AI 뉴스 비서**입니다:
-
-- **74개 소스**에서 AI 뉴스를 한 번에 수집
-- AI가 모든 기사를 **자동 요약·분류·분석**
-- 매일 **TOP 5 브리핑**, 매주 **인텔리전스 리포트** 생성
-- 뉴스에 대해 AI와 **대화** ("오늘 AI 분야에 무슨 일이 있었어?")
-- Discord, Telegram, X 등에 **SNS 게시물 자동 생성**
-- AI 도구 **릴리즈 추적**, **트렌드 분석**, **경쟁사 비교**
+> 이 문서는 [README.md](README.md) 와 동일한 내용입니다. 최신 정보는 README.md 를 참고하세요.
 
 ---
 
-## 빠른 시작 가이드
+## AI News Radar가 뭔가요?
 
-> **코딩 경험이 전혀 필요 없습니다.** 아래 단계를 그대로 따라하세요.
+**코딩을 한 번도 안 해봐도** 사용할 수 있는 AI 뉴스 도구입니다.
+
+- 📰 **74개 AI 뉴스 소스**에서 자동으로 최신 뉴스를 수집합니다
+- 🤖 **AI가 자동으로 요약·분류·중요도 평가**를 해줍니다
+- 📋 **매일 TOP 5 브리핑**을 자동으로 만들어 줍니다
+- 💬 **"이번 주 Claude 관련 뉴스 알려줘"** — AI에게 자연어로 질문하세요
+- 🔍 **시맨틱 검색** — 의미 기반 AI 검색 (단어가 정확히 안 맞아도 관련 기사 찾기)
+- ⭐ **북마크 + 메모** — 중요한 기사를 저장하고 메모합니다
+- 📱 **텔레그램 봇** — 앱을 안 켜도 중요 뉴스가 텔레그램으로 옵니다
+- 📊 **트렌드·경쟁사 분석** — AI 업계 흐름을 차트로 한눈에 파악합니다
+
+> 내 컴퓨터에서만 실행되는 **완전 로컬** 앱입니다. 데이터가 외부로 나가지 않습니다.
+
+---
+
+## 빠른 시작 (코딩 경험 없어도 OK)
 
 ### 1단계: Python 설치
 
-이미 Python이 설치되어 있으면 2단계로 건너뛰세요.
+이미 Python이 설치되어 있다면 2단계로 건너뛰세요.
 
-1. 웹 브라우저에서 **[python.org/downloads](https://www.python.org/downloads/)** 열기
-2. 노란색 **"Download Python 3.xx"** 버튼 클릭
+1. 브라우저에서 **[python.org/downloads](https://www.python.org/downloads/)** 접속
+2. 노란 **"Download Python 3.xx"** 버튼 클릭
 3. 다운로드된 파일 실행
-4. **매우 중요**: 설치 화면 아래쪽에 **"Add Python to PATH"** 체크박스가 있습니다. **반드시 체크하세요!** 이걸 안 하면 앱이 Python을 찾지 못합니다.
-5. **"Install Now"** 클릭하고 완료까지 대기
-6. **"Close"** 클릭
+4. ⚠️ **반드시 체크 필수**: 설치 화면 맨 아래 **"Add Python to PATH"** 체크박스를 반드시 체크하세요! (이것 안 하면 앱이 Python을 못 찾습니다)
+5. **"Install Now"** 클릭 → 완료되면 "Close"
 
-### 2단계: AI News Radar 다운로드
+### 2단계: 프로그램 다운로드
 
-**방법 A — GitHub Releases에서 다운로드 (추천):**
-1. [릴리즈 페이지](https://github.com/sodam-ai/ai-news-radar/releases)로 이동
-2. **`AI_News_Radar_v1.2.0.zip`** 다운로드
-3. ZIP 파일 우클릭 → **"압축 풀기"** → 원하는 폴더 선택 (예: 바탕화면)
+**방법 A — GitHub Releases (권장):**
+1. [Releases 페이지](https://github.com/sodam-ai/ai-news-radar/releases) 접속
+2. 최신 버전의 **`Source code (zip)`** 다운로드
+3. ZIP 파일 우클릭 → "모두 압축 풀기" → 폴더 선택 → "압축 풀기"
 
-**방법 B — 이 페이지에서 다운로드:**
-1. 이 페이지 위쪽의 초록색 **"Code"** 버튼 클릭
+**방법 B — 이 페이지에서:**
+1. 상단 초록색 **"Code"** 버튼 클릭
 2. **"Download ZIP"** 클릭
-3. 원하는 폴더에 압축 해제
+3. ZIP을 원하는 폴더에 압축 해제
 
-### 3단계: 무료 API 키 발급
+### 3단계: 무료 API 키 발급 (30초)
 
-AI News Radar가 뉴스를 분석하려면 AI 서비스 키가 필요합니다 (30초면 됩니다):
+AI News Radar는 AI로 뉴스를 분석합니다. 무료 API 키가 필요합니다.
 
 1. **[aistudio.google.com/apikey](https://aistudio.google.com/apikey)** 접속
 2. Google 계정으로 로그인
 3. **"Create API Key"** 클릭
-4. **키를 복사** (`AIzaSy...` 형태)
-5. 이 페이지를 열어두세요 — 다음 단계에서 붙여넣기합니다
+4. 키를 복사 (`AIzaSy...` 형태로 시작하는 긴 문자열)
 
-> **정말 무료인가요?** 네! Google이 하루 1,000회 무료 API 호출을 제공합니다. 개인 뉴스 추적에 충분합니다. 신용카드 불필요.
+> **정말 무료인가요?** 네! Google이 하루 1,000회 무료 제공합니다. 개인 뉴스 추적에는 충분합니다. 신용카드 불필요.
 
 ### 4단계: 앱 실행
 
-압축 해제한 폴더를 열고 **`AI_News_Radar.exe`** 를 **더블클릭**하세요.
+압축 해제한 폴더에서 **`AI_News_Radar.exe`** 를 **더블클릭**하세요.
 
-**처음 실행할 때:**
-- 앱이 **자동으로 가상환경을 생성**하고 **모든 의존성을 설치**합니다
-- **3~5분 정도 걸립니다** (인터넷 속도에 따라, 약 200MB 다운로드)
-- 텍스트 편집기가 열리면 — 3단계에서 복사한 **API 키를 붙여넣기**하고, 파일을 저장하고 닫으세요
-- 브라우저에 AI News Radar가 열립니다!
+- **처음 실행**: 패키지 설치로 2~3분 걸립니다 (한 번만)
+- **실행 후**: 브라우저에서 `http://localhost:6601` 이 자동으로 열립니다
+- **bat 파일 방식**: `AI_News_Radar.bat` 더블클릭도 동일하게 작동합니다
 
-**두 번째 실행부터:**
-- exe를 더블클릭하면 — 몇 초 안에 시작됩니다
+> **Windows SmartScreen 경고가 뜨면?** "추가 정보" → "실행"을 클릭하세요. 새 소프트웨어에 정상적으로 나타나는 안내 화면입니다.
 
-> **Windows SmartScreen 경고?** 새로운 앱이라 파란색 경고 화면이 나올 수 있습니다. **"추가 정보"** → **"실행"** 을 클릭하세요. 모든 새 소프트웨어에 나타나는 정상적인 현상입니다.
+### 5단계: 앱에서 API 키 설정
 
----
+앱이 열리면 **👋 환영 카드**가 자동으로 표시됩니다:
 
-## 주요 기능 (45개 이상)
+1. **🚀 지금 시작하기** 버튼 클릭 → 설정 모달이 자동으로 열립니다
+2. **🔑 LLM API 키** 탭에서 "Google Gemini" 선택
+3. 3단계에서 복사한 키를 붙여넣기 → **💾 저장**
 
-### 뉴스 수집 & 관리
-| 기능 | 설명 |
-|------|------|
-| 원클릭 파이프라인 | 수집 → 분석 → 브리핑을 버튼 하나로 |
-| 74개 RSS 소스 | TechCrunch, MIT Tech Review, 한국 기술 매체 등 |
-| 스마트 중복 제거 | 여러 매체의 같은 뉴스를 자동 병합 |
-| 키워드 워치리스트 | 관심 키워드 하이라이트 |
-| 북마크 | 기사 저장 및 빠른 접근 |
-| 자동 번역 | 영어 기사를 한국어로 자동 번역 |
-| 카테고리 필터 | AI 도구, 연구, 트렌드, 튜토리얼, 비즈니스 등 8개 |
+언제든 사이드바 **⚙️ 설정** 버튼으로 다시 열 수 있습니다.
 
-### AI 분석 & 인텔리전스
-| 기능 | 설명 |
-|------|------|
-| 매일 TOP 5 브리핑 | AI가 가장 중요한 5개 뉴스를 선별·요약 |
-| 주간 리포트 | 트렌드, 예측, 핵심 시사점을 포함한 종합 분석 |
-| AI 채팅 | "최근 LLM 발전은?", "오늘 중요한 뉴스는?" 등 질문 |
-| 트렌드 분석 | 시간에 따른 주제 변화를 차트로 시각화 |
-| 릴리즈 트래커 | 50+ AI 도구의 새 버전 모니터링 |
-| 경쟁사 분석 | AI 기업/도구 비교 |
-| AI 토론 | 논쟁적 AI 주제의 찬반 분석 |
-| 용어 사전 | 전문 용어를 쉬운 말로 설명 |
-| 팩트체크 | 여러 매체 교차 검증 |
-| 스마트 알림 | 관심사와 매칭되는 뉴스 알림 |
-
-### 콘텐츠 생성 & 공유
-| 기능 | 설명 |
-|------|------|
-| 음성 브리핑 | TTS로 브리핑 듣기 (20+ 음성) |
-| Markdown 내보내기 | 블로그, Notion, Obsidian용 |
-| PDF 내보내기 | 표지와 목차가 있는 PDF |
-| Discord/Telegram/X/Threads/Instagram | 5개 SNS 플랫폼 게시 |
-| AI 콘텐츠 생성 | 플랫폼별 최적화된 게시물 자동 작성 |
-| 이메일 뉴스레터 | 주간 요약을 이메일로 발송 |
+> **완전 오프라인으로 쓰고 싶다면?** Ollama, LM Studio, llama.cpp, Jan 중 하나를 설치한 후 ⚙️ 설정에서 선택하면 됩니다. **API 키 불필요, 완전 무료.**
 
 ---
 
-## 환경 변수
+## 주요 기능 전체 목록
 
-모든 설정은 `.env` 파일에 저장됩니다. **최소 1개의 API 키만 있으면 됩니다.**
+| 기능 | 설명 |
+|------|------|
+| 📡 자동 수집 | 74개 RSS 소스 병렬 수집 (15개 스레드) |
+| 🤖 AI 배치 처리 | 요약·분류·중요도·감성·키워드 한 번에 |
+| 🔍 시맨틱 검색 | ChromaDB + ONNX 로컬 임베딩 (v1.3.0+) |
+| 💬 AI 채팅 | 수집된 뉴스로 자연어 대화 |
+| 📋 일일 브리핑 | TOP 5 자동 생성 |
+| 📊 주간 리포트 | 트렌드·예측 PDF 자동 생성 |
+| ⭐ 북마크+메모 | 기사 저장 및 메모 |
+| 🔔 스마트 알림 | 워치리스트 키워드 감지 시 알림 |
+| 📱 텔레그램 봇 | `/today`, `/ask`, `/alert`, `/bookmark` |
+| 🌐 번역 | AI 영→한 자동 번역 |
+| 🎙️ 음성 브리핑 | edge-tts AI 음성으로 읽어주기 |
+| 📈 트렌드 차트 | 키워드별 시계열 언급량 분석 |
+| 🏢 경쟁사 모니터링 | AI 기업·제품 추적 |
+| ✅ 팩트체크 배지 | 보도 매체 수 기반 신뢰도 |
+| 🗣️ 디베이트 모드 | AI가 찬성/반대 시각 자동 생성 |
+| 📚 AI 용어 사전 | 뉴스 속 전문용어 자동 추출·설명 |
+| 🚀 릴리즈 트래커 | AI 도구 새 버전 자동 감지 |
+| 📤 내보내기 | Markdown·PDF |
+| 📲 SNS 카드 | 뉴스 카드 자동 생성 |
+| 🤖 39개 LLM | Gemini, Claude, GPT, Groq 등 + **로컬 4종** (Ollama/LM Studio/llama.cpp/Jan) |
+| ⚙️ 통합 설정 모달 | API 키·크롤링·소스·이메일·SNS·Actions 한 곳에서 (v1.6.0+) |
+| 🏠 완전 오프라인 | 로컬 LLM으로 **API 키 없이** 동작 (v1.6.0+) |
+| 🚀 온보딩 웰컴 | 첫 실행 시 자동 안내 카드 → 클릭 1회로 설정 완료 (v1.6.0+) |
+| ☁️ GitHub Secrets 동기화 | 로컬 API 키를 Actions에 원클릭 전송 (v1.6.0+) |
+| 📖 인앱 사용 가이드 | 초보자용 Actions·이메일 가이드 (v1.6.0+) |
+| 🔧 DB 자동 복구 | SQLite FTS5 손상 시 자동 감지·복구 (v1.6.1+) |
 
-### 필수 (1개만 선택)
+---
 
-| 변수 | 제공자 | 무료 한도 | 발급 방법 |
-|------|--------|-----------|----------|
-| `GEMINI_API_KEY` | Google Gemini | 1,000회/일 | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
-| `GROQ_API_KEY` | Groq | 14,400회/일 | [console.groq.com](https://console.groq.com) |
-| `OPENAI_API_KEY` | OpenAI | 유료 ($0.002/회) | [platform.openai.com](https://platform.openai.com) |
+## 환경 변수 설정 (.env)
 
-35개 AI 서비스 전체 목록은 `.env.example`을 참고하세요.
+**v1.6.0부터는 앱 안에서 설정**할 수 있어 `.env` 파일을 직접 편집할 필요가 없습니다.  
+직접 편집하고 싶다면 `.env.example` 파일을 복사해 `.env`로 이름을 바꾸고 아래와 같이 입력하세요.
+
+```env
+# ── 필수 (하나만 있으면 됩니다) ──────────────────────
+GEMINI_API_KEY=AIzaSy...          # Google AI Studio (무료 1,000회/일)
+
+# ── 선택: 다른 LLM 프로바이더 ────────────────────────
+GROQ_API_KEY=gsk_...              # Groq (무료 14,400회/일, 초고속)
+OPENAI_API_KEY=sk-...             # OpenAI GPT
+ANTHROPIC_API_KEY=sk-ant-...      # Anthropic Claude
+
+# ── 선택: 텔레그램 봇 ────────────────────────────────
+TELEGRAM_BOT_TOKEN=123456:ABC...  # @BotFather에서 발급
+TELEGRAM_CHAT_ID=123456789        # @userinfobot에서 확인
+
+# ── 선택: 수집 주기 ──────────────────────────────────
+CRAWL_INTERVAL_MINUTES=60         # 기본값: 60분마다 자동 수집
+```
+
+> **보안 주의**: `.env` 파일은 절대 GitHub, 카카오톡, 이메일로 공유하지 마세요. `.gitignore`에 이미 등록되어 있어 자동으로 제외됩니다.
+
+---
+
+## 텔레그램 봇 설정 방법
+
+1. 텔레그램에서 **@BotFather** 검색
+2. `/newbot` 입력 → 봇 이름 설정 → 토큰 복사
+3. `.env`에 `TELEGRAM_BOT_TOKEN=발급받은토큰` 입력
+4. 텔레그램에서 **@userinfobot** 검색 → `/start` → 숫자 ID 복사
+5. `.env`에 `TELEGRAM_CHAT_ID=숫자ID` 입력
+6. 터미널에서: `python -m bot.telegram_bot`
+
+**봇 명령어:**
+| 명령어 | 설명 |
+|--------|------|
+| `/today` | 오늘의 AI 브리핑 |
+| `/top` | 중요도 TOP 5 뉴스 |
+| `/search 키워드` | 뉴스 검색 |
+| `/ask 질문` | AI에게 뉴스 질문 |
+| `/alert` | 워치리스트 조회 |
+| `/alert 키워드` | 워치리스트 추가 |
+| `/bookmark` | 북마크 기사 목록 |
+| `/stats` | 수집 통계 |
+
+---
+
+## 시맨틱 검색 초기 설정 (v1.3.0+)
+
+처음 실행 후 사이드바에서 **"🧠 벡터 동기화"** 버튼을 한 번 클릭하세요.  
+기존에 수집된 기사들이 AI 검색 DB에 등록됩니다. (이후에는 자동)
 
 ---
 
 ## 자주 묻는 질문
 
-### "API key not configured"라고 나옵니다
-`.env` 파일을 메모장으로 열어 API 키가 올바르게 입력되었는지 확인하세요:
+### "AI 처리 오류: database disk image is malformed" 가 뜹니다
+
+앱이 실행 중에 강제 종료되면 SQLite 내부 인덱스가 손상될 수 있습니다. 해결 방법:
+
+1. **사이드바 → 🔧 DB 복구** 버튼 클릭 (v1.6.1+ 자동 복구)
+2. 그래도 안 되면: `data/radar.db` 파일을 삭제 후 앱 재시작
+
+v1.6.1부터는 앱 시작 시 자동으로 손상을 감지하고 복구합니다.
+
+### "API key not configured" 가 나옵니다
+
+⚙️ 설정 → 🔑 LLM API 키 탭에서 키가 저장되어 있는지 확인하세요.  
+직접 `.env` 파일을 사용한다면 메모장으로 열어 아래 형식이 맞는지 확인하세요:
 ```
 GEMINI_API_KEY=AIzaSyBxxxxxxxxxxxxxxxxxxxxxxx
 ```
 따옴표 없이, `=` 주위에 공백 없이 입력합니다.
 
 ### exe를 더블클릭해도 아무 반응이 없습니다
+
 1. Python이 설치되었는지 확인: 명령 프롬프트에서 `python --version` 입력
-2. "인식되지 않는 명령"이 나오면, Python을 **"Add to PATH"** 체크하고 재설치
+2. "인식되지 않는 명령"이 나오면 Python을 **"Add to PATH"** 체크 후 재설치
 3. exe 우클릭 → **"관리자 권한으로 실행"** 시도
 
 ### 처음 실행이 오래 걸립니다
-정상입니다! 첫 실행 시 약 200MB의 Python 패키지를 다운로드합니다. **3~5분** 걸리며, 이후에는 몇 초 안에 시작됩니다.
+
+정상입니다! 첫 실행 시 약 200MB의 Python 패키지를 자동으로 다운로드합니다.  
+**2~3분** 정도 걸리며, 이후에는 몇 초 안에 시작됩니다.
 
 ### Mac이나 Linux에서도 쓸 수 있나요?
-네! `.exe` 파일은 Windows 전용이지만, 핵심 앱은 모든 OS에서 작동합니다:
+
+네! `.exe` 파일은 Windows 전용이지만 핵심 앱은 모든 OS에서 작동합니다:
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py --server.port 6601
 ```
+
+---
+
+## 폴더 구조
+
+```
+ai-news-radar/
+├── app.py                  # 메인 Streamlit 대시보드
+├── config.py               # 설정 (포트, 카테고리, API 키 로드)
+├── requirements.txt        # 필요 패키지 목록
+├── .env                    # API 키 설정 (직접 생성, GitHub에 올리지 마세요)
+├── .env.example            # 환경 변수 예시 파일
+│
+├── ai/                     # AI 처리 모듈
+│   ├── model_router.py     # 39개 LLM 멀티 프로바이더 라우팅
+│   ├── batch_processor.py  # 기사 일괄 AI 분석
+│   ├── vector_store.py     # ChromaDB 시맨틱 검색
+│   ├── chat.py             # AI 뉴스 채팅
+│   ├── briefing.py         # 일일 브리핑 생성
+│   ├── weekly_report.py    # 주간 리포트
+│   ├── trend.py            # 트렌드 분석
+│   ├── competitor.py       # 경쟁사 모니터링
+│   ├── smart_alert.py      # 스마트 알림 (텔레그램 연동)
+│   ├── factcheck.py        # 팩트체크 배지
+│   ├── debate.py           # 디베이트 모드
+│   ├── glossary.py         # AI 용어 사전
+│   ├── release_tracker.py  # 릴리즈 감지
+│   ├── translator.py       # 영→한 자동 번역
+│   ├── voice_briefing.py   # 음성 브리핑
+│   └── deduplicator.py     # 중복 뉴스 병합
+│
+├── crawler/                # 뉴스 수집
+│   ├── rss_crawler.py      # RSS 멀티스레드 수집 (74개 소스)
+│   └── scheduler.py        # 자동 수집 스케줄러
+│
+├── db/                     # 데이터베이스
+│   └── database.py         # SQLite + FTS5 전문 검색
+│
+├── bot/                    # 텔레그램 봇
+│   └── telegram_bot.py     # 봇 명령어 처리
+│
+├── sns/                    # 소셜 미디어
+│   ├── card_generator.py   # 뉴스 카드 생성
+│   ├── content_generator.py
+│   ├── newsletter.py       # 이메일 뉴스레터
+│   └── poster.py           # 소셜 포스팅
+│
+├── reader/                 # 아티클 리더
+│   └── article_reader.py   # 원문 클린 뷰
+│
+├── export/                 # 내보내기
+│   └── exporter.py         # Markdown/PDF 내보내기
+│
+├── utils/                  # 공통 유틸
+│   ├── helpers.py          # 로그, ID 생성 등
+│   └── bookmarks.py        # 북마크 관리
+│
+└── data/                   # 런타임 데이터 (자동 생성, Git 제외)
+    ├── radar.db             # 메인 데이터베이스 (기사·브리핑·소스 통합)
+    ├── chroma/              # 벡터 검색 DB
+    └── audio/               # 음성 브리핑 파일
+```
+
+---
+
+## 운영 시 주의사항
+
+| 항목 | 내용 |
+|------|------|
+| **API 키** | `.env` 파일 또는 ⚙️ 설정에만 보관. GitHub, 카카오톡, 이메일로 공유 금지 |
+| **API 한도** | Gemini Flash 무료: 1,000회/일. 초과 시 Groq 등 다른 프로바이더 자동 전환 |
+| **data/ 폴더** | 기사가 쌓이면 `radar.db` 용량이 커질 수 있습니다. 주기적 정리 권장 |
+| **포트 충돌** | `6601` 포트를 다른 프로그램이 사용 중이면 `.env`에서 변경 가능 |
+| **벡터 동기화** | `data/chroma/` 삭제 후 재동기화하면 초기화됩니다 |
+| **텔레그램 알림** | `.env`에 `TELEGRAM_CHAT_ID` 없으면 데스크톱 알림만 작동 |
+| **DB 손상** | 앱 강제 종료 시 발생 가능. v1.6.1+ 자동 복구, 또는 사이드바 🔧 DB 복구 클릭 |
+
+---
+
+## 버전 히스토리
+
+| 버전 | 주요 변경 |
+|------|----------|
+| v1.6.1 | SQLite FTS5 자동 복구 (`🔧 DB 복구` 버튼), deduplicator SQLite 완전 이전, DB 손상 자동 감지 |
+| v1.6.0 | 통합 설정 모달, 로컬 LLM 4종 지원, 온보딩 웰컴 카드, GitHub Secrets 동기화, 인앱 가이드 |
+| v1.5.0 | Knowledge Graph, 보안 강화 (OWASP ASVS L1), 159개 자동화 테스트 |
+| v1.4.0 | SQLite 전환, Discord 연동, GitHub Actions 뉴스레터 |
+| v1.3.0 | ChromaDB 시맨틱 검색, 텔레그램 봇 고도화 (`/alert`, `/bookmark`) |
+| v1.2.1 | 멀티 LLM 35개 프로바이더 지원 확장 |
+| v1.2.0 | 경량 exe 런처 (7.8MB), 다중 해상도 아이콘 |
+| v1.0.0 | MVP 출시 — 수집·요약·분류·브리핑·채팅 |
 
 ---
 
@@ -185,9 +345,7 @@ streamlit run app.py --server.port 6601
 
 ## 라이선스
 
-Copyright (c) 2026 **SoDam AI Studio**. All rights reserved.
+MIT License © 2026 [SoDam AI Studio](https://github.com/sodam-ai)
 
-이 소프트웨어는 개인 및 교육 목적으로 제공됩니다.
-상업적 사용은 퍼블리셔에게 문의하세요.
-
-자세한 내용은 [LICENSE](LICENSE)를 참조하세요.
+자유롭게 사용, 수정, 배포 가능합니다.  
+상업적 이용 시 원 저작자 표기를 유지해 주세요.
